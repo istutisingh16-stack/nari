@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NARI | Reclaim Your Confidence</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* --- 1. BRAND VARIABLES --- */
+        :root {
+            /* Palette */
+            --ink-black: #05090F;      /* Primary Text, Dark Backgrounds */
+            --carmine: #C5172E;        /* Accents, Buttons, CTAs */
+            --lavender-blush: #F4E4E4; /* Section Backgrounds, Soft Elements */
+            --white: #FFFFFF;
+            --off-white: #FAFAFA;
+            
+            /* Typography */
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Lato', sans-serif;
+            
+            /* Spacing */
+            --container-width: 1200px;
+            --section-spacing: 100px;
+        }
+
+        /* --- 2. GLOBAL RESET & BASE --- */
+        html { scroll-behavior: smooth; }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--ink-black);
+            background-color: var(--white);
+            line-height: 1.8;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; /* Crisp text on Mac */
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: var(--font-serif);
+            color: var(--ink-black);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        p { margin-bottom: 20px; color: #4a4a4a; }
+        a { text-decoration: none; color: inherit; transition: all 0.3s ease; }
+
+        /* --- 3. UTILITIES --- */
+        .container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .section-padding { padding: var(--section-spacing) 0; }
+        
+        .text-carmine { color: var(--carmine); }
+        .text-center { text-align: center; }
+        
+        .eyebrow {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            color: var(--carmine);
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        /* --- 4. BUTTONS --- */
+        .btn {
+            display: inline-block;
+            padding: 16px 40px;
+            background-color: var(--carmine);
+            color: var(--white);
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid var(--carmine);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(197, 23, 46, 0.25);
+            background-color: #a01225; /* Slightly darker red on hover */
+            border-color: #a01225;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--ink-black);
+            border: 2px solid var(--ink-black);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--ink-black);
+            color: var(--white);
+            transform: translateY(-4px);
+        }
+
+        /* --- 5. HEADER (Sticky & Glassmorphism) --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+            transition: 0.3s;
+        }
+
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Logo Area */
+        .brand-logo img {
+            height: 55px; /* Adjust based on your logo file */
+            width: auto;
+            display: block;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--ink-black);
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--carmine);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover { color: var(--carmine); }
+        .nav-link:hover::after { width: 100%; }
+
+        /* --- 6. HERO SECTION (Split: Text Left, Image Right) --- */
+        .hero {
+            padding-top: 160px; /* Account for fixed header */
+            padding-bottom: 100px;
+            background: linear-gradient(100deg, var(--lavender-blush) 0%, #fff 60%);
+            min-height: 90vh; /* Full viewport height feel */
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.2rem; /* UPDATED: Adjusted size as requested */
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 90%;
+            color: #555;
+        }
+
+        /* Organic Shape Image Container */
+        .hero-image-container {
+            position: relative;
+            width: 100%;
+            height: 550px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-blob {
+            width: 100%;
+            height: 100%;
+            /* This creates the fluid, organic shape */
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            overflow: hidden;
+            box-shadow: 20px 20px 60px rgba(0,0,0,0.1);
+            animation: morph 8s ease-in-out infinite;
+            border: 4px solid var(--white);
+        }
+
+        .hero-blob img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.1); /* Slight zoom for parallax feel */
+        }
+
+        @keyframes morph {
+            0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+            34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+            67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+        }
+
+        /* --- 7. ABOUT SECTION --- */
+        .about { background: var(--white); position: relative; }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr; /* More space for card */
+            gap: 80px;
+        }
+
+        .quote-card {
+            background-color: var(--lavender-blush);
+            padding: 50px;
+            border-radius: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .quote-card::before {
+            content: '\201C';
+            font-family: var(--font-serif);
+            font-size: 200px;
+            color: rgba(197, 23, 46, 0.08);
+            position: absolute;
+            top: -40px;
+            left: -30px;
+            line-height: 1;
+            z-index: 1;
+        }
+
+        .quote-text {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- 8. SERVICES (Cards) --- */
+        .services { background-color: #faf7f7; } /* Very light grey/pink */
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Four boxes in a straight line on desktop */
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .service-card {
+            background: var(--white);
+            padding: 45px 35px;
+            border-radius: 16px;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover Effect: Lift and Carmine Border */
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-bottom: 4px solid var(--carmine);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: var(--lavender-blush);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            color: var(--carmine);
+            font-size: 1.5rem;
+        }
+
+        .service-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .service-list li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .service-list li::before {
+            content: '\f00c'; /* FontAwesome check */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--carmine);
+            font-size: 0.8rem;
+            top: 4px;
+        }
+
+        /* --- 9. CONTACT (Dark Mode) --- */
+        .contact {
+            background-color: var(--ink-black);
+            color: var(--white);
+            position: relative;
+        }
+
+        .contact h2, .contact h3 { color: var(--white); }
+        .contact p { color: #a0a0a0; }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+        }
+
+        .contact-form-wrapper {
+            background: var(--white);
+            padding: 50px;
+            border-radius: 10px;
+            color: var(--ink-black); /* Reset text color for form */
+        }
+
+        .form-group { margin-bottom: 20px; }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            background: #f4f4f4;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            background: var(--white);
+            border-color: var(--carmine);
+            box-shadow: 0 0 0 4px rgba(197, 23, 46, 0.1);
+        }
+
+        /* --- 10. FOOTER --- */
+        footer {
+            background: #020407; /* Slightly darker than ink black */
+            color: #555;
+            padding: 50px 0 20px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 968px) {
+            .hero-content h1 { font-size: 2.2rem; } /* Adjusted mobile size too */
+            .hero-grid, .about-grid, .contact-grid, .services-grid { grid-template-columns: 1fr; gap: 50px; }
+            
+            .hero-image-container { height: 400px; order: -1; } /* Image on top for mobile */
+            .hero { padding-top: 120px; text-align: center; }
+            .hero-content p { margin: 0 auto 30px auto; }
+            
+            .nav-links { display: none; } /* Simplified mobile nav */
+        }
+
+        /* WhatsApp floating button */
+        .whatsapp-float {
+            position: fixed;
+            right: 20px;
+            bottom: 22px;
+            width: 62px;
+            height: 62px;
+            background: #25D366;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(37,211,102,0.24);
+            z-index: 1100;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .whatsapp-float:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(37,211,102,0.28); }
+
+        .whatsapp-float i { font-size: 1.4rem; }
+
+        .whatsapp-badge {
+            position: absolute;
+            right: -6px;
+            top: -6px;
+            background: #ff5a5f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav-wrapper">
+            <a href="#" class="brand-logo" style="display:flex;align-items:center;gap:12px;">
+                <img src="C:\Users\Istuti Singh\Downloads\last.png" alt="NARI Logo"> 
+                <span class="brand-title" style="font-family: var(--font-serif); font-weight:700; font-size:1.1rem; color:var(--ink-black); text-transform:uppercase; letter-spacing:0.6px;">NARI HEALTH</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="#contact" class="btn" style="padding: 12px 30px; font-size: 0.8rem;">Book Consultation</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-grid">
+            
+            <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
+                <span class="eyebrow">Online Healing</span>
+                <div class="heading-content">
+                    <h1>NARI is a movement to bring women back to their confidence.</h1>
+                </div>
+                <p>NARI helps women feel stronger, healthier, and more in control of their lives. NARI is not just a service; it is a community where women support and understand each other.</p>
+
+                <div class="btn-group">
+                    <a href="#contact" class="btn">Start Healing</a>
+                    <a href="#services" class="btn btn-outline" style="margin-left: 15px;">Our Services</a>
+                </div>
+            </div>
+
+            <div class="hero-image-container" data-aos="zoom-in" data-aos-duration="1200">
+                <div class="hero-blob">
+                    <img src="C:\Users\Istuti Singh\Downloads\Gemini_Generated_Image_we49nzwe49nzwe49.png" alt="Woman feeling free and healthy">
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="about" class="section-padding about">
+        <div class="container about-grid">
+            
+            <div class="about-text" data-aos="fade-up">
+                <span class="eyebrow">The NARI Story</span>
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px;">You Are NARI.</h2>
+                <p><p>Every ache ignored.
+Every discomfort normalized.
+Every woman putting herself last.</p>
+
+We created NARI to change that.
+
+NARI is a safe space where women feel heard, cared for, and supported. Through holistic, science-backed care, we help women reconnect with their bodies and trust their strength again.
+
+NARI is not just care.
+It is connection.
+It is community.
+
+A strong bond where women heal together—because no woman should walk her health journey alone.
+.</p>
+                <p>We combine <strong>clinical physiotherapy</strong> with a deep, empathetic understanding of the female experience—from menstruation to motherhood and menopause.</p>
+                
+                                <div style="margin-top: 30px; border-left: 2px solid var(--carmine); padding-left: 20px;">
+                                        <h4 style="margin-bottom: 5px;">Our Mission</h4>
+                                        <p style="margin-bottom: 0;">NARI exists to educate, heal, and empower women so they can take control of their bodies without fear, shame, or silence.</p>
+                                </div>
+                        </div>
+
+                </div>
+        </section>
+
+    <section id="services" class="section-padding services">
+        <div class="container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="eyebrow">What We Do</span>
+                <h2 style="font-size: 3rem;">Holistic Care for Her</h2>
+            </div>
+
+            <div class="services-grid">
+                
+                <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="icon-box"><i class="fa-solid fa-person-dress"></i></div>
+                    <h3>Physiotherapy</h3>
+                    <ul class="service-list">
+                        <li>Women-centric physiotherapy</li>
+                        <li>Pregnancy-safe exercise programs</li>
+                        <li>Personalized exercise programs</li>
+                        <li>Evidence-Based Assessment</li>
+                    </ul>
+                </div>
+
+                <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box"><i class="fa-solid fa-brain"></i></div>
+                    <h3>Mental & Emotional Wellbeing</h3>
+                    <ul class="service-list">
+                        <li>Therapy for hormonal mood changes</li>
+                        <li>Stress & anxiety support</li>
+                        <li>Mindfulness & coping tools</li>
+                        <li>Body image and self-confidence counselling</li>
+                    </ul>
+                </div>
+
+                <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="icon-box"><i class="fa-solid fa-apple-whole"></i></div>
+                    <h3>Nutrition & Lifestyle</h3>
+                    <ul class="service-list">
+                        <li>Personalised Nutrition Guidance</li>
+                        <li>Activity & Sleep Plans</li>
+                        <li>Stress Management Techniques</li>
+                        <li>Long-term Healthy Habits</li>
+                    </ul>
+                </div>
+
+                <div class="service-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="icon-box"><i class="fa-solid fa-laptop-medical"></i></div>
+                    <h3>Tele-Rehab</h3>
+                    <ul class="service-list">
+                        <li>1-on-1 Online Assessment</li>
+                        <li>Home Exercise Plans</li>
+                        <li>WhatsApp Support</li>
+                        <li>Flexible scheduling to suit working women</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section-padding contact">
+        <div class="container">
+            <div class="text-center" style="margin-bottom: 60px;" data-aos="fade-down">
+                <span class="eyebrow" style="color: var(--lavender-blush);">Get In Touch</span>
+                <h2>Start Your Journey Today</h2>
+            </div>
+
+            <div class="contact-grid">
+                
+                <div class="contact-info" data-aos="fade-right">
+                    <h3 style="margin-bottom: 30px;">We are here to listen.</h3>
+                    <p style="margin-bottom: 40px; font-size: 1.1rem;">Whether you have a question about a specific pain or want to book a session, reach out to us.</p>
+                    
+                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
+                        <i class="fa-solid fa-location-dot text-carmine" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong style="display: block; color: var(--white);">Location</strong>
+                            <span>Online & Home Visit </span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
+                        <i class="fa-solid fa-envelope text-carmine" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong style="display: block; color: var(--white);">Email</strong>
+                            <a href="mailto:hello@nariwellness.com">hello@nariwellness.com</a>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
+                        <i class="fa-brands fa-instagram text-carmine" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong style="display: block; color: var(--white);">Social</strong>
+                            <span>@NARIwellness</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-wrapper" data-aos="fade-left">
+                    <form>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Name</label>
+                            <input type="text" class="form-input" placeholder="Your Full Name">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Phone Number</label>
+                            <input type="tel" class="form-input" placeholder="+91">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">How can we help?</label>
+                            
+                            <textarea class="form-input" rows="4" placeholder="Describe your pain or goal..."></textarea>
+                        </div>
+
+                                                <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Timing</label>
+                            
+                            <textarea class="form-input" rows="4" placeholder="We will schedule a call on prefered time please enter the time"></textarea>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; border: none;">Send Message</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p style="margin-bottom: 10px; color: #777;">&copy; 2025 NARI Wellness. All Rights Reserved.</p>
+            <div style="font-size: 0.8rem; opacity: 0.6;">
+                <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            once: true,
+            offset: 120,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+    </script>
+
+    <!-- WhatsApp floating button -->
+    <a href="#" id="whatsappBtn" class="whatsapp-float" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // Replace the value of `whatsappNumber` with your number in international format (no plus or spaces).
+        // Example for India: '919812345678' ; for US: '12135551234'
+        var whatsappNumber = '916399507521';
+        var prefilledMessage = encodeURIComponent('Hi, I would like to chat about NARI.');
+
+        document.getElementById('whatsappBtn').addEventListener('click', function(e){
+            e.preventDefault();
+            var url;
+            // Use api.whatsapp.com for better mobile compatibility
+            url = 'https://api.whatsapp.com/send?phone=' + whatsappNumber + '&text=' + prefilledMessage;
+            window.open(url, '_blank');
+        });
+    </script>
+</body>
+</html>
