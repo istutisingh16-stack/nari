@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NARI | Reclaim Your Confidence</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -238,7 +239,7 @@
         .about { background: var(--white); position: relative; }
 
         .about-grid {
-            display: grid;
+            display: block;
             grid-template-columns: 1fr 1.1fr; /* More space for card */
             gap: 80px;
         }
@@ -631,11 +632,18 @@ A strong bond where women heal together—because no woman should walk her healt
                             <textarea class="form-input" rows="4" placeholder="Describe your pain or goal..."></textarea>
                         </div>
 
-                                                <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Timing</label>
-                            
-                            <textarea class="form-input" rows="4" placeholder="We will schedule a call on prefered time please enter the time"></textarea>
-                        </div>
+                                               <div class="form-group">
+  <label style="display: block; margin-bottom: 8px; font-weight: 700;">
+    Preferred Date & Time
+  </label>
+
+  <input 
+    type="datetime-local" 
+    class="form-input"
+    name="preferred_time"
+    required
+  >
+</div>
                         <button type="submit" class="btn" style="width: 100%; border: none;">Send Message</button>
                     </form>
                 </div>
