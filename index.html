@@ -8,6 +8,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="C:\Users\Istuti Singh\Downloads\LOGO.png">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -445,6 +446,39 @@
             font-size: 0.7rem;
             font-weight: 700;
         }
+
+        /* Form Message Styles */
+        .form-message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .form-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -475,10 +509,10 @@
                 </div>
                 <p>NARI helps women feel stronger, healthier, and more in control of their lives. NARI is not just a service; it is a community where women support and understand each other.</p>
 
-                <div class="btn-group">
-                    <a href="#contact" class="btn">Start Healing</a>
-                    <a href="#services" class="btn btn-outline" style="margin-left: 15px;">Our Services</a>
-                </div>
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start;">
+    <a href="#contact" class="btn">Start Healing</a>
+    <a href="#services" class="btn btn-outline">Our Services</a>
+</div>
             </div>
 
             <div class="hero-image-container" data-aos="zoom-in" data-aos-duration="1200">
@@ -508,9 +542,9 @@ NARI is not just care.
 It is connection.
 It is community.
 
-A strong bond where women heal together—because no woman should walk her health journey alone.
+A strong bond where women heal together because no woman should walk her health journey alone
 .</p>
-                <p>We combine <strong>clinical physiotherapy</strong> with a deep, empathetic understanding of the female experience—from menstruation to motherhood and menopause.</p>
+                <p>We combine <strong>clinical physiotherapy</strong> with a deep, empathetic understanding of the female experience from menstruation to motherhood and menopause.</p>
                 
                                 <div style="margin-top: 30px; border-left: 2px solid var(--carmine); padding-left: 20px;">
                                         <h4 style="margin-bottom: 5px;">Our Mission</h4>
@@ -603,7 +637,7 @@ A strong bond where women heal together—because no woman should walk her healt
                         <i class="fa-solid fa-envelope text-carmine" style="font-size: 1.5rem;"></i>
                         <div>
                             <strong style="display: block; color: var(--white);">Email</strong>
-                            <a href="mailto:hello@nariwellness.com">hello@nariwellness.com</a>
+                            <a href="mailto:narihealthh.com">narihealthh.com</a>
                         </div>
                     </div>
 
@@ -611,27 +645,27 @@ A strong bond where women heal together—because no woman should walk her healt
                         <i class="fa-brands fa-instagram text-carmine" style="font-size: 1.5rem;"></i>
                         <div>
                             <strong style="display: block; color: var(--white);">Social</strong>
-                            <span>@NARIwellness</span>
+                            <span>@_nari.health</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="contact-form-wrapper" data-aos="fade-left">
-                    <form>
+                    <form id="contactForm">
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Name</label>
-                            <input type="text" class="form-input" placeholder="Your Full Name">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Name *</label>
+                            <input type="text" id="name" name="name" class="form-input" placeholder="Your Full Name" required>
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Phone Number</label>
-                            <input type="tel" class="form-input" placeholder="+91">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91" required>
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">How can we help?</label>
-                            
-                            <textarea class="form-input" rows="4" placeholder="Describe your pain or goal..."></textarea>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">How can we help? *</label>
+                            <textarea id="message" name="message" class="form-input" rows="4" placeholder="Describe your pain or goal..." required></textarea>
                         </div>
 
+<<<<<<< HEAD
                                                <div class="form-group">
   <label style="display: block; margin-bottom: 8px; font-weight: 700;">
     Preferred Date & Time
@@ -645,6 +679,13 @@ A strong bond where women heal together—because no woman should walk her healt
   >
 </div>
                         <button type="submit" class="btn" style="width: 100%; border: none;">Send Message</button>
+=======
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Timing</label>
+                            <textarea id="timing" name="timing" class="form-input" rows="4" placeholder="We will schedule a call on prefered time please enter the time"></textarea>
+                        </div>
+                        <button type="submit" id="submitBtn" class="btn" style="width: 100%; border: none;">Send Message</button>
+>>>>>>> 5096907ee462cd7d969b7d3ea834c0fb2cd82f77
                     </form>
                 </div>
 
@@ -660,6 +701,9 @@ A strong bond where women heal together—because no woman should walk her healt
             </div>
         </div>
     </footer>
+
+    <!-- EmailJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
@@ -690,5 +734,15 @@ A strong bond where women heal together—because no woman should walk her healt
             window.open(url, '_blank');
         });
     </script>
+
+    <!-- Form Handler Script -->
+    <script src="form-handler.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
