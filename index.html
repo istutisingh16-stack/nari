@@ -280,7 +280,7 @@
             z-index: 2;
         }
 
-        /* --- 8. SERVICES (Cards) --- */
+        /* --- 8. Plans (Cards) --- */
         .services { background-color: #faf7f7; } /* Very light grey/pink */
         
         .services-grid {
@@ -343,8 +343,38 @@
             font-size: 0.8rem;
             top: 4px;
         }
+/*--- 9. TRUST BAR ---*/
+.trust-bar {
+    background: #000;          /* Black box */
+    padding: 20px 0;           
+}
 
-        /* --- 9. CONTACT (Dark Mode) --- */
+.trust-flex { 
+    display: flex; 
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap; 
+    text-align: center;
+    opacity: 0.9; 
+    color: white;              /* Make text visible */
+}
+
+/* --- 10. HOW IT WORKS --- */
+        .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 50px; }
+        .step { text-align: center; }
+        .step-num { width: 40px; height: 40px; background: var(--carmine); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: 700;
+         }
+      /*--- 11. PLANS (Pricing Cards) --- */
+      /* Pricing Cards */
+        .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 50px; }
+        .price-card { padding: 40px; border: 1px solid #EEE; border-radius: 20px; transition: 0.3s; }
+        .price-card.featured { border: 2px solid var(--carmine); background: #FFF9FA; transform: scale(1.05); }
+        .price-val { font-size: 2.5rem; font-family: var(--font-serif); margin: 20px 0; }
+
+        /* Expert Section */
+        .expert-card { text-align: center; }
+        .expert-img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 5px solid var(--lavender-blush); }
+        /* --- 12. CONTACT (Dark Mode) --- */
         .contact {
             background-color: var(--ink-black);
             color: var(--white);
@@ -387,7 +417,7 @@
             box-shadow: 0 0 0 4px rgba(197, 23, 46, 0.1);
         }
 
-        /* --- 10. FOOTER --- */
+        /* --- 13. FOOTER --- */
         footer {
             background: #020407; /* Slightly darker than ink black */
             color: #555;
@@ -491,8 +521,8 @@
             </a>
 
             <ul class="nav-links">
-                <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#How it Works" class="nav-link">How it Works</a></li>
+                <li><a href="#Plans" class="nav-link">Plans</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
                 <li><a href="#contact" class="btn" style="padding: 12px 30px; font-size: 0.8rem;">Book Consultation</a></li>
             </ul>
@@ -510,9 +540,10 @@
                 <p>NARI helps women feel stronger, healthier, and more in control of their lives. NARI is not just a service; it is a community where women support and understand each other.</p>
 
                 <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start;">
-    <a href="#contact" class="btn">Start Healing</a>
-    <a href="#services" class="btn btn-outline">Our Services</a>
+    <a href="#contact" class="btn">Start Free Assessment</a>
+    <a href="#Pricing" class="btn btn-outline">View Plans</a>
 </div>
+<p style="margin-top:20px; font-size:0.9rem; color:var(--green); font-weight:700;"><i class="fa-solid fa-circle-check"></i> First Consultation at just ₹199</p>
             </div>
 
             <div class="hero-image-container" data-aos="zoom-in" data-aos-duration="1200">
@@ -523,7 +554,41 @@
 
         </div>
     </section>
+    <div class="trust-bar">
+        <div class="container trust-flex">
+            <span><i class="fa-solid fa-user-doctor"></i> Verified Specialists</span>
+            <span><i class="fa-solid fa-users"></i> 500+ Women Empowered</span>
+            <span><i class="fa-solid fa-language"></i> Available in Hindi & English</span>
+            <span><i class="fa-solid fa-shield-heart"></i> 100% Confidential</span>
+        </div>
+    </div>
+     <section id="how" class="section-padding">
+        <div class="container">
+            <div class="text-center">
+                <span class="eyebrow">The Journey</span>
+                <h2>How NARI Heals You</h2>
+            </div>
+            <div class="how-grid">
+                <div class="step" data-aos="fade-up">
+                    <div class="step-num">1</div>
+                    <h3>Free PCOS Quiz</h3>
+                    <p>Identify your symptoms and risk factors in 2 minutes.</p>
+                </div>
+                <div class="step" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-num">2</div>
+                    <h3>Expert Match</h3>
+                    <p>Connect with a specialized Physiotherapist & Nutritionist.</p>
+                </div>
+                <div class="step" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-num">3</div>
+                    <h3>Holistic Recovery</h3>
+                    <p>Start your tailored exercise and lifestyle plan.</p>
+                </div>
+            </div>
+        </div>\
+    
 
+.
     <section id="about" class="section-padding about">
         <div class="container about-grid">
             
@@ -555,62 +620,57 @@ A strong bond where women heal together because no woman should walk her health 
                 </div>
         </section>
 
-    <section id="services" class="section-padding services">
+    <section id="Plans" class="section-padding Plans">
         <div class="container">
             <div class="text-center" data-aos="fade-up">
-                <span class="eyebrow">What We Do</span>
-                <h2 style="font-size: 3rem;">Holistic Care for Her</h2>
-            </div>
+                <span class="eyebrow">Invest in your health for less than the cost of a coffee a day.
 
-            <div class="services-grid">
-                
-                <div class="service-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="icon-box"><i class="fa-solid fa-person-dress"></i></div>
-                    <h3>Physiotherapy</h3>
-                    <ul class="service-list">
-                        <li>Women-centric physiotherapy</li>
-                        <li>Pregnancy-safe exercise programs</li>
-                        <li>Personalized exercise programs</li>
-                        <li>Evidence-Based Assessment</li>
+
+</span>
+                <h2 style="font-size: 3rem;">Simple, Transparent Plans
+
+</h2>
+            <section></section>
+            <div class="price-grid">
+                <div class="price-card" data-aos="zoom-in">
+                    <h3>Saathi  (Basic)</h3>
+                    <div class="price-val">₹199<span>/session</span></div>
+                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
+                        <li><i class="fa-solid fa-check text-green"></i> 1-on-1 Consultation</li>
+                        <li><i class="fa-solid fa-check text-green"></i> Basic Assessment</li>
                     </ul>
+                    <a href="#contact" class="btn btn-outline" style="width:100%; text-align:center;">Book Session</a>
                 </div>
-
-                <div class="service-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="icon-box"><i class="fa-solid fa-brain"></i></div>
-                    <h3>Mental & Emotional Wellbeing</h3>
-                    <ul class="service-list">
-                        <li>Therapy for hormonal mood changes</li>
-                        <li>Stress & anxiety support</li>
-                        <li>Mindfulness & coping tools</li>
-                        <li>Body image and self-confidence counselling</li>
+                <div class="price-card featured" data-aos="zoom-in" data-aos-delay="100">
+                    <span style="background:var(--carmine); color:white; padding:5px 15px; border-radius:20px; font-size:0.7rem; font-weight:700;">MOST POPULAR</span>
+                    <h3>Shakti   (PRO)</h3>
+                    <div class="price-val">₹2,999<span>/month</span></div>
+                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
+                        <li><i class="fa-solid fa-check text-green"></i> 4 Physio Sessions</li>
+                        <li><i class="fa-solid fa-check text-green"></i> Diet Plan & Mental Support</li>
+                        <li><i class="fa-solid fa-check text-green"></i> 24/7 WhatsApp Care</li>
                     </ul>
+                    <a href="#contact" class="btn" style="width:100%; text-align:center;">Select Plan</a>
                 </div>
-
-                <div class="service-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="icon-box"><i class="fa-solid fa-apple-whole"></i></div>
-                    <h3>Nutrition & Lifestyle</h3>
-                    <ul class="service-list">
-                        <li>Personalised Nutrition Guidance</li>
-                        <li>Activity & Sleep Plans</li>
-                        <li>Stress Management Techniques</li>
-                        <li>Long-term Healthy Habits</li>
+                <div class="price-card" data-aos="zoom-in" data-aos-delay="200">
+                    <h3>Sampurna  (Premium)</h3>
+                    <div class="price-val">₹7,499</div>
+                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
+                        <li><i class="fa-solid fa-check text-green"></i> Full Hormonal Reset</li>
+                        <li><i class="fa-solid fa-check text-green"></i> All Specialities Included</li>
                     </ul>
+                    <a href="#contact" class="btn btn-outline" style="width:100%; text-align:center;">Select Plan</a>
                 </div>
-
-                <div class="service-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="icon-box"><i class="fa-solid fa-laptop-medical"></i></div>
-                    <h3>Tele-Rehab</h3>
-                    <ul class="service-list">
-                        <li>1-on-1 Online Assessment</li>
-                        <li>Home Exercise Plans</li>
-                        <li>WhatsApp Support</li>
-                        <li>Flexible scheduling to suit working women</li>
-                    </ul>
-                </div>
-
             </div>
         </div>
     </section>
+
+    <section id="experts" class="section-padding">
+        <div class="container">
+            <div class="text-center">
+                <h2>Meet Your Care Team</h2>
+                <p>Real experts. Real degrees. Real results.</p>
+            </div>
 
     <section id="contact" class="section-padding contact">
         <div class="container">
@@ -684,8 +744,7 @@ A strong bond where women heal together because no woman should walk her health 
             </div>
         </div>
     </section>
-
-    <footer>
+<footer>
         <div class="container">
             <p style="margin-bottom: 10px; color: #777;">&copy; 2025 NARI Wellness. All Rights Reserved.</p>
             <div style="font-size: 0.8rem; opacity: 0.6;">
