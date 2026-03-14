@@ -1,12 +1,11 @@
 const CONFIG = {
-    serviceID: "service_02a69lr",       // From EmailJS dashboard
-    templateID: "template_9nyubey",     // From EmailJS dashboard
-    publicKey: "bmXU3I-vGXm20wj_Q"        // From EmailJS dashboard
+    serviceID: "service_5vhlg1h",       // From EmailJS dashboard
+    templateID: "template_0v7i0gq",     // From EmailJS dashboard
+    publicKey: "E9UG8aw6D3f63OyWx"        // From EmailJS dashboard
 };
 
 // Initialize EmailJS
 emailjs.init(CONFIG.publicKey);
-ansh
 
 // Form submission handler
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name: document.getElementById('name').value,
             phone: document.getElementById('phone').value,
             message: document.getElementById('message').value,
-            timing: document.getElementById('timing').value || 'Not specified',
+            timing: document.getElementById('preferred_time').value || 'Not specified',
             date: new Date().toLocaleString()
         };
 
@@ -38,14 +37,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Send email using EmailJS
         emailjs.send(CONFIG.serviceID, CONFIG.templateID, formData)
-            .then(function() {
+            .then(function(response) {
+                console.log('Email sent successfully:', response);
                 showMessage('Thank you! Your message has been sent successfully. We will get back to you soon.', 'success');
                 form.reset();
                 resetButton();
             })
             .catch(function(error) {
+                console.error('EmailJS error:', error);
                 showMessage('Sorry, there was an error. Please try again or contact us via WhatsApp.', 'error');
-                console.error('Error:', error);
                 resetButton();
             });
     });
