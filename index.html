@@ -922,14 +922,11 @@
             .hero {
                 background: var(--lavender-blush); /* shows during video crossfade at loop */
             }
-            /* overlay starts below the navbar — nav area shows raw video, not a flat tint */
+            /* gradient covers the left half so text stays legible over the video */
             .hero::before {
                 content: '';
                 position: absolute;
-                top: var(--header-height);
-                left: 0;
-                right: 0;
-                bottom: 0;
+                inset: 0;
                 background: linear-gradient(
                     to right,
                     rgba(244, 228, 228, 0.96) 0%,
@@ -947,10 +944,7 @@
             .hero-video {
                 display: block;
                 position: absolute;
-                top: var(--header-height);
-                left: 0;
-                right: 0;
-                bottom: 0;
+                inset: 0;
                 object-fit: cover;
                 object-position: center;
                 z-index: 0;
