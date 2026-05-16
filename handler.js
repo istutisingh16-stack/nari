@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name: document.getElementById('name').value,
             phone: document.getElementById('phone').value,
             message: document.getElementById('message').value,
-            timing: document.getElementById('timing').value || 'Not specified',
+            timing: document.getElementById('preferred_time').value || 'Not specified',
             date: new Date().toLocaleString()
         };
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Create message element
         const messageDiv = document.createElement('div');
-        messageDiv.className = form-message ${type};
+        messageDiv.className = `form-message ${type}`;
         messageDiv.textContent = message;
 
         // Insert message before the form

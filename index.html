@@ -3,49 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NARI | Reclaim Your Confidence</title>
+    <title>NARI | Women's Holistic Health Platform</title>
+    <meta name="description" content="NARI is a women-led holistic health platform bringing together physiotherapy, psychology and nutrition. Evidence-based care designed specifically for women.">
+    <meta property="og:title" content="NARI | Women's Holistic Health Platform">
+    <meta property="og:description" content="Integrated, evidence-based care designed specifically for women. Physiotherapy, psychology and nutrition in one place.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://narihealth.in/">
+    <meta name="theme-color" content="#C5172E">
+    <link rel="canonical" href="https://narihealth.in/">
+
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="icon" type="image/png" href="C:\Users\Istuti Singh\Downloads\LOGO.png">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
-        /* --- 1. BRAND VARIABLES --- */
+        /* --- 1. VARIABLES --- */
         :root {
-            /* Palette */
-            --ink-black: #05090F;      /* Primary Text, Dark Backgrounds */
-            --carmine: #C5172E;        /* Accents, Buttons, CTAs */
-            --lavender-blush: #F4E4E4; /* Section Backgrounds, Soft Elements */
+            --ink-black: #05090F;
+            --carmine: #C5172E;
+            --lavender-blush: #F4E4E4;
             --white: #FFFFFF;
             --off-white: #FAFAFA;
-            
-            /* Typography */
+            --green: #2a7a3b;
             --font-serif: 'Playfair Display', serif;
             --font-sans: 'Lato', sans-serif;
-            
-            /* Spacing */
             --container-width: 1200px;
             --section-spacing: 100px;
+            --header-height: 80px;
         }
 
-        /* --- 2. GLOBAL RESET & BASE --- */
-        html { scroll-behavior: smooth; }
-        
+        /* --- 2. RESET & BASE --- */
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: var(--font-sans);
             color: var(--ink-black);
             background-color: var(--white);
             line-height: 1.8;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased; /* Crisp text on Mac */
+            max-width: 100%;
+            -webkit-font-smoothing: antialiased;
         }
 
         h1, h2, h3, h4, h5 {
@@ -56,7 +60,7 @@
         }
 
         p { margin-bottom: 20px; color: #4a4a4a; }
-        a { text-decoration: none; color: inherit; transition: all 0.3s ease; }
+        a { text-decoration: none; color: inherit; transition: color 0.25s ease, opacity 0.25s ease; }
 
         /* --- 3. UTILITIES --- */
         .container {
@@ -64,12 +68,13 @@
             margin: 0 auto;
             padding: 0 24px;
         }
-        
+
         .section-padding { padding: var(--section-spacing) 0; }
-        
+
+        section, .trust-bar { overflow-x: clip; }
         .text-carmine { color: var(--carmine); }
         .text-center { text-align: center; }
-        
+
         .eyebrow {
             font-family: var(--font-sans);
             font-size: 0.85rem;
@@ -79,6 +84,60 @@
             color: var(--carmine);
             display: block;
             margin-bottom: 15px;
+        }
+
+        /* --- SKIP TO CONTENT --- */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 16px;
+            background: var(--carmine);
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: 0 0 8px 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 9999;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 0; }
+
+        /* --- FOCUS STYLES --- */
+        :focus-visible {
+            outline: 2px solid var(--carmine);
+            outline-offset: 3px;
+            border-radius: 3px;
+        }
+        .form-input:focus-visible {
+            outline: none;
+        }
+        .btn:focus-visible {
+            outline: 2px solid var(--carmine);
+            outline-offset: 4px;
+        }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f0e6e6; }
+        ::-webkit-scrollbar-thumb {
+            background: #c98a95;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--carmine); }
+
+        /* Firefox */
+        * { scrollbar-width: thin; scrollbar-color: #c98a95 #f0e6e6; }
+
+        /* --- SCROLL PROGRESS --- */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--carmine);
+            width: 0%;
+            z-index: 9999;
+            transition: width 0.08s linear;
         }
 
         /* --- 4. BUTTONS --- */
@@ -92,15 +151,15 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.85rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
             border: 2px solid var(--carmine);
             cursor: pointer;
         }
 
         .btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(197, 23, 46, 0.25);
-            background-color: #a01225; /* Slightly darker red on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(197, 23, 46, 0.28);
+            background-color: #a01225;
             border-color: #a01225;
         }
 
@@ -113,44 +172,57 @@
         .btn-outline:hover {
             background-color: var(--ink-black);
             color: var(--white);
-            transform: translateY(-4px);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(5, 9, 15, 0.15);
         }
 
-        /* --- 5. HEADER (Sticky & Glassmorphism) --- */
+        /* --- 5. HEADER --- */
         header {
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 1000;
-            padding: 15px 0;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.04);
-            transition: 0.3s;
+            height: var(--header-height);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+            transition: box-shadow 0.3s;
         }
 
         .nav-wrapper {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: var(--header-height);
         }
 
-        /* Logo Area */
-        .brand-logo img {
-            height: 55px; /* Adjust based on your logo file */
-            width: auto;
-            display: block;
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo img { height: 50px; width: auto; display: block; }
+
+        .brand-title {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--ink-black);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
         }
 
         .nav-links {
             display: flex;
-            gap: 40px;
+            gap: 36px;
             list-style: none;
             align-items: center;
         }
 
         .nav-link {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--ink-black);
             position: relative;
@@ -164,18 +236,94 @@
             bottom: -4px;
             left: 0;
             background-color: var(--carmine);
-            transition: width 0.3s;
+            transition: width 0.3s ease;
         }
 
-        .nav-link:hover { color: var(--carmine); }
-        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover,
+        .nav-link.active { color: var(--carmine); }
 
-        /* --- 6. HERO SECTION (Split: Text Left, Image Right) --- */
+        .nav-link:hover::after,
+        .nav-link.active::after { width: 100%; }
+
+        /* Hamburger */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--ink-black);
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform-origin: center;
+        }
+
+        .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            padding: 24px 24px 36px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            z-index: 998;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .mobile-menu.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu ul li a {
+            display: block;
+            padding: 13px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink-black);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .mobile-menu ul li a:hover { color: var(--carmine); }
+
+        .mobile-menu .btn {
+            display: block;
+            text-align: center;
+            margin-top: 24px;
+            width: 100%;
+        }
+
+        /* --- 6. HERO --- */
         .hero {
-            padding-top: 160px; /* Account for fixed header */
+            padding-top: calc(var(--header-height) + 80px);
             padding-bottom: 100px;
-            background: linear-gradient(100deg, var(--lavender-blush) 0%, #fff 60%);
-            min-height: 90vh; /* Full viewport height feel */
+            background: linear-gradient(110deg, var(--lavender-blush) 0%, #fff 55%);
+            min-height: 90vh;
             display: flex;
             align-items: center;
             overflow: hidden;
@@ -189,24 +337,41 @@
         }
 
         .hero-content h1 {
-            font-size: 3.2rem; /* UPDATED: Adjusted size as requested */
-            margin-bottom: 25px;
+            font-size: 3.2rem;
+            margin-bottom: 24px;
             letter-spacing: -1px;
         }
 
         .hero-content p {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             margin-bottom: 40px;
-            line-height: 1.6;
+            line-height: 1.7;
             max-width: 90%;
             color: #555;
         }
 
-        /* Organic Shape Image Container */
+        .hero-ctas {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .hero-trust {
+            margin-top: 24px;
+            font-size: 0.88rem;
+            color: var(--green);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+
         .hero-image-container {
             position: relative;
             width: 100%;
-            height: 550px;
+            height: 540px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -215,59 +380,136 @@
         .hero-blob {
             width: 100%;
             height: 100%;
-            /* This creates the fluid, organic shape */
             border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
             overflow: hidden;
             box-shadow: 20px 20px 60px rgba(0,0,0,0.1);
             animation: morph 8s ease-in-out infinite;
-            border: 4px solid var(--white);
         }
 
         .hero-blob img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1.1); /* Slight zoom for parallax feel */
+            transform: scale(1.1);
         }
 
         @keyframes morph {
             0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-            34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-            67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+            34%       { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+            67%       { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
         }
 
-        /* --- 7. ABOUT SECTION --- */
-        .about { background: var(--white); position: relative; }
+        /* --- TRUST BAR --- */
+        .trust-bar {
+            background: var(--ink-black);
+            padding: 20px 0;
+        }
+
+        .trust-flex {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .trust-flex span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trust-flex i { color: var(--carmine); }
+
+        /* --- 7. HOW IT WORKS --- */
+        .how-section { background: var(--off-white); }
+
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 50px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 44px 32px;
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+        }
+
+        .step-num {
+            width: 48px;
+            height: 48px;
+            background: var(--carmine);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            font-family: var(--font-serif);
+        }
+
+        .step h3 { margin-bottom: 12px; font-size: 1.15rem; }
+        .step p { margin-bottom: 0; font-size: 0.95rem; color: #666; }
+
+        /* --- 8. ABOUT --- */
+        .about { background: var(--white); }
 
         .about-grid {
-            display: block;
-            grid-template-columns: 1fr 1.1fr; /* More space for card */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 80px;
+            align-items: center;
         }
+
+        .about-text h2 { font-size: 2.5rem; margin-bottom: 20px; }
+
+        .mission-box {
+            margin-top: 32px;
+            background: var(--lavender-blush);
+            padding: 20px 24px;
+            border-radius: 6px;
+        }
+
+        .mission-box h3 { margin-bottom: 6px; font-size: 1rem; }
+        .mission-box p { margin-bottom: 0; }
 
         .quote-card {
             background-color: var(--lavender-blush);
-            padding: 50px;
-            border-radius: 0;
+            padding: 56px 48px;
+            border-radius: 4px;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            aspect-ratio: 1 / 1;
+            min-height: 420px;
             overflow: hidden;
-            min-height: 500px;
         }
 
         .quote-card::before {
             content: '\201C';
             font-family: var(--font-serif);
-            font-size: 200px;
-            color: rgba(197, 23, 46, 0.08);
+            font-size: 220px;
+            color: rgba(197, 23, 46, 0.07);
             position: absolute;
-            top: -40px;
-            left: -30px;
+            top: -50px;
+            left: -20px;
             line-height: 1;
             z-index: 1;
         }
@@ -278,107 +520,176 @@
             font-style: italic;
             position: relative;
             z-index: 2;
+            line-height: 1.65;
+            margin-bottom: 24px;
+            color: var(--ink-black);
         }
 
-        /* --- 8. Plans (Cards) --- */
-        .services { background-color: #faf7f7; } /* Very light grey/pink */
-        
-        .services-grid {
+        .quote-attr {
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--carmine);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- 9. PLANS --- */
+        .plans-section { background: var(--off-white); }
+
+        .price-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* Four boxes in a straight line on desktop */
-            gap: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            margin-top: 50px;
+            align-items: start;
+        }
+
+        .price-card {
+            padding: 40px;
+            border: 1px solid #eee;
+            border-radius: 20px;
+            background: var(--white);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .price-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.07);
+        }
+
+        .price-card.featured {
+            border: 2px solid var(--carmine);
+            background: #FFF9FA;
+            transform: scale(1.04);
+        }
+
+        .price-card.featured:hover { transform: scale(1.04) translateY(-6px); }
+
+        .plan-badge {
+            display: inline-block;
+            background: var(--carmine);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .price-card h3 { margin-bottom: 4px; }
+
+        .price-val {
+            font-size: 2.4rem;
+            font-family: var(--font-serif);
+            margin: 16px 0;
+            color: var(--ink-black);
+        }
+
+        .price-val span {
+            font-size: 0.95rem;
+            font-family: var(--font-sans);
+            color: #6b6b6b;
+            font-weight: 400;
+        }
+
+        .plan-sub { font-size: 0.82rem; color: #6b6b6b; margin-bottom: 0; }
+
+        .plan-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 28px;
+        }
+
+        .plan-list li {
+            padding: 7px 0;
+            font-size: 0.92rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .plan-list li:last-child { border-bottom: none; }
+        .plan-list li i { color: var(--green); font-size: 0.8rem; flex-shrink: 0; }
+
+        .plan-cta {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* --- 10. EXPERTS --- */
+        .experts-section { background: var(--off-white); }
+
+        .experts-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 80px;
+            align-items: center;
             margin-top: 60px;
         }
 
-        .service-card {
-            background: var(--white);
-            padding: 45px 35px;
-            border-radius: 16px;
-            transition: all 0.4s ease;
-            border: 1px solid rgba(0,0,0,0.05);
-            position: relative;
-            overflow: hidden;
+        .experts-intro h3 {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            line-height: 1.3;
         }
 
-        /* Hover Effect: Lift and Carmine Border */
-        .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-            border-bottom: 4px solid var(--carmine);
+        .experts-intro p { color: #555; font-size: 0.95rem; }
+
+        .experts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
 
-        .icon-box {
-            width: 60px;
-            height: 60px;
+        .expert-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            padding: 28px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.07);
+        }
+
+        .expert-row:first-child { padding-top: 0; }
+        .expert-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .expert-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
             background: var(--lavender-blush);
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+
+        .expert-icon i { font-size: 1.4rem; color: var(--carmine); }
+
+        .expert-row h3 { font-size: 1.05rem; margin-bottom: 4px; }
+
+        .expert-role {
             color: var(--carmine);
-            font-size: 1.5rem;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
         }
 
-        .service-list {
-            list-style: none;
-            margin-top: 20px;
-        }
+        .expert-row p { font-size: 0.9rem; color: #666; margin-bottom: 0; line-height: 1.6; }
 
-        .service-list li {
-            margin-bottom: 12px;
-            padding-left: 25px;
-            position: relative;
-            font-size: 0.95rem;
-            color: #666;
-        }
-
-        .service-list li::before {
-            content: '\f00c'; /* FontAwesome check */
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            left: 0;
-            color: var(--carmine);
-            font-size: 0.8rem;
-            top: 4px;
-        }
-/*--- 9. TRUST BAR ---*/
-.trust-bar {
-    background: #000;          /* Black box */
-    padding: 20px 0;           
-}
-
-.trust-flex { 
-    display: flex; 
-    justify-content: space-evenly;
-    align-items: center;
-    flex-wrap: wrap; 
-    text-align: center;
-    opacity: 0.9; 
-    color: white;              /* Make text visible */
-}
-
-/* --- 10. HOW IT WORKS --- */
-        .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 50px; }
-        .step { text-align: center; }
-        .step-num { width: 40px; height: 40px; background: var(--carmine); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: 700;
-         }
-      /*--- 11. PLANS (Pricing Cards) --- */
-      /* Pricing Cards */
-        .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 50px; }
-        .price-card { padding: 40px; border: 1px solid #EEE; border-radius: 20px; transition: 0.3s; }
-        .price-card.featured { border: 2px solid var(--carmine); background: #FFF9FA; transform: scale(1.05); }
-        .price-val { font-size: 2.5rem; font-family: var(--font-serif); margin: 20px 0; }
-
-        /* Expert Section */
-        .expert-card { text-align: center; }
-        .expert-img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 5px solid var(--lavender-blush); }
-        /* --- 12. CONTACT (Dark Mode) --- */
+        /* --- 11. CONTACT --- */
         .contact {
             background-color: var(--ink-black);
             color: var(--white);
-            position: relative;
         }
 
         .contact h2, .contact h3 { color: var(--white); }
@@ -390,322 +701,533 @@
             gap: 80px;
         }
 
-        .contact-form-wrapper {
-            background: var(--white);
-            padding: 50px;
-            border-radius: 10px;
-            color: var(--ink-black); /* Reset text color for form */
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 28px;
+            gap: 18px;
         }
 
-        .form-group { margin-bottom: 20px; }
-        
+        .contact-item i {
+            font-size: 1.3rem;
+            color: var(--carmine);
+            margin-top: 3px;
+            flex-shrink: 0;
+            width: 20px;
+            text-align: center;
+        }
+
+        .contact-item strong {
+            display: block;
+            color: var(--white);
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .contact-item span,
+        .contact-item a {
+            color: #a0a0a0;
+            font-size: 0.92rem;
+        }
+
+        .contact-item a:hover { color: var(--white); }
+
+        .contact-form-wrapper {
+            background: var(--white);
+            padding: 48px;
+            border-radius: 12px;
+            color: var(--ink-black);
+        }
+
+        .form-group { margin-bottom: 18px; }
+
+        .form-label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--ink-black);
+        }
+
         .form-input {
             width: 100%;
-            padding: 15px;
-            background: #f4f4f4;
-            border: 1px solid transparent;
-            border-radius: 5px;
+            padding: 13px 15px;
+            background: #f5f5f5;
+            border: 1.5px solid transparent;
+            border-radius: 8px;
             font-family: var(--font-sans);
-            font-size: 1rem;
-            transition: 0.3s;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            color: var(--ink-black);
         }
 
         .form-input:focus {
             outline: none;
             background: var(--white);
             border-color: var(--carmine);
-            box-shadow: 0 0 0 4px rgba(197, 23, 46, 0.1);
+            box-shadow: 0 0 0 3px rgba(197, 23, 46, 0.1);
         }
 
-        /* --- 13. FOOTER --- */
+        /* --- 12. FOOTER --- */
         footer {
-            background: #020407; /* Slightly darker than ink black */
+            background: #020407;
+            padding: 64px 0 28px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr 1fr;
+            gap: 60px;
+            padding-bottom: 48px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .footer-brand-name {
+            font-family: var(--font-serif);
+            color: var(--white);
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .footer-brand p {
+            color: #888;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            margin-bottom: 0;
+        }
+
+        .footer-col h4 {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+            font-family: var(--font-sans);
+            font-weight: 700;
+        }
+
+        .footer-col ul { list-style: none; }
+
+        .footer-col ul li { margin-bottom: 10px; }
+
+        .footer-col ul li a {
+            color: #888;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover { color: var(--white); }
+
+        .footer-bottom {
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-bottom p {
+            color: #888;
+            font-size: 0.82rem;
+            margin-bottom: 0;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-links a {
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #555;
-            padding: 50px 0 20px 0;
-            text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
+            transition: border-color 0.2s, color 0.2s;
         }
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 968px) {
-            .hero-content h1 { font-size: 2.2rem; } /* Adjusted mobile size too */
-            .hero-grid, .about-grid, .contact-grid, .services-grid { grid-template-columns: 1fr; gap: 50px; }
-            
-            .hero-image-container { height: 400px; order: -1; } /* Image on top for mobile */
-            .hero { padding-top: 120px; text-align: center; }
-            .hero-content p { margin: 0 auto 30px auto; }
-            
-            .nav-links { display: none; } /* Simplified mobile nav */
+        .social-links a:hover { border-color: var(--carmine); color: var(--carmine); }
+
+        /* --- FORM MESSAGES --- */
+        .form-message {
+            padding: 13px 18px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            animation: slideIn 0.25s ease-out;
         }
 
-        /* WhatsApp floating button */
+        .form-message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .form-message.error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+
+        /* --- WHATSAPP FLOAT --- */
         .whatsapp-float {
             position: fixed;
-            right: 20px;
-            bottom: 22px;
-            width: 62px;
-            height: 62px;
+            right: 24px;
+            bottom: 24px;
+            width: 58px;
+            height: 58px;
             background: #25D366;
             color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(37,211,102,0.24);
+            box-shadow: 0 8px 24px rgba(37,211,102,0.3);
             z-index: 1100;
-            text-decoration: none;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .whatsapp-float:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(37,211,102,0.28); }
+        .whatsapp-float:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(37,211,102,0.38); }
+        .whatsapp-float i { font-size: 1.45rem; }
 
-        .whatsapp-float i { font-size: 1.4rem; }
-
-        .whatsapp-badge {
-            position: absolute;
-            right: -6px;
-            top: -6px;
-            background: #ff5a5f;
-            color: #fff;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 1024px) {
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .footer-brand { grid-column: 1 / -1; }
         }
 
-        /* Form Message Styles */
-        .form-message {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 600;
-            animation: slideIn 0.3s ease-out;
-            transition: opacity 0.3s ease;
+        @media (max-width: 900px) {
+            .how-grid { grid-template-columns: 1fr 1fr; }
+            .experts-layout { grid-template-columns: 1fr; gap: 40px; }
+            .price-grid { grid-template-columns: 1fr; gap: 20px; }
+            .price-card.featured { transform: scale(1); }
+            .price-card.featured:hover { transform: translateY(-6px); }
         }
 
-        .form-message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
+        @media (max-width: 768px) {
+            :root { --section-spacing: 70px; }
 
-        .form-message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
 
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
+            .hero {
+                padding-top: calc(var(--header-height) + 40px);
+                padding-bottom: 64px;
+                text-align: center;
             }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+
+            .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+            .hero-content h1 { font-size: 2.2rem; }
+            .hero-content p { max-width: 100%; font-size: 1rem; margin-bottom: 32px; }
+            .hero-image-container { height: 320px; order: -1; }
+            .hero-ctas { align-items: center; }
+            .hero-trust { justify-content: center; }
+
+            .trust-flex { gap: 14px 20px; }
+
+            .how-grid { grid-template-columns: 1fr; gap: 20px; }
+            .about-grid { grid-template-columns: 1fr; gap: 40px; }
+            .quote-card { min-height: 300px; padding: 40px 32px; }
+            .quote-text { font-size: 1.2rem; }
+
+            .price-grid { grid-template-columns: 1fr; gap: 20px; }
+            .price-card.featured { transform: scale(1); }
+            .price-card.featured:hover { transform: translateY(-6px); }
+
+            .experts-layout { grid-template-columns: 1fr; gap: 36px; }
+            .contact-grid { grid-template-columns: 1fr; gap: 44px; }
+            .contact-form-wrapper { padding: 28px 22px; }
+
+            .footer-grid { grid-template-columns: 1fr; gap: 36px; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 16px; }
+            .hero-content h1 { font-size: 1.85rem; }
+            .hero-image-container { height: 260px; }
+            .trust-flex { flex-direction: column; gap: 12px; }
+            .btn { padding: 14px 32px; }
+        }
+
     </style>
 </head>
 <body>
 
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div id="scroll-progress"></div>
+
+    <!-- HEADER -->
     <header>
         <div class="container nav-wrapper">
-            <a href="#" class="brand-logo" style="display:flex;align-items:center;gap:12px;">
-                <img src="./assets/last.png" alt="NARI Logo"> 
-                <span class="brand-title" style="font-family: var(--font-serif); font-weight:700; font-size:1.1rem; color:var(--ink-black); text-transform:uppercase; letter-spacing:0.6px;">NARI HEALTH</span>
+            <a href="#" class="brand-logo">
+                <img src="./assets/last.png" alt="NARI Logo">
+                <span class="brand-title">NARI Health</span>
             </a>
 
-            <ul class="nav-links">
-                <li><a href="#How it Works" class="nav-link">How it Works</a></li>
-                <li><a href="#Plans" class="nav-link">Plans</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-                <li><a href="#contact" class="btn" style="padding: 12px 30px; font-size: 0.8rem;">Book Consultation</a></li>
-            </ul>
+            <nav aria-label="Main navigation">
+                <ul class="nav-links" id="desktopNav">
+                    <li><a href="#how" class="nav-link">How it Works</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#Plans" class="nav-link">Plans</a></li>
+                    <li><a href="#experts" class="nav-link">Our Team</a></li>
+                    <li><a href="#contact" class="btn" style="padding:12px 26px; font-size:0.8rem;">Book Consultation</a></li>
+                </ul>
+            </nav>
+
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
+    <!-- MOBILE MENU -->
+    <nav class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <ul>
+            <li><a href="#how">How it Works</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#Plans">Plans</a></li>
+            <li><a href="#experts">Our Team</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <a href="#contact" class="btn">Book Consultation</a>
+    </nav>
+
+    <main id="main-content">
+
+    <!-- HERO -->
     <section class="hero">
         <div class="container hero-grid">
-            
             <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
                 <span class="eyebrow">Online Healing</span>
-                <div class="heading-content">
-                    <h1>NARI is a movement to bring women back to their confidence.</h1>
-                </div>
-                <p>NARI helps women feel stronger, healthier, and more in control of their lives. NARI is not just a service; it is a community where women support and understand each other.</p>
+                <h1>NARI is a movement to bring women back to their confidence.</h1>
+                <p>A women-led holistic health platform bringing together physiotherapy, psychology and nutrition: integrated, evidence-based care designed specifically for women.</p>
 
-                <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start;">
-    <a href="#contact" class="btn">Start Free Assessment</a>
-    <a href="#Pricing" class="btn btn-outline">View Plans</a>
-</div>
-<p style="margin-top:20px; font-size:0.9rem; color:var(--green); font-weight:700;"><i class="fa-solid fa-circle-check"></i> First Consultation at just ₹199</p>
+                <div class="hero-ctas">
+                    <a href="#contact" class="btn">Start Free Assessment</a>
+                    <a href="#Plans" class="btn btn-outline">View Plans</a>
+                </div>
+                <p class="hero-trust">
+                    <i class="fa-solid fa-circle-check"></i>
+                    First Consultation at just ₹199
+                </p>
             </div>
 
             <div class="hero-image-container" data-aos="zoom-in" data-aos-duration="1200">
                 <div class="hero-blob">
-                    <img src="./assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png" alt="Woman feeling free and healthy">
+                    <img src="./assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png" alt="Woman feeling free and healthy" fetchpriority="high" loading="eager">
                 </div>
             </div>
-
         </div>
     </section>
+
+    <!-- TRUST BAR -->
     <div class="trust-bar">
         <div class="container trust-flex">
             <span><i class="fa-solid fa-user-doctor"></i> Verified Specialists</span>
             <span><i class="fa-solid fa-users"></i> 500+ Women Empowered</span>
-            <span><i class="fa-solid fa-language"></i> Available in Hindi & English</span>
+            <span><i class="fa-solid fa-language"></i> Available in Hindi &amp; English</span>
             <span><i class="fa-solid fa-shield-heart"></i> 100% Confidential</span>
         </div>
     </div>
-     <section id="how" class="section-padding">
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="section-padding how-section">
         <div class="container">
-            <div class="text-center">
+            <div class="text-center" data-aos="fade-up">
                 <span class="eyebrow">The Journey</span>
                 <h2>How NARI Heals You</h2>
             </div>
             <div class="how-grid">
                 <div class="step" data-aos="fade-up">
                     <div class="step-num">1</div>
-                    <h3>Free Consultation for PCOS Diagnosis</h3>
-                    <p>Identify your symptoms and risk factors in 2 minutes.</p>
+                    <h3>Free Assessment</h3>
+                    <p>Identify your symptoms and risk factors in a quick 2-minute assessment — no judgment, no pressure.</p>
                 </div>
                 <div class="step" data-aos="fade-up" data-aos-delay="100">
                     <div class="step-num">2</div>
                     <h3>Expert Match</h3>
-                    <p>Consult with Specialist Doctors .</p>
+                    <p>Get paired with the right specialist — physiotherapist, psychologist, or nutritionist — based on your needs.</p>
                 </div>
                 <div class="step" data-aos="fade-up" data-aos-delay="200">
                     <div class="step-num">3</div>
-                    <h3> Healing Journey</h3>
-                    <p>Start Your Personalized Treatment Plan.</p>
-                </div>
-            </div>
-        </div>\
-    
-
-.
-    <section id="about" class="section-padding about">
-        <div class="container about-grid">
-            
-            <div class="about-text" data-aos="fade-up">
-                <span class="eyebrow">The NARI Story</span>
-                <h2 style="font-size: 2.5rem; margin-bottom: 20px;">You Are NARI.</h2>
-                <p><p>Every ache ignored.
-Every discomfort normalized.
-Every woman putting herself last.</p>
-
-We created NARI to change that.
-
-NARI is a safe space where women feel heard, cared for, and supported. Through holistic, science-backed care, we help women reconnect with their bodies and trust their strength again.
-
-NARI is not just care.
-It is connection.
-It is community.
-
-A strong bond where women heal together because no woman should walk her health journey alone
-.</p>
-                <p>We combine <strong>clinical physiotherapy</strong> with a deep, empathetic understanding of the female experience from menstruation to motherhood and menopause.</p>
-                
-                                <div style="margin-top: 30px; border-left: 2px solid var(--carmine); padding-left: 20px;">
-                                        <h4 style="margin-bottom: 5px;">Our Mission</h4>
-                                        <p style="margin-bottom: 0;">NARI exists to educate, heal, and empower women so they can take control of their bodies without fear, shame, or silence.</p>
-                                </div>
-                        </div>
-
-                </div>
-        </section>
-
-    <section id="Plans" class="section-padding Plans">
-        <div class="container">
-            <div class="text-center" data-aos="fade-up">
-                <span class="eyebrow">Invest in your health for less than the cost of a coffee a day.
-
-
-</span>
-                <h2 style="font-size: 3rem;">Simple, Transparent Plans
-
-</h2>
-            <section></section>
-            <div class="price-grid">
-                <div class="price-card" data-aos="zoom-in">
-                    <h3>Saathi  (Basic)</h3>
-                    <div class="price-val">₹199<span>/session</span></div>
-                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
-                        <li><i class="fa-solid fa-check text-green"></i> 1-on-1 Consultation</li>
-                        <li><i class="fa-solid fa-check text-green"></i> Basic Assessment</li>
-                    </ul>
-                    <a href="#contact" class="btn btn-outline" style="width:100%; text-align:center;">Book Session</a>
-                </div>
-                <div class="price-card featured" data-aos="zoom-in" data-aos-delay="100">
-                    <span style="background:var(--carmine); color:white; padding:5px 15px; border-radius:20px; font-size:0.7rem; font-weight:700;">MOST POPULAR</span>
-                    <h3>Shakti   (PRO)</h3>
-                    <div class="price-val">₹2,999<span>/month</span></div>
-                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
-                        <li><i class="fa-solid fa-check text-green"></i> 4 Physio Sessions</li>
-                        <li><i class="fa-solid fa-check text-green"></i> Diet Plan & Mental Support</li>
-                        <li><i class="fa-solid fa-check text-green"></i> 24/7 WhatsApp Care</li>
-                    </ul>
-                    <a href="#contact" class="btn" style="width:100%; text-align:center;">Select Plan</a>
-                </div>
-                <div class="price-card" data-aos="zoom-in" data-aos-delay="200">
-                    <h3>Sampurna  (Premium)</h3>
-                    <div class="price-val">₹7,499</div>
-                    <ul style="list-style:none; padding:0; margin-bottom:30px;">
-                        <li><i class="fa-solid fa-check text-green"></i> Full Hormonal Reset</li>
-                        <li><i class="fa-solid fa-check text-green"></i> All Specialities Included</li>
-                    </ul>
-                    <a href="#contact" class="btn btn-outline" style="width:100%; text-align:center;">Select Plan</a>
+                    <h3>Your Healing Journey</h3>
+                    <p>Begin a personalized treatment plan built around your body, your goals, and your life.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="experts" class="section-padding">
-        <div class="container">
-            <div class="text-center">
-                <h2>Meet Your Care Team</h2>
-                <p>Real experts. Real degrees. Real results.</p>
+    <!-- ABOUT -->
+    <section id="about" class="section-padding about">
+        <div class="container about-grid">
+            <div class="about-text" data-aos="fade-right">
+                <span class="eyebrow">The NARI Story</span>
+                <h2>You Are NARI.</h2>
+                <p>NARI is a women-led holistic health platform dedicated to caring for the female body and mind. We bring together <strong>physiotherapy, psychology and nutrition</strong> to provide integrated, evidence-based care designed specifically for women.</p>
+                <p>Beyond consultations, NARI is also a growing community: a safe, supportive space where women come together to learn, share and better understand their bodies. We believe healing begins with awareness and through education, conversations and guided support, we help women reconnect with themselves.</p>
+
+                <div class="mission-box">
+                    <h3>Our Mission</h3>
+                    <p>NARI exists to educate, heal, and empower women so they can take control of their bodies without fear, shame, or silence.</p>
+                </div>
             </div>
 
+            <div class="quote-card" data-aos="fade-left">
+                <p class="quote-text">"No woman should have to normalize pain, silence her symptoms, or walk her health journey alone."</p>
+                <span class="quote-attr">NARI Health</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLANS -->
+    <section id="Plans" class="section-padding plans-section">
+        <div class="container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="eyebrow">Invest in your health for less than the cost of a coffee a day.</span>
+                <h2>Simple, Transparent Plans</h2>
+            </div>
+            <div class="price-grid">
+                <div class="price-card" data-aos="fade-up">
+                    <h3>Saathi</h3>
+                    <p class="plan-sub">Basic</p>
+                    <div class="price-val">₹199<span>/session</span></div>
+                    <ul class="plan-list">
+                        <li><i class="fa-solid fa-check"></i> 1-on-1 Consultation</li>
+                        <li><i class="fa-solid fa-check"></i> Basic Assessment</li>
+                        <li><i class="fa-solid fa-check"></i> Session Summary Report</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline plan-cta">Book Session</a>
+                </div>
+
+                <div class="price-card featured" data-aos="fade-up" data-aos-delay="100">
+                    <span class="plan-badge">Most Popular</span>
+                    <h3>Shakti</h3>
+                    <p class="plan-sub">PRO</p>
+                    <div class="price-val">₹2,999<span>/month</span></div>
+                    <ul class="plan-list">
+                        <li><i class="fa-solid fa-check"></i> 4 Physio Sessions</li>
+                        <li><i class="fa-solid fa-check"></i> Diet Plan &amp; Mental Support</li>
+                        <li><i class="fa-solid fa-check"></i> 24/7 WhatsApp Care</li>
+                        <li><i class="fa-solid fa-check"></i> Progress Tracking</li>
+                    </ul>
+                    <a href="#contact" class="btn plan-cta">Select Plan</a>
+                </div>
+
+                <div class="price-card" data-aos="fade-up" data-aos-delay="200">
+                    <h3>Sampurna</h3>
+                    <p class="plan-sub">Premium</p>
+                    <div class="price-val">₹7,499<span>/month</span></div>
+                    <ul class="plan-list">
+                        <li><i class="fa-solid fa-check"></i> Full Hormonal Reset Protocol</li>
+                        <li><i class="fa-solid fa-check"></i> All Specialties Included</li>
+                        <li><i class="fa-solid fa-check"></i> Priority Appointments</li>
+                        <li><i class="fa-solid fa-check"></i> Community Access</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline plan-cta">Select Plan</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERTS -->
+    <section id="experts" class="section-padding experts-section">
+        <div class="container">
+            <div class="experts-layout">
+                <div class="experts-intro" data-aos="fade-right">
+                    <span class="eyebrow">Your Care Team</span>
+                    <h2>Three disciplines. One integrated team.</h2>
+                    <p>NARI's specialists work together across physiotherapy, psychology and nutrition so your care is joined up, not siloed. Real experts, real degrees, real results.</p>
+                </div>
+
+                <div class="experts-list" data-aos="fade-left">
+                    <div class="expert-row">
+                        <div class="expert-icon">
+                            <i class="fa-solid fa-person-walking"></i>
+                        </div>
+                        <div>
+                            <h3>Physiotherapy</h3>
+                            <span class="expert-role">Physical Health</span>
+                            <p>Certified physiotherapists specializing in women's health: PCOS, pelvic floor, posture and pain management.</p>
+                        </div>
+                    </div>
+                    <div class="expert-row">
+                        <div class="expert-icon">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <h3>Psychology</h3>
+                            <span class="expert-role">Mental Wellness</span>
+                            <p>Licensed psychologists who understand the emotional dimensions of women's health, offering evidence-based support.</p>
+                        </div>
+                    </div>
+                    <div class="expert-row">
+                        <div class="expert-icon">
+                            <i class="fa-solid fa-bowl-food"></i>
+                        </div>
+                        <div>
+                            <h3>Nutrition</h3>
+                            <span class="expert-role">Diet &amp; Hormonal Balance</span>
+                            <p>Clinical nutritionists crafting personalized plans around hormonal health, cycle syncing and long-term wellbeing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
     <section id="contact" class="section-padding contact">
         <div class="container">
-            <div class="text-center" style="margin-bottom: 60px;" data-aos="fade-down">
-                <span class="eyebrow" style="color: var(--lavender-blush);">Get In Touch</span>
+            <div class="text-center" style="margin-bottom:60px;" data-aos="fade-down">
+                <span class="eyebrow" style="color:var(--lavender-blush);">Get In Touch</span>
                 <h2>Start Your Journey Today</h2>
             </div>
 
             <div class="contact-grid">
-                
                 <div class="contact-info" data-aos="fade-right">
-                    <h3 style="margin-bottom: 30px;">We are here to listen.</h3>
-                    <p style="margin-bottom: 40px; font-size: 1.1rem;">Whether you have a question about a specific pain or want to book a session, reach out to us.</p>
-                    
-                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
-                        <i class="fa-solid fa-location-dot text-carmine" style="font-size: 1.5rem;"></i>
+                    <h3 style="margin-bottom:20px;">We are here to listen.</h3>
+                    <p style="margin-bottom:36px; font-size:1.05rem;">Whether you have a question about a specific pain or want to book a session, reach out to us.</p>
+
+                    <div class="contact-item">
+                        <i class="fa-solid fa-location-dot"></i>
                         <div>
-                            <strong style="display: block; color: var(--white);">Location</strong>
-                            <span>Online & Home Visit </span>
+                            <strong>Location</strong>
+                            <span>Online &amp; Home Visit</span>
                         </div>
                     </div>
 
-                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
-                        <i class="fa-solid fa-envelope text-carmine" style="font-size: 1.5rem;"></i>
+                    <div class="contact-item">
+                        <i class="fa-solid fa-envelope"></i>
                         <div>
-                            <strong style="display: block; color: var(--white);">Email</strong>
-                            <a href="mailto:info@narihealthh.com">info@narihealthh.com</a>
+                            <strong>Email</strong>
+                            <a href="mailto:narihealthh@gmail.com">narihealthh@gmail.com</a>
                         </div>
                     </div>
 
-                    <div style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
-                        <i class="fa-brands fa-instagram text-carmine" style="font-size: 1.5rem;"></i>
+                    <div class="contact-item">
+                        <i class="fa-solid fa-clock"></i>
                         <div>
-                            <strong style="display: block; color: var(--white);">Social</strong>
-                            <span>@_nari.health</span>
+                            <strong>Timings</strong>
+                            <span style="line-height:2;">
+                                Sun: 9:00 AM – 6:00 PM<br>
+                                Mon: 11:00 AM – 2:00 PM<br>
+                                Tue – Fri: 9:00 AM – 6:00 PM
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fa-brands fa-instagram"></i>
+                        <div>
+                            <strong>Instagram</strong>
+                            <a href="https://www.instagram.com/_nari.health" target="_blank" rel="noopener">@_nari.health</a>
                         </div>
                     </div>
                 </div>
@@ -713,88 +1235,139 @@ A strong bond where women heal together because no woman should walk her health 
                 <div class="contact-form-wrapper" data-aos="fade-left">
                     <form id="contactForm">
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Name *</label>
+                            <label class="form-label" for="name">Name *</label>
                             <input type="text" id="name" name="name" class="form-input" placeholder="Your Full Name" required>
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">Phone Number *</label>
-                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91" required>
+                            <label class="form-label" for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 XXXXX XXXXX" required>
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 700;">How can we help? *</label>
+                            <label class="form-label" for="message">How can we help? *</label>
                             <textarea id="message" name="message" class="form-input" rows="4" placeholder="Describe your pain or goal..." required></textarea>
                         </div>
-
- <div class="form-group">
-  <label style="display: block; margin-bottom: 8px; font-weight: 700;">
-    Preferred Date & Time
-  </label>
-
-  <input 
-    type="datetime-local" 
-    class="form-input"
-    id="preferred_time"
-    name="preferred_time"
-    required
-  >
-</div>
-                        <button type="submit" id="submitBtn" class="btn" style="width: 100%; border: none;">Send Message</button>
+                        <div class="form-group">
+                            <label class="form-label" for="preferred_time">Preferred Date &amp; Time</label>
+                            <input type="datetime-local" class="form-input" id="preferred_time" name="preferred_time" required>
+                        </div>
+                        <button type="submit" id="submitBtn" class="btn" style="width:100%; border:none; margin-top:4px;">Send Message</button>
                     </form>
                 </div>
-
             </div>
         </div>
     </section>
-<footer>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
         <div class="container">
-            <p style="margin-bottom: 10px; color: #777;">&copy; 2025 NARI Wellness. All Rights Reserved.</p>
-            <div style="font-size: 0.8rem; opacity: 0.6;">
-                <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <span class="footer-brand-name">NARI Health</span>
+                    <p>A women-led holistic health platform dedicated to caring for the female body and mind. Physiotherapy, psychology and nutrition in one place.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigate</h4>
+                    <ul>
+                        <li><a href="#how">How it Works</a></li>
+                        <li><a href="#about">About NARI</a></li>
+                        <li><a href="#Plans">Plans</a></li>
+                        <li><a href="#experts">Our Team</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 NARI Wellness. All Rights Reserved.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/_nari.health" target="_blank" rel="noopener" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?phone=916399507521" target="_blank" rel="noopener" aria-label="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                    <a href="mailto:narihealthh@gmail.com" aria-label="Email">
+                        <i class="fa-solid fa-envelope"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- EmailJS Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({
-            once: true,
-            offset: 120,
-            duration: 800,
-            easing: 'ease-out-cubic',
-        });
-    </script>
-
-    <!-- WhatsApp floating button -->
+    <!-- WhatsApp float -->
     <a href="#" id="whatsappBtn" class="whatsapp-float" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
-    <script>
-        // Replace the value of `whatsappNumber` with your number in international format (no plus or spaces).
-        // Example for India: '919812345678' ; for US: '12135551234'
-        var whatsappNumber = '916399507521';
-        var prefilledMessage = encodeURIComponent('Hi, I would like to chat about NARI.');
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-        document.getElementById('whatsappBtn').addEventListener('click', function(e){
+    <script>
+        // AOS scroll animations
+        AOS.init({ once: true, offset: 100, duration: 820, easing: 'ease-out-quart' });
+
+        // Scroll progress bar
+        const progressBar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const total = document.documentElement.scrollHeight - window.innerHeight;
+            progressBar.style.width = (document.documentElement.scrollTop / total * 100) + '%';
+        }, { passive: true });
+
+        // Active nav highlight on scroll
+        const sections  = document.querySelectorAll('section[id]');
+        const navLinks  = document.querySelectorAll('.nav-link');
+
+        const sectionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+                    });
+                }
+            });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+
+        sections.forEach(s => sectionObserver.observe(s));
+
+        // Hamburger menu
+        const hamburger   = document.getElementById('hamburger');
+        const mobileMenu  = document.getElementById('mobileMenu');
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+
+        function closeMenu() {
+            hamburger.classList.remove('open');
+            mobileMenu.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            mobileMenu.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        hamburger.addEventListener('click', () => {
+            const isOpen = hamburger.classList.toggle('open');
+            mobileMenu.classList.toggle('open', isOpen);
+            hamburger.setAttribute('aria-expanded', String(isOpen));
+            mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+
+        mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+        // WhatsApp button
+        document.getElementById('whatsappBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            var url;
-            // Use api.whatsapp.com for better mobile compatibility
-            url = 'https://api.whatsapp.com/send?phone=' + whatsappNumber + '&text=' + prefilledMessage;
-            window.open(url, '_blank');
+            window.open('https://api.whatsapp.com/send?phone=916399507521&text=' + encodeURIComponent('Hi, I would like to chat about NARI.'), '_blank');
         });
     </script>
 
-    <!-- Form Handler Script -->
     <script src="form-handler.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
