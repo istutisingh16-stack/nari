@@ -920,10 +920,9 @@
         /* --- DESKTOP HERO VIDEO --- */
         @media (min-width: 769px) {
             .hero {
-                /* white behind the transparent navbar — no tint bleeding into nav area */
-                background: var(--white);
+                background: var(--lavender-blush); /* shows during video crossfade at loop */
             }
-            /* gradient shield starts BELOW the navbar so nav area stays clean */
+            /* overlay starts below the navbar — nav area shows raw video, not a flat tint */
             .hero::before {
                 content: '';
                 position: absolute;
@@ -952,7 +951,6 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                width: 100%;
                 object-fit: cover;
                 object-position: center;
                 z-index: 0;
