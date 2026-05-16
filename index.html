@@ -958,9 +958,6 @@
             .hero-image-container {
                 display: none;
             }
-            .trust-bar {
-                margin-top: 28px;
-            }
         }
 
         /* --- RESPONSIVENESS --- */
@@ -1495,10 +1492,12 @@
         // AOS scroll animations
         AOS.init({ once: true, offset: 100, duration: 820, easing: 'ease-out-quart' });
 
-        // Transparent navbar — adds .scrolled class once user scrolls past hero
+        // Transparent navbar — stays transparent over hero, turns opaque once scrolled past it
         const headerEl = document.querySelector('header');
+        const heroEl = document.querySelector('.hero');
         function updateHeader() {
-            headerEl.classList.toggle('scrolled', window.scrollY > 60);
+            var threshold = heroEl ? heroEl.offsetHeight - headerEl.offsetHeight : 400;
+            headerEl.classList.toggle('scrolled', window.scrollY > threshold);
         }
         window.addEventListener('scroll', updateHeader, { passive: true });
         updateHeader();
