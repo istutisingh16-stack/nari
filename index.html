@@ -920,11 +920,27 @@
         /* --- DESKTOP HERO VIDEO --- */
         @media (min-width: 769px) {
             .hero {
-                background: none;
+                /* lavender shows through during the video crossfade at loop point */
+                background: var(--lavender-blush);
+            }
+            /* gradient shield — keeps left text column readable at all video frames */
+            .hero::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    to right,
+                    rgba(244, 228, 228, 0.96) 0%,
+                    rgba(244, 228, 228, 0.88) 28%,
+                    rgba(244, 228, 228, 0.45) 50%,
+                    transparent 68%
+                );
+                z-index: 1;
+                pointer-events: none;
             }
             .hero .container {
                 position: relative;
-                z-index: 1;
+                z-index: 2;
             }
             .hero-video {
                 display: block;
@@ -1494,6 +1510,22 @@
                     video.appendChild(src);
                     video.load();
                     video.play().catch(function() {});
+
+                    // Crossfade at loop point — fade out last 0.6s, fade in first 0.6s
+                    // Lavender background shows through so the jump is invisible
+                    video.addEventListener('timeupdate', function() {
+                        if (!video.duration) return;
+                        var fade = 0.6;
+                        var t = video.currentTime;
+                        var d = video.duration;
+                        if (d - t < fade) {
+                            video.style.opacity = (d - t) / fade;
+                        } else if (t < fade) {
+                            video.style.opacity = t / fade;
+                        } else {
+                            video.style.opacity = 1;
+                        }
+                    });
                 }
             }
         })();
