@@ -1492,15 +1492,20 @@
         // AOS scroll animations
         AOS.init({ once: true, offset: 100, duration: 820, easing: 'ease-out-quart' });
 
-        // Transparent navbar — transparent over hero, opaque once hero scrolls out of view
-        const headerEl = document.querySelector('header');
-        const heroEl = document.querySelector('.hero');
-        function updateHeader() {
-            var heroBottom = heroEl ? heroEl.getBoundingClientRect().bottom : -1;
-            headerEl.classList.toggle('scrolled', heroBottom <= headerEl.offsetHeight);
-        }
-        window.addEventListener('scroll', updateHeader, { passive: true });
-        updateHeader();
+        // Transparent navbar — transparent on hero, opaque after hero scrolls out of view
+        // IntersectionObserver is reliable: no layout timing issues, fires on actual visibility
+        (function() {
+            var nav = document.querySelector('header');
+            var hero = document.querySelector('.hero');
+            if (!nav) return;
+            if (hero) {
+                new IntersectionObserver(function(entries) {
+                    nav.classList.toggle('scrolled', !entries[0].isIntersecting);
+                }, { threshold: 0 }).observe(hero);
+            } else {
+                nav.classList.add('scrolled');
+            }
+        })();
 
         // Hero video — load only on desktop (saves mobile users from downloading 11MB)
         (function() {
