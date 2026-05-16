@@ -9,6 +9,12 @@
     <meta property="og:description" content="Integrated, evidence-based care designed specifically for women. Physiotherapy, psychology and nutrition in one place.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://narihealth.in/">
+    <meta property="og:image" content="https://narihealth.in/assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png">
+    <meta property="og:locale" content="en_IN">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="NARI | Women's Holistic Health Platform">
+    <meta name="twitter:description" content="Integrated, evidence-based care designed specifically for women. Physiotherapy, psychology and nutrition in one place.">
+    <meta name="twitter:image" content="https://narihealth.in/assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png">
     <meta name="theme-color" content="#C5172E">
     <link rel="canonical" href="https://narihealth.in/">
 
@@ -1306,6 +1312,97 @@
     <a href="#" id="whatsappBtn" class="whatsapp-float" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "MedicalBusiness",
+          "@id": "https://narihealth.in/#organization",
+          "name": "NARI Health",
+          "url": "https://narihealth.in",
+          "email": "narihealthh@gmail.com",
+          "logo": "https://narihealth.in/assets/last.png",
+          "description": "Women-led holistic health platform offering physiotherapy, psychology and nutrition consultations online and via home visits across India.",
+          "sameAs": ["https://www.instagram.com/_nari.health"],
+          "areaServed": {
+            "@type": "Country",
+            "name": "India"
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Sunday",
+              "opens": "09:00",
+              "closes": "18:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Monday",
+              "opens": "11:00",
+              "closes": "14:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Tuesday","Wednesday","Thursday","Friday"],
+              "opens": "09:00",
+              "closes": "18:00"
+            }
+          ],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "NARI Health Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "MedicalTherapy",
+                  "name": "Physiotherapy Consultation",
+                  "description": "Women's health physiotherapy for PCOS, pelvic floor, posture and pain management."
+                },
+                "price": "199",
+                "priceCurrency": "INR"
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "MedicalTherapy",
+                  "name": "Psychology Consultation",
+                  "description": "Evidence-based psychological support for women's mental wellness."
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "MedicalTherapy",
+                  "name": "Nutrition Consultation",
+                  "description": "Personalized nutrition plans for hormonal health and cycle syncing."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://narihealth.in/#website",
+          "url": "https://narihealth.in",
+          "name": "NARI Health",
+          "publisher": { "@id": "https://narihealth.in/#organization" }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://narihealth.in/#webpage",
+          "url": "https://narihealth.in",
+          "name": "NARI | Women's Holistic Health Platform",
+          "isPartOf": { "@id": "https://narihealth.in/#website" },
+          "about": { "@id": "https://narihealth.in/#organization" },
+          "description": "NARI is a women-led holistic health platform bringing together physiotherapy, psychology and nutrition. Evidence-based care designed specifically for women."
+        }
+      ]
+    }
+    </script>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
