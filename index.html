@@ -336,6 +336,39 @@
             display: flex;
             align-items: center;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Desktop hero video — hidden on mobile */
+        .hero-video {
+            display: none;
+        }
+
+        @media (min-width: 769px) {
+            .hero-video {
+                display: block;
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+                z-index: 0;
+                pointer-events: none;
+            }
+            .hero {
+                background: none;
+            }
+            .hero .container {
+                position: relative;
+                z-index: 1;
+            }
+            .hero-image-container {
+                display: none;
+            }
+            .hero-grid {
+                grid-template-columns: 55% auto;
+            }
         }
 
         .hero-grid {
@@ -1012,6 +1045,8 @@
 
     <!-- HERO -->
     <section class="hero">
+        <!-- Desktop background video — source injected by JS so mobile never downloads it -->
+        <video class="hero-video" muted loop playsinline poster="./assets/hero.webp" aria-hidden="true" preload="none" id="heroVideo"></video>
         <div class="container hero-grid">
             <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
                 <span class="eyebrow">Online Healing</span>
@@ -1432,6 +1467,21 @@
     <script>
         // AOS scroll animations
         AOS.init({ once: true, offset: 100, duration: 820, easing: 'ease-out-quart' });
+
+        // Hero video — load only on desktop (saves mobile users from downloading 11MB)
+        (function() {
+            if (window.innerWidth >= 769) {
+                const video = document.getElementById('heroVideo');
+                if (video) {
+                    const src = document.createElement('source');
+                    src.src = './assets/hero-video.mp4';
+                    src.type = 'video/mp4';
+                    video.appendChild(src);
+                    video.load();
+                    video.play().catch(function() {});
+                }
+            }
+        })();
 
         // Set minimum date on booking input to right now (no past dates)
         const dateInput = document.getElementById('preferred_time');
