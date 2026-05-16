@@ -9,12 +9,12 @@
     <meta property="og:description" content="Integrated, evidence-based care designed specifically for women. Physiotherapy, psychology and nutrition in one place.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://narihealth.in/">
-    <meta property="og:image" content="https://narihealth.in/assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png">
+    <meta property="og:image" content="https://narihealth.in/assets/og-image.png">
     <meta property="og:locale" content="en_IN">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="NARI | Women's Holistic Health Platform">
     <meta name="twitter:description" content="Integrated, evidence-based care designed specifically for women. Physiotherapy, psychology and nutrition in one place.">
-    <meta name="twitter:image" content="https://narihealth.in/assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png">
+    <meta name="twitter:image" content="https://narihealth.in/assets/og-image.png">
     <meta name="theme-color" content="#C5172E">
     <link rel="canonical" href="https://narihealth.in/">
 
@@ -1027,7 +1027,7 @@
 
             <div class="hero-image-container" data-aos="zoom-in" data-aos-duration="1200">
                 <div class="hero-blob">
-                    <img src="./assets/Gemini_Generated_Image_3j1b8p3j1b8p3j1b.png" alt="Woman feeling free and healthy" fetchpriority="high" loading="eager">
+                    <img src="./assets/hero.webp" alt="Woman feeling free and confident with NARI Health" fetchpriority="high" loading="eager" width="560" height="560">
                 </div>
             </div>
         </div>
@@ -1148,8 +1148,8 @@
             <div class="experts-layout">
                 <div class="experts-intro" data-aos="fade-right">
                     <span class="eyebrow">Your Care Team</span>
-                    <h2>Three disciplines. One integrated team.</h2>
-                    <p>NARI's specialists work together across physiotherapy, psychology and nutrition so your care is joined up, not siloed. Real experts, real degrees, real results.</p>
+                    <h2>Four disciplines. One integrated team.</h2>
+                    <p>NARI's specialists work together across physiotherapy, psychology, nutrition and gynaecology so your care is joined up, not siloed. Real experts, real degrees, real results.</p>
                 </div>
 
                 <div class="experts-list" data-aos="fade-left">
@@ -1181,6 +1181,16 @@
                             <h3>Nutrition</h3>
                             <span class="expert-role">Diet &amp; Hormonal Balance</span>
                             <p>Clinical nutritionists crafting personalized plans around hormonal health, cycle syncing and long-term wellbeing.</p>
+                        </div>
+                    </div>
+                    <div class="expert-row">
+                        <div class="expert-icon">
+                            <i class="fa-solid fa-venus"></i>
+                        </div>
+                        <div>
+                            <h3>Gynaecology</h3>
+                            <span class="expert-role">Women's Reproductive Health</span>
+                            <p>Specialist gynaecologists addressing menstrual health, PCOS, hormonal disorders and reproductive wellbeing with sensitivity and expertise.</p>
                         </div>
                     </div>
                 </div>
@@ -1246,7 +1256,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="phone">Phone Number *</label>
-                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 XXXXX XXXXX" required>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 XXXXX XXXXX" inputmode="numeric" pattern="[+0-9\s\-()]{7,15}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="message">How can we help? *</label>
@@ -1325,7 +1335,7 @@
           "url": "https://narihealth.in",
           "email": "narihealthh@gmail.com",
           "logo": "https://narihealth.in/assets/last.png",
-          "description": "Women-led holistic health platform offering physiotherapy, psychology and nutrition consultations online and via home visits across India.",
+          "description": "Women-led holistic health platform offering physiotherapy, psychology, nutrition and gynaecology consultations online and via home visits across India.",
           "sameAs": ["https://www.instagram.com/_nari.health"],
           "areaServed": {
             "@type": "Country",
@@ -1380,6 +1390,14 @@
                   "name": "Nutrition Consultation",
                   "description": "Personalized nutrition plans for hormonal health and cycle syncing."
                 }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "MedicalTherapy",
+                  "name": "Gynaecology Consultation",
+                  "description": "Specialist gynaecology for menstrual health, PCOS, hormonal disorders and reproductive wellbeing."
+                }
               }
             ]
           }
@@ -1411,6 +1429,22 @@
     <script>
         // AOS scroll animations
         AOS.init({ once: true, offset: 100, duration: 820, easing: 'ease-out-quart' });
+
+        // Set minimum date on booking input to right now (no past dates)
+        const dateInput = document.getElementById('preferred_time');
+        if (dateInput) {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            dateInput.min = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        }
+
+        // Phone number — strip non-numeric characters (allow +, spaces, dashes, parentheses)
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9+\-\s()]/g, '');
+            });
+        }
 
         // Scroll progress bar
         const progressBar = document.getElementById('scroll-progress');
