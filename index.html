@@ -921,6 +921,58 @@
         .whatsapp-float:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(37,211,102,0.38); }
         .whatsapp-float i { font-size: 1.45rem; }
 
+.testimonials-section{
+    padding:100px 0;
+    overflow:hidden;
+}
+
+.testimonial-slider{
+    display:flex;
+    gap:25px;
+    width:max-content;
+    animation:scrollReviews 35s linear infinite;
+}
+
+.testimonial-slider:hover{
+    animation-play-state:paused;
+}
+
+.testimonial-card{
+    width:320px;
+    min-height:220px;
+    background:#fff;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    border:1px solid rgba(255,105,180,.15);
+    flex-shrink:0;
+}
+
+.testimonial-card p{
+    color:#555;
+    line-height:1.8;
+    margin-bottom:20px;
+    font-size:15px;
+}
+
+.testimonial-card h4{
+    margin-bottom:8px;
+    color:#222;
+}
+
+.testimonial-card span{
+    color:#ffb400;
+    font-size:18px;
+}
+
+@keyframes scrollReviews{
+    0%{
+        transform:translateX(0);
+    }
+    100%{
+        transform:translateX(-50%);
+    }
+}
         /* --- DESKTOP HERO VIDEO --- */
         @media (min-width: 769px) {
             .hero {
@@ -1190,48 +1242,67 @@
         <div class="container">
             <div class="text-center" data-aos="fade-up">
                 <span class="eyebrow">Invest in your health for less than the cost of a coffee a day.</span>
-                <h2>Simple, Transparent Plans</h2>
-            </div>
-            <div class="price-grid">
-                <div class="price-card" data-aos="fade-up">
-                    <h3>Saathi</h3>
-                    <p class="plan-sub">Basic</p>
-                    <div class="price-val">₹199<span>/session</span></div>
-                    <ul class="plan-list">
-                        <li><i class="fa-solid fa-check"></i> 1-on-1 Consultation</li>
-                        <li><i class="fa-solid fa-check"></i> Basic Assessment</li>
-                        <li><i class="fa-solid fa-check"></i> Session Summary Report</li>
-                    </ul>
-                    <a href="#contact" class="btn btn-outline plan-cta">Book Session</a>
-                </div>
 
-                <div class="price-card featured" data-aos="fade-up" data-aos-delay="100">
-                    <span class="plan-badge">Most Popular</span>
-                    <h3>Shakti</h3>
-                    <p class="plan-sub">PRO</p>
-                    <div class="price-val">₹2,999<span>/month</span></div>
-                    <ul class="plan-list">
-                        <li><i class="fa-solid fa-check"></i> 4 Physio Sessions</li>
-                        <li><i class="fa-solid fa-check"></i> Diet Plan &amp; Mental Support</li>
-                        <li><i class="fa-solid fa-check"></i> 24/7 WhatsApp Care</li>
-                        <li><i class="fa-solid fa-check"></i> Progress Tracking</li>
-                    </ul>
-                    <a href="#contact" class="btn plan-cta">Select Plan</a>
-                </div>
-
-                <div class="price-card" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Sampurna</h3>
-                    <p class="plan-sub">Premium</p>
-                    <div class="price-val">₹7,499<span>/month</span></div>
-                    <ul class="plan-list">
-                        <li><i class="fa-solid fa-check"></i> Full Hormonal Reset Protocol</li>
-                        <li><i class="fa-solid fa-check"></i> All Specialties Included</li>
-                        <li><i class="fa-solid fa-check"></i> Priority Appointments</li>
-                        <li><i class="fa-solid fa-check"></i> Community Access</li>
-                    </ul>
-                    <a href="#contact" class="btn btn-outline plan-cta">Select Plan</a>
-                </div>
             </div>
+<section class="testimonials-section">
+    <div class="section-heading">
+        <span>Testimonials</span>
+        <h2>What Our Patients Say</h2>
+        <p>Real stories from women who trusted Nari Health.</p>
+    </div>
+
+    <div class="testimonial-slider">
+
+        <div class="testimonial-card">
+            <p>"The physiotherapy sessions significantly reduced my back pain. The care and guidance were excellent."</p>
+            <h4>Priya Sharma</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"The personalized diet plan helped me improve my energy levels and overall health."</p>
+            <h4>Anjali Verma</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"Professional doctors and timely support. Every session felt focused on my needs."</p>
+            <h4>Meera Gupta</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"I appreciated the combination of physiotherapy and mental wellness support."</p>
+            <h4>Neha Kapoor</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"Easy appointment scheduling and a very caring healthcare team."</p>
+            <h4>Ritu Singh</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"The recovery plan was clear and easy to follow. Highly recommended."</p>
+            <h4>Pooja Agarwal</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"Great experience from consultation to follow-up. I felt supported throughout."</p>
+            <h4>Shweta Jain</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+        <div class="testimonial-card">
+            <p>"The holistic wellness approach helped me build healthier habits."</p>
+            <h4>Kavita Mishra</h4>
+            <span>⭐⭐⭐⭐⭐</span>
+        </div>
+
+    </div>
+</section>
         </div>
     </section>
 
@@ -1434,6 +1505,7 @@
             "@type": "Country",
             "name": "India"
           },
+          
           "openingHoursSpecification": [
             {
               "@type": "OpeningHoursSpecification",
