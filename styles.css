@@ -639,3 +639,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .social-btn:hover { background: rgba(255,255,255,0.2); }
 .social-btn svg { width: 1rem; height: 1rem; }
 .footer-bottom { max-width: var(--max80); margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+
+/* ===== Portal entry link (navbar) ===== */
+.nav-cta-desktop { align-items: center; gap: 1.25rem; }
+@media (min-width: 768px) { .nav-cta-desktop { display: flex; } }
+.nav-signin { font-size: 0.875rem; font-weight: 600; color: var(--ink); transition: color 0.2s; }
+.nav-signin:hover { color: var(--primary); }
+
+/* ===== Booking-first hero / CTA links ===== */
+.hero-wa-link { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 600; color: var(--ink); transition: color 0.2s; }
+.hero-wa-link:hover { color: var(--primary); }
+.hero-wa-link .wa-icon.sm { width: 1.1rem; height: 1.1rem; color: #25D366; }
+.cta-secondary { display: inline-block; margin-top: 1.1rem; font-size: 0.875rem; font-weight: 600; color: rgba(255,255,255,0.85); text-decoration: underline; text-underline-offset: 3px; }
+.cta-secondary:hover { color: #fff; }
+.btn-pill-sm .arrow-icon.sm { width: 0.9rem; height: 0.9rem; }

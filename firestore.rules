@@ -1,0 +1,65 @@
+rules_version = '2';
+// ===== NARI Health — Firestore security rules =====
+// Paste into Firebase console → Firestore Database → Rules, or deploy with
+// `firebase deploy --only firestore:rules`. These rules are what actually
+// protects member data; the browser code is not trusted.
+//
+// Collections
+//   doctors/{doctorId}      public profile of a panel doctor (no email, no password)
+//   staff/{email}           { role: 'admin' | 'doctor', doctorId?, name }  — who may sign in as staff
+//   members/{uid}           one document per signed-in member, keyed by their Firebase uid
+//   appointments/{id}       bookings; member details are copied on so doctors never read /members
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function hasEmail() { return signedIn() && request.auth.token.email is string && request.auth.token.email_verified == true; }
+    function myEmail() { return request.auth.token.email; }
+    function isStaff() { return hasEmail() && exists(/databases/$(database)/documents/staff/$(myEmail())); }
+    function staffDoc() { return get(/databases/$(database)/documents/staff/$(myEmail())).data; }
+    function isAdmin() { return isStaff() && staffDoc().role == 'admin'; }
+    function isDoctor() { return isStaff() && staffDoc().role == 'doctor'; }
+    function myDoctorId() { return staffDoc().doctorId; }
+    function onlyChanges(fields) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields); }
+
+    // Doctors are public so the booking form and referral links work before sign-in.
+    match /doctors/{doctorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // A person may read their own staff record (to learn their role); only admins manage the list.
+    match /staff/{email} {
+      allow read: if isAdmin() || (hasEmail() && myEmail() == email);
+      allow write: if isAdmin();
+    }
+
+    // Members own their profile. Admins can read everyone (for the console).
+    match /members/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['id', 'name', 'phone', 'email', 'city', 'img', 'provider', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80;
+      allow delete: if isAdmin();
+    }
+
+    match /appointments/{id} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.memberId == request.auth.uid)
+        || (isDoctor() && (resource.data.doctorId == myDoctorId() || resource.data.referredDoctorId == myDoctorId()));
+
+      // Members create their own bookings, always starting as pending.
+      allow create: if isAdmin()
+        || (signedIn() && request.resource.data.memberId == request.auth.uid
+            && request.resource.data.status == 'pending'
+            && request.resource.data.notes is string && request.resource.data.notes.size() <= 1000);
+
+      // Members may only cancel. Doctors may change the status of their own consultations. Admins may do anything.
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.memberId == request.auth.uid && onlyChanges(['status']) && request.resource.data.status == 'cancelled')
+        || (isDoctor() && resource.data.doctorId == myDoctorId() && onlyChanges(['status']));
+
+      allow delete: if isAdmin();
+    }
+  }
+}

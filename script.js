@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var WA = 'https://wa.me/919999999999?text=Hi%20NARI%20Health%2C%20I%20have%20a%20health%20question';
+  var WA = 'https://wa.me/916399507521?text=Hi%20NARI%20Health%2C%20I%20have%20a%20health%20question';
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- Data ---------- */
@@ -29,21 +29,21 @@
   var REVIEWS = [
     { img: 'https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png', name: 'Priya S.', city: 'Chennai', text: 'Got a clear answer about my PCOS reports in ten minutes. No panic-Googling at 2am.' },
     { img: 'https://images.hostinger.com/a24c2559-102e-4ffa-84c6-fdc8899cc74c.png', name: 'Divya M.', city: 'Hyderabad', text: 'The doctor was kind and specific. Booking a follow-up took one message.' },
-    { img: 'https://images.hostinger.com/62fcdbf3-7fa2-4760-85a2-76b8f9e72cbe.png', name: 'Kavita R.', city: 'Jaipur', text: 'For ₹99 I got advice I actually trusted. I have recommended it to my whole family.' }
+    { img: 'https://images.hostinger.com/62fcdbf3-7fa2-4760-85a2-76b8f9e72cbe.png', name: 'Kavita R.', city: 'Jaipur', text: 'The nutritionist gave me advice I actually trusted. I have recommended NARI to my whole family.' }
   ];
 
   var VIDEO_REVIEWS = [
     { img: 'https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png', name: 'Priya S.', city: 'Chennai', duration: '1:12', text: 'How NARI helped me understand my PCOS diagnosis.' },
-    { img: 'https://images.hostinger.com/a24c2559-102e-4ffa-84c6-fdc8899cc74c.png', name: 'Divya M.', city: 'Hyderabad', duration: '0:58', text: 'I got a same-day care plan — all on WhatsApp.' },
+    { img: 'https://images.hostinger.com/a24c2559-102e-4ffa-84c6-fdc8899cc74c.png', name: 'Divya M.', city: 'Hyderabad', duration: '0:58', text: 'I got a same-day care plan after one video call.' },
     { img: 'https://images.hostinger.com/62fcdbf3-7fa2-4760-85a2-76b8f9e72cbe.png', name: 'Kavita R.', city: 'Jaipur', duration: '1:34', text: 'Why I recommend NARI Health to every woman I know.' }
   ];
 
   var FAQS = [
-    ['What exactly do I get for ₹99?', 'One full consultation thread on WhatsApp with a verified professional — your question, follow-ups, and a clear next step.'],
-    ['How fast will someone reply?', 'Most questions are answered within minutes. Complex cases may take a few hours.'],
-    ['Is my conversation private?', 'Yes. Chats are end-to-end encrypted on WhatsApp and never shared or sold.'],
+    ['How much does a consultation cost?', 'Video consultations start at ₹499 and clinic visits are quoted when you book. You pay only after your slot is confirmed. There are no subscriptions, packages or hidden charges.'],
+    ['How soon can I get a slot?', 'Most requests are confirmed within a few hours, often for the same or next day. Our care coordinator confirms on WhatsApp.'],
+    ['Is my information private?', 'Yes. Your bookings are visible only to you, your expert and the NARI care coordinator. We never sell or share your data.'],
     ['Are the experts really verified?', 'Every professional is licence-verified and reviewed before joining the NARI panel.'],
-    ['Can I book an in-person doctor?', 'Yes. If your case needs a physical exam, we help you book the right specialist.']
+    ['Can I see a doctor in person?', 'Yes. Choose “Clinic visit” when you book and we will arrange a partner clinic near you.']
   ];
 
   var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
@@ -394,7 +394,7 @@
       { type: 'me', text: 'Hi, I have had irregular periods for 3 months. Should I be worried?' },
       { type: 'them', text: 'Thanks for sharing. Any recent weight change or high stress?' },
       { type: 'me', text: 'Yes, a lot of stress at work.' },
-      { type: 'them', text: 'That can affect your cycle. Let us start with a thyroid + PCOS panel. Sharing a plan now.' }
+      { type: 'them', text: 'That can affect your cycle. Dr. Sudha (gynaecologist) has a video slot tomorrow at 10 AM. Shall I book it for you?' }
     ];
 
     var timers = [];

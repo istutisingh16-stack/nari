@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My consultations — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="portal.css" />
+</head>
+<body class="portal loading">
+  <div class="page-loader" id="loader"><div class="ring"></div><p>Opening your space…</p></div>
+  <header class="dash-nav" id="nav"></header>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow">Your space</p>
+        <h1 id="greeting">Hi there</h1>
+        <p id="subline">Book a consultation or check on an upcoming one.</p>
+      </div>
+      <a href="#" target="_blank" rel="noreferrer" class="btn btn-wa btn-sm" id="waQuick"></a>
+    </div>
+
+    <div class="grid-2">
+      <!-- Booking -->
+      <section class="card" id="bookingCard">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Book a consultation</h2>
+            <p class="card-sub">Takes about a minute. A NARI care coordinator confirms your slot on WhatsApp.</p>
+          </div>
+          <span class="badge role">Step by step</span>
+        </div>
+
+        <form id="bookForm" class="stack" novalidate>
+          <div class="form-grid two">
+            <div class="field">
+              <label for="category">What would you like help with?</label>
+              <select class="select" id="category" required></select>
+            </div>
+            <div class="field">
+              <label for="doctorSel">Expert</label>
+              <select class="select" id="doctorSel"></select>
+              <span class="hint" id="doctorHint">Pick one, or let NARI match you.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="label">How would you like to consult?</span>
+            <div class="mode-cards" id="modeCards"></div>
+          </div>
+
+          <div class="form-grid two">
+            <div class="field">
+              <label for="date">Preferred date</label>
+              <input class="input" id="date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="time">Preferred time</label>
+              <select class="select" id="time" required></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="notes">Anything your expert should know? <span class="muted" style="font-weight:400">(optional)</span></label>
+            <textarea class="textarea" id="notes" maxlength="1000" placeholder="e.g. Irregular periods for 3 months, recent weight change."></textarea>
+          </div>
+
+          <div class="card tinted" style="padding:1.1rem 1.25rem">
+            <div class="form-grid two">
+              <div class="field">
+                <label for="refSel">How did you hear about us?</label>
+                <select class="select" id="refSel"></select>
+                <span class="hint">If a doctor referred you, they can follow your care.</span>
+              </div>
+              <div class="field">
+                <label for="refCode">Referral code <span class="muted" style="font-weight:400">(if you have one)</span></label>
+                <input class="input" id="refCode" type="text" placeholder="e.g. NH-SUDHA" autocapitalize="characters" style="text-transform:uppercase" />
+                <span class="hint" id="refCodeHint"></span>
+              </div>
+            </div>
+          </div>
+
+          <dl class="summary" id="summary"></dl>
+          <p class="form-error" id="bookErr" role="alert"></p>
+          <button type="submit" class="btn btn-primary btn-block" id="bookBtn">Request this slot
+            <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <p class="small muted" style="text-align:center">No subscriptions, no hidden charges. You pay only once your consultation is confirmed, and you can cancel any time before it starts.</p>
+        </form>
+      </section>
+
+      <!-- Appointments -->
+      <aside class="stack">
+        <section class="card">
+          <div class="card-head" style="margin-bottom:1rem">
+            <div>
+              <h2 class="card-title">Your consultations</h2>
+              <p class="card-sub" id="apptSub"></p>
+            </div>
+          </div>
+          <div class="tabs" id="apptTabs">
+            <button type="button" class="tab active" data-tab="upcoming">Upcoming <span class="count" id="cntUp">0</span></button>
+            <button type="button" class="tab" data-tab="past">Past <span class="count" id="cntPast">0</span></button>
+          </div>
+          <div class="tab-panel active" id="upcoming"><div class="appt-list" id="listUp"></div></div>
+          <div class="tab-panel" id="past"><div class="appt-list" id="listPast"></div></div>
+        </section>
+
+        <section class="card ink">
+          <h2 class="card-title">Not sure where to start?</h2>
+          <p class="card-sub">Tell our care coordinator what's going on. They'll point you to the right expert and help you pick a slot. No charge for asking.</p>
+          <a href="#" target="_blank" rel="noreferrer" class="btn btn-wa btn-sm" style="margin-top:1rem" id="waCard"></a>
+        </section>
+
+        <section class="card">
+          <div class="card-head" style="margin-bottom:0.75rem"><div><h2 class="card-title">Your details</h2><p class="card-sub">Used only to confirm and remind you about consultations.</p></div></div>
+          <dl class="kv" id="profile"></dl>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="dash-foot">© <span id="yr"></span> NARI Health · Not a substitute for emergency care · <a href="privacy.html">Privacy</a></footer>
+
+  <script src="portal-config.js"></script>
+  <script src="portal-data.js"></script>
+  <script src="portal.js"></script>
+  <script>
+  NariPortal.ready('member').then(function (me) {
+    if (!me) return;
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
+
+    $('yr').textContent = new Date().getFullYear();
+    UI.renderNav($('nav'), me, NP.MEMBER, me.phone ? NP.fmt.phone(me.phone) : (me.email || ''));
+    $('greeting').textContent = UI.greeting(NP.fmt.firstName(me.name));
+    var waMsg = 'Hi NARI Health, this is ' + me.name + '. I\'d like some help choosing a consultation.';
+    $('waQuick').innerHTML = UI.WA_SVG + 'Chat with us'; $('waQuick').href = NP.waLink(waMsg);
+    $('waCard').innerHTML = UI.WA_SVG + 'Message the care team'; $('waCard').href = NP.waLink(waMsg);
+    $('profile').innerHTML =
+      '<div><dt>Name</dt><dd>' + esc(me.name) + '</dd></div>' +
+      '<div><dt>WhatsApp</dt><dd>' + esc(NP.fmt.phone(me.phone)) + '</dd></div>' +
+      (me.email ? '<div><dt>Email</dt><dd>' + esc(me.email) + '</dd></div>' : '') +
+      '<div><dt>City</dt><dd>' + esc(me.city || '—') + '</dd></div>' +
+      '<div><dt>Signed in with</dt><dd>' + (me.provider === 'google' ? 'Google' : 'Mobile OTP') + '</dd></div>';
+
+    /* ---------- Form setup ---------- */
+    var catSel = $('category'), docSel = $('doctorSel'), refSel = $('refSel'), refCode = $('refCode'), dateEl = $('date'), timeEl = $('time');
+    catSel.innerHTML = '<option value="" disabled selected>Choose a concern</option>' + NP.CATEGORIES.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+
+    function fillDoctors() {
+      var cat = catSel.value; var docs = NP.doctors.list(true);
+      var match = cat ? docs.filter(function (d) { return (d.categories || []).indexOf(cat) >= 0; }) : [];
+      var others = docs.filter(function (d) { return match.indexOf(d) < 0; });
+      var prev = docSel.value;
+      var html = '<option value="">Let NARI choose for me</option>';
+      if (match.length) html += '<optgroup label="Recommended for ' + esc(cat) + '">' + match.map(opt).join('') + '</optgroup>';
+      if (others.length) html += '<optgroup label="' + (match.length ? 'Other experts' : 'NARI experts') + '">' + others.map(opt).join('') + '</optgroup>';
+      docSel.innerHTML = html;
+      if (prev && docs.some(function (d) { return d.id === prev; })) docSel.value = prev;
+      $('doctorHint').textContent = match.length ? match.length + ' expert' + (match.length > 1 ? 's' : '') + ' recommended for this concern.' : 'Pick one, or let NARI match you.';
+      function opt(d) { return '<option value="' + esc(d.id) + '">' + esc(d.name) + ' · ' + esc(d.role) + '</option>'; }
+    }
+    fillDoctors();
+    catSel.addEventListener('change', function () { fillDoctors(); updateSummary(); });
+
+    var modeIcon = { video: 'video', clinic: 'mapPin', audio: 'phone' };
+    $('modeCards').innerHTML = NP.MODES.map(function (m, i) {
+      return '<label class="mode-card"><input type="radio" name="mode" value="' + esc(m.id) + '"' + (i === 0 ? ' checked' : '') + '><span class="mc">' +
+        '<span class="mc-top"><span class="mc-ic">' + UI.icon(modeIcon[m.id] || 'heart', '') + '</span><span class="mc-price">' + esc(m.price) + '</span></span>' +
+        '<span class="mc-title">' + esc(m.label) + '</span><span class="mc-desc">' + esc(m.desc || '') + '</span></span></label>';
+    }).join('');
+
+    dateEl.min = NP.today(); dateEl.value = NP.daysFromToday(1);
+    timeEl.innerHTML = NP.SLOTS.map(function (t) { return '<option value="' + t + '">' + NP.fmt.time(t) + '</option>'; }).join('');
+    timeEl.value = NP.SLOTS.indexOf('10:00') >= 0 ? '10:00' : NP.SLOTS[0];
+
+    function fillRefs() {
+      var v = refSel.value;
+      refSel.innerHTML = '<option value="">Prefer not to say</option>' +
+        '<optgroup label="A NARI doctor">' + NP.doctors.list(true).map(function (d) { return '<option value="doctor:' + esc(d.id) + '">' + esc(d.name) + '</option>'; }).join('') + '</optgroup>' +
+        '<optgroup label="Somewhere else">' + NP.SOURCES.map(function (s) { return '<option value="source:' + esc(s) + '">' + esc(s) + '</option>'; }).join('') + '</optgroup>';
+      if (v) refSel.value = v;
+    }
+    fillRefs();
+
+    var pendingRef = NP.referral.capture();
+    if (pendingRef) { refCode.value = pendingRef.refCode; refSel.value = 'doctor:' + pendingRef.id; $('refCodeHint').textContent = 'Referred by ' + pendingRef.name + '.'; $('refCodeHint').style.color = 'var(--good)'; }
+
+    refCode.addEventListener('input', function () {
+      var d = NP.doctors.byRefCode(refCode.value);
+      if (d) { refSel.value = 'doctor:' + d.id; $('refCodeHint').textContent = 'Referred by ' + d.name + '.'; $('refCodeHint').style.color = 'var(--good)'; refCode.classList.remove('error'); }
+      else if (refCode.value.trim()) { $('refCodeHint').textContent = 'We don\'t recognise this code yet.'; $('refCodeHint').style.color = 'var(--critical)'; }
+      else { $('refCodeHint').textContent = ''; }
+      updateSummary();
+    });
+    refSel.addEventListener('change', function () {
+      var v = refSel.value;
+      if (v.indexOf('doctor:') === 0) { var d = NP.doctors.get(v.slice(7)); if (d) { refCode.value = d.refCode; $('refCodeHint').textContent = 'Referred by ' + d.name + '.'; $('refCodeHint').style.color = 'var(--good)'; } }
+      else { refCode.value = ''; $('refCodeHint').textContent = ''; }
+      updateSummary();
+    });
+
+    function currentRef() {
+      var v = refSel.value; if (!v) return null;
+      if (v.indexOf('doctor:') === 0) return { type: 'doctor', doctorId: v.slice(7), code: refCode.value.trim().toUpperCase() || null };
+      return { type: 'source', label: v.slice(7) };
+    }
+    function selectedMode() { var r = document.querySelector('input[name="mode"]:checked'); return r ? r.value : NP.MODES[0].id; }
+
+    function updateSummary() {
+      var doc = docSel.value ? NP.doctors.get(docSel.value) : null; var mode = NP.fmt.mode(selectedMode());
+      $('summary').innerHTML =
+        '<div><dt>Concern</dt><dd>' + esc(catSel.value || '—') + '</dd></div>' +
+        '<div><dt>Expert</dt><dd>' + esc(doc ? doc.name : 'NARI will match you') + '</dd></div>' +
+        '<div><dt>Mode</dt><dd>' + esc(mode.label) + (mode.price ? ' · ' + esc(mode.price) : '') + '</dd></div>' +
+        '<div><dt>When</dt><dd>' + esc(dateEl.value ? NP.fmt.date(dateEl.value) : '—') + ', ' + esc(NP.fmt.time(timeEl.value)) + '</dd></div>' +
+        '<div><dt>Referred by</dt><dd>' + esc(NP.referral.describe(currentRef())) + '</dd></div>';
+    }
+    ['change', 'input'].forEach(function (evt) { $('bookForm').addEventListener(evt, updateSummary); });
+    updateSummary();
+
+    $('bookForm').addEventListener('submit', function (e) {
+      e.preventDefault(); UI.showError('bookErr', '');
+      if (!catSel.value) { UI.showError('bookErr', 'Tell us what this consultation is about.'); catSel.focus(); return; }
+      if (!dateEl.value || dateEl.value < NP.today()) { UI.showError('bookErr', 'Pick a date from today onwards.'); dateEl.focus(); return; }
+      var btn = $('bookBtn'); UI.busy(btn, true, 'Booking…');
+      NP.appointments.create({ memberId: me.id, doctorId: docSel.value || null, category: catSel.value, mode: selectedMode(), date: dateEl.value, time: timeEl.value, notes: $('notes').value, referredBy: currentRef() }).then(function (a) {
+        UI.busy(btn, false);
+        NP.referral.clear();
+        UI.toast('<strong>Requested!</strong> Our care coordinator will confirm ' + esc(NP.fmt.date(a.date)) + ' at ' + esc(NP.fmt.time(a.time)) + ' on WhatsApp.', 'success', 5000);
+        $('notes').value = ''; catSel.selectedIndex = 0; fillDoctors(); updateSummary();
+        render();
+        if (window.innerWidth < 1024) $('apptTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, function () { UI.busy(btn, false); });
+    });
+
+    /* ---------- Appointments ---------- */
+    function actions(a) {
+      var html = '';
+      if (NP.appointments.isUpcoming(a)) html += '<button type="button" class="btn btn-ghost btn-xs" data-cancel="' + esc(a.id) + '">Cancel</button>';
+      var doc = a.doctorId ? NP.doctors.get(a.doctorId) : null;
+      var msg = 'Hi NARI Health, about my consultation on ' + NP.fmt.date(a.date) + ' at ' + NP.fmt.time(a.time) + (doc ? ' with ' + doc.name : '') + ' (' + a.category + ').';
+      html += '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="' + NP.waLink(msg) + '">WhatsApp</a>';
+      return html;
+    }
+    function render() {
+      var all = NP.appointments.forMember(me.id);
+      var up = all.filter(function (a) { return NP.appointments.isUpcoming(a); });
+      var past = all.filter(function (a) { return !NP.appointments.isUpcoming(a); }).reverse();
+      $('cntUp').textContent = up.length; $('cntPast').textContent = past.length;
+      $('apptSub').textContent = up.length ? 'Next: ' + NP.fmt.relative(up[0].date) + ' at ' + NP.fmt.time(up[0].time) : 'Nothing scheduled yet.';
+      $('listUp').innerHTML = up.length ? up.map(function (a) { return UI.apptCard(a, { who: 'member', actions: actions }); }).join('') :
+        '<div class="empty"><span class="em-ic">' + UI.icon('calendar') + '</span><strong>No upcoming consultations</strong>Use the form to book your first one.</div>';
+      $('listPast').innerHTML = past.length ? past.map(function (a) { return UI.apptCard(a, { who: 'member', actions: actions }); }).join('') :
+        '<div class="empty"><span class="em-ic">' + UI.icon('clock') + '</span><strong>No past consultations</strong>Your history will appear here.</div>';
+    }
+    document.addEventListener('click', function (e) {
+      var id = e.target.getAttribute && e.target.getAttribute('data-cancel');
+      if (!id) return;
+      UI.confirmDialog('Cancel this consultation?', 'You can always book again. Your expert will be told.', 'Yes, cancel', true).then(function (ok) {
+        if (!ok) return; NP.appointments.setStatus(id, 'cancelled'); UI.toast('Consultation cancelled.', 'info'); render();
+      });
+    });
+    UI.initTabs($('apptTabs'));
+    NP.subscribe(function () { fillDoctors(); fillRefs(); render(); });
+    render();
+    UI.pageReady();
+  });
+  </script>
+</body>
+</html>

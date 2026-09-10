@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member sign in — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="portal.css" />
+</head>
+<body class="portal">
+  <main class="auth-page">
+    <!-- Brand panel -->
+    <aside class="auth-panel member">
+      <div class="blob a"></div><div class="blob b"></div>
+      <a href="index.html" class="auth-brand">
+        <img src="https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/9acd6eddb9cebb990d19c12ee018b0f9.png" alt="NARI Health" />
+      </a>
+      <div class="auth-panel-copy">
+        <span class="auth-eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          For <span data-member-word="plural">Members</span>
+        </span>
+        <h1 class="auth-title">Your health, <em>on your terms.</em></h1>
+        <p class="auth-sub">Book a private consultation with a verified gynaecologist, psychologist, physiotherapist or nutritionist. One sign-in, no app, no waiting room.</p>
+        <ul class="auth-points">
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Book in under a minute</li>
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>Licence-verified experts only</li>
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Private. Only you and your expert see your bookings</li>
+        </ul>
+        <div class="auth-panel-quote">
+          <p>“Got a clear answer about my PCOS reports in one call. No panic-Googling at 2am.”</p>
+          <div class="who"><img src="https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png" alt="" /> Priya S. · Chennai</div>
+        </div>
+      </div>
+      <p class="auth-panel-foot">Trusted by 5,000+ women across India.</p>
+    </aside>
+
+    <!-- Form -->
+    <section class="auth-form-wrap">
+      <div class="bg-blob a"></div><div class="bg-blob b"></div>
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <span class="auth-role-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-member-word>Member</span></span>
+          <h1 id="cardTitle">Welcome to NARI</h1>
+          <p class="lead" id="cardLead">Sign in with Google or your mobile number. New here? We'll set you up in a moment.</p>
+        </div>
+
+        <div id="refBanner" class="ref-banner hidden" style="margin-bottom:1.25rem"></div>
+        <p class="form-error" id="errTop" role="alert" style="margin-bottom:1rem"></p>
+
+        <form class="auth-form" id="memberForm" novalidate>
+          <!-- Step 1: choose how to sign in -->
+          <div class="auth-step active" id="step1">
+            <div id="googleWrap"></div>
+            <div class="or">or</div>
+            <div class="field">
+              <label for="phone">Mobile number</label>
+              <div class="input-group">
+                <span class="prefix" id="cc">+91</span>
+                <input class="input" id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" maxlength="12" />
+              </div>
+              <span class="hint">We'll text you a one-time code. No spam, no calls without asking.</span>
+            </div>
+            <p class="form-error" id="err1" role="alert"></p>
+            <div id="recaptcha-holder"></div>
+            <button type="button" class="btn btn-primary btn-block" id="sendBtn">Send code
+              <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+            <label class="check"><input type="checkbox" id="agree" checked /> <span>I agree to the <a href="terms.html" target="_blank" style="color:var(--primary);font-weight:600">Terms</a> and <a href="privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Privacy Policy</a>.</span></label>
+          </div>
+
+          <!-- Step 2: one-time code -->
+          <div class="auth-step" id="step2">
+            <div class="otp-demo hidden" id="otpDemo" data-demo-only>
+              <span>Demo mode: your code is</span><strong id="otpCode">000000</strong>
+            </div>
+            <div class="field">
+              <label for="otp">Enter the 6-digit code sent to <span id="sentTo" style="color:var(--primary)"></span></label>
+              <input class="input otp-input" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" maxlength="6" />
+              <span class="hint"><button type="button" class="btn-link" id="changeNum">Change number</button> · <button type="button" class="btn-link" id="resend">Resend code</button></span>
+            </div>
+            <p class="form-error" id="err2" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-block" id="verifyBtn">Verify and continue
+              <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+
+          <!-- Step 3: finish profile (new members only) -->
+          <div class="auth-step" id="step3">
+            <div id="welcomePill"></div>
+            <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><span>You're verified. Tell us a little about you so your expert knows who they're talking to.</span></div>
+            <div class="form-grid two">
+              <div class="field"><label for="name">Your name</label><input class="input" id="name" type="text" autocomplete="name" placeholder="e.g. Ananya Gupta" /></div>
+              <div class="field"><label for="city">City <span class="muted" style="font-weight:400">(optional)</span></label><input class="input" id="city" type="text" autocomplete="address-level2" placeholder="e.g. Delhi" /></div>
+            </div>
+            <div class="field hidden" id="phoneField">
+              <label for="phone2">WhatsApp number</label>
+              <div class="input-group">
+                <span class="prefix">+91</span>
+                <input class="input" id="phone2" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" maxlength="12" />
+              </div>
+              <span class="hint">Our care coordinator confirms every booking on WhatsApp.</span>
+            </div>
+            <p class="form-error" id="err3" role="alert"></p>
+            <button type="button" class="btn btn-primary btn-block" id="finishBtn">Create my account
+              <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <details class="demo-box" data-demo-only>
+          <summary><svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Trying the demo?</summary>
+          <ul>
+            <li>Use any 10-digit number. The one-time code appears on screen instead of by SMS.</li>
+            <li>Returning demo member: <code>98765 01001</code> (Priya S.)</li>
+            <li>“Continue with Google” signs you in as a sample Google account.</li>
+          </ul>
+        </details>
+
+        <div class="auth-foot">
+          <span>Have a question before you book? <a id="waLink" href="#" target="_blank" rel="noreferrer">Chat with the NARI team on WhatsApp</a>.</span>
+        </div>
+        <div class="auth-switch">
+          <a href="doctor-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>Doctor sign in</a>
+          <a href="admin-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Team</a>
+          <a href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>All options</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="portal-config.js"></script>
+  <script src="portal-data.js"></script>
+  <script src="portal.js"></script>
+  <script>
+  (function () {
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
+    var next = UI.nextParam('member.html');
+    $('cc').textContent = NP.CONFIG.phoneCountryCode || '+91';
+    $('waLink').href = NP.waLink('Hi NARI Health, I have a question before booking.');
+    $('googleWrap').innerHTML = UI.googleButton('googleBtn', 'Continue with Google');
+    var errMsg = UI.param('error'); if (errMsg) UI.showError('errTop', errMsg);
+
+    var phoneEl = $('phone'), otpEl = $('otp');
+    var currentPhone = '', pendingAuth = null;
+
+    function fmtPhoneInput(input) { var v = input.value.replace(/\D/g, '').slice(0, 10); input.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; }
+    phoneEl.addEventListener('input', function () { fmtPhoneInput(phoneEl); });
+    $('phone2').addEventListener('input', function () { fmtPhoneInput($('phone2')); });
+    otpEl.addEventListener('input', function () { otpEl.value = otpEl.value.replace(/\D/g, '').slice(0, 6); if (otpEl.value.length === 6) verify(); });
+
+    function goStep(n) {
+      [1, 2, 3].forEach(function (i) { $('step' + i).classList.toggle('active', n === i); });
+      var t = $('cardTitle'), l = $('cardLead');
+      if (n === 1) { t.textContent = 'Welcome to NARI'; l.textContent = 'Sign in with Google or your mobile number. New here? We\'ll set you up in a moment.'; }
+      if (n === 2) { t.textContent = 'Check your phone'; l.textContent = 'Enter the code to finish signing in.'; setTimeout(function () { otpEl.focus(); }, 60); }
+      if (n === 3) { t.textContent = 'Almost there'; l.textContent = 'One last step and you can book your first consultation.'; setTimeout(function () { $('name').focus(); }, 60); }
+    }
+
+    function finishSignIn(user, isNew) {
+      UI.toast(isNew ? '<strong>Welcome to NARI, ' + esc(NP.fmt.firstName(user.name)) + '!</strong> Your account is ready.' : 'Welcome back, ' + esc(NP.fmt.firstName(user.name)) + '.', 'success', 2000);
+      setTimeout(function () { window.location.href = next; }, 400);
+    }
+    function startProfile(au) {
+      pendingAuth = au;
+      var needPhone = !au.phone;
+      $('phoneField').classList.toggle('hidden', !needPhone);
+      $('name').value = au.name || '';
+      $('welcomePill').innerHTML = au.email
+        ? '<span class="welcome-pill">' + UI.avatar({ name: au.name || au.email, img: au.photo }) + '<span>Signed in as <strong>' + esc(au.email) + '</strong></span></span>'
+        : '<span class="welcome-pill">' + UI.icon('phone', 'ic sm') + '<span>Verified <strong>' + esc(NP.fmt.phone(au.phone)) + '</strong></span></span>';
+      goStep(3);
+    }
+
+    /* ---- Already signed in? Referral banner? ---- */
+    NP.readyPublic().then(function () {
+      var refDoc = NP.referral.capture();
+      if (refDoc) {
+        var b = $('refBanner'); b.classList.remove('hidden');
+        b.innerHTML = UI.icon('shieldCheck', '') + '<span>You were referred by <strong>' + esc(refDoc.name) + '</strong>. We\'ll note that on your booking.</span>';
+      }
+      return NP.auth.resolve('member');
+    }).then(function (r) {
+      if (r.status === 'ok') { window.location.replace(next); return; }
+      if (r.status === 'new') startProfile(r.authUser);
+    });
+
+    /* ---- Google ---- */
+    $('googleBtn').addEventListener('click', function () {
+      UI.showError('err1', ''); UI.showError('errTop', '');
+      if (!$('agree').checked) { UI.showError('err1', 'Please accept the Terms and Privacy Policy to continue.'); return; }
+      var btn = $('googleBtn'); UI.busy(btn, true, 'Opening Google…');
+      NP.auth.signInWithGoogle('member').then(function (r) {
+        UI.busy(btn, false);
+        if (!r.ok) { UI.showError('err1', r.error); return; }
+        if (r.status === 'ok') finishSignIn(r.user, false); else startProfile(r.authUser);
+      });
+    });
+
+    /* ---- Phone OTP ---- */
+    function sendCode() {
+      UI.showError('err1', ''); UI.showError('errTop', '');
+      if (!$('agree').checked) { UI.showError('err1', 'Please accept the Terms and Privacy Policy to continue.'); return; }
+      var btn = $('sendBtn'); UI.busy(btn, true, 'Sending…');
+      NP.auth.sendOtp(phoneEl.value, 'recaptcha-holder').then(function (r) {
+        UI.busy(btn, false);
+        if (!r.ok) { UI.showError('err1', r.error); phoneEl.classList.add('error'); return; }
+        phoneEl.classList.remove('error');
+        currentPhone = r.phone;
+        $('sentTo').textContent = NP.fmt.phone(r.phone);
+        if (r.demoCode) { $('otpCode').textContent = r.demoCode; $('otpDemo').classList.remove('hidden'); }
+        otpEl.value = '';
+        goStep(2);
+        UI.toast('Code sent to ' + NP.fmt.phone(r.phone) + (r.demoCode ? '. <strong>Demo code: ' + r.demoCode + '</strong>' : '.'), 'success');
+      });
+    }
+    $('sendBtn').addEventListener('click', sendCode);
+    phoneEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendCode(); } });
+    $('resend').addEventListener('click', sendCode);
+    $('changeNum').addEventListener('click', function () { goStep(1); });
+
+    var verifying = false;
+    function verify() {
+      if (verifying) return;
+      UI.showError('err2', '');
+      if (otpEl.value.length < 6) { UI.showError('err2', 'Enter the 6-digit code.'); return; }
+      verifying = true; var btn = $('verifyBtn'); UI.busy(btn, true, 'Checking…');
+      NP.auth.verifyOtp(currentPhone, otpEl.value).then(function (v) {
+        verifying = false; UI.busy(btn, false);
+        if (!v.ok) { UI.showError('err2', v.error); otpEl.classList.add('error'); return; }
+        otpEl.classList.remove('error');
+        if (v.status === 'ok') finishSignIn(v.user, false); else startProfile(v.authUser);
+      });
+    }
+    $('memberForm').addEventListener('submit', function (e) { e.preventDefault(); if ($('step2').classList.contains('active')) verify(); else if ($('step3').classList.contains('active')) finishProfile(); });
+
+    /* ---- Profile ---- */
+    function finishProfile() {
+      UI.showError('err3', '');
+      var name = $('name').value.trim();
+      if (name.length < 2) { UI.showError('err3', 'Please tell us your name.'); $('name').focus(); return; }
+      var phone = pendingAuth && pendingAuth.phone ? pendingAuth.phone : NP.normPhone($('phone2').value);
+      if (phone.length !== 10) { UI.showError('err3', 'Enter a valid 10-digit WhatsApp number so we can confirm your bookings.'); $('phone2').focus(); return; }
+      var btn = $('finishBtn'); UI.busy(btn, true, 'Creating your account…');
+      NP.members.completeProfile({ name: name, city: $('city').value, phone: phone }).then(function (m) {
+        finishSignIn(m, true);
+      }, function (e) { UI.busy(btn, false); UI.showError('err3', e && e.message || 'Could not save your details. Try again.'); });
+    }
+    $('finishBtn').addEventListener('click', finishProfile);
+  })();
+  </script>
+</body>
+</html>

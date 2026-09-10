@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team console — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="portal.css" />
+</head>
+<body class="portal loading">
+  <div class="page-loader" id="loader"><div class="ring"></div><p>Loading the console…</p></div>
+  <header class="dash-nav" id="nav"></header>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow">Team console</p>
+        <h1>Everything, at a glance</h1>
+        <p id="subline"></p>
+      </div>
+      <div class="tabs" id="tabs">
+        <button type="button" class="tab active" data-tab="overview">Overview</button>
+        <button type="button" class="tab" data-tab="appointments">Consultations <span class="count" id="cApt">0</span></button>
+        <button type="button" class="tab" data-tab="members"><span data-member-word="plural">Members</span> <span class="count" id="cMem">0</span></button>
+        <button type="button" class="tab" data-tab="doctors">Doctors <span class="count" id="cDoc">0</span></button>
+        <button type="button" class="tab" data-tab="settings">Settings</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel active" id="overview">
+      <div class="stats" id="stats"></div>
+      <div class="grid-2 section-gap">
+        <section class="card">
+          <div class="card-head"><div><h2 class="card-title">Needs attention</h2><p class="card-sub">Pending requests and today's confirmed consultations.</p></div><button type="button" class="btn btn-ghost btn-xs" data-goto="appointments">View all</button></div>
+          <div class="appt-list" id="attention"></div>
+        </section>
+        <aside class="stack">
+          <section class="card">
+            <div class="card-head" style="margin-bottom:1rem"><div><h2 class="card-title">Where members come from</h2><p class="card-sub" id="refTotal"></p></div></div>
+            <div class="bars" id="refBars"></div>
+          </section>
+          <section class="card">
+            <div class="card-head" style="margin-bottom:1rem"><div><h2 class="card-title">Doctor referrals</h2><p class="card-sub">Members each doctor has brought in.</p></div></div>
+            <div class="plist" id="docRefs"></div>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="tab-panel" id="appointments">
+      <div class="toolbar">
+        <div class="input-group iconed grow"><input class="input" id="aptSearch" type="search" placeholder="Search name, phone or concern" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <select class="select" id="aptStatus"><option value="">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
+        <select class="select" id="aptDoctor"><option value="">All experts</option><option value="none">Unassigned</option></select>
+        <select class="select" id="aptWhen"><option value="">Any date</option><option value="upcoming">Upcoming</option><option value="past">Past</option></select>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="aptTable">
+          <thead><tr><th>When</th><th data-member-word>Member</th><th>Concern</th><th>Expert</th><th>Referred by</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="small muted" id="aptCount" style="margin-top:.75rem"></p>
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="tab-panel" id="members">
+      <div class="toolbar">
+        <div class="input-group iconed grow"><input class="input" id="memSearch" type="search" placeholder="Search by name, phone, email or city" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="memTable">
+          <thead><tr><th data-member-word>Member</th><th>City</th><th>Joined</th><th class="num">Visits</th><th>Next consultation</th><th>First referred by</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DOCTORS -->
+    <div class="tab-panel" id="doctors">
+      <div class="grid-2">
+        <section>
+          <div class="table-wrap">
+            <table class="table" id="docTable">
+              <thead><tr><th>Doctor</th><th>Referral code</th><th class="num">Referred</th><th class="num">Consultations</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+        <aside class="card">
+          <div class="card-head"><div><h2 class="card-title">Add a doctor</h2><p class="card-sub" data-live-only>They sign in with Google using this email. A referral code is generated automatically.</p><p class="card-sub" data-demo-only>They can sign in right away with the password you set. A referral code is generated automatically.</p></div></div>
+          <form id="docForm" class="stack" novalidate>
+            <div class="form-grid two">
+              <div class="field"><label for="dName">Full name</label><input class="input" id="dName" placeholder="Dr. Asha Menon" required /></div>
+              <div class="field"><label for="dRole">Speciality</label><input class="input" id="dRole" placeholder="Dermatologist" required /></div>
+            </div>
+            <div class="form-grid two">
+              <div class="field"><label for="dEmail">Google / work email</label><input class="input" id="dEmail" type="email" placeholder="asha@gmail.com" required /></div>
+              <div class="field"><label for="dExp">Experience</label><input class="input" id="dExp" placeholder="8 yrs" /></div>
+            </div>
+            <div class="field" data-demo-only><label for="dPw">Temporary password</label><input class="input" id="dPw" type="text" value="doctor123" /></div>
+            <div class="field"><span class="label">Handles these concerns</span><div class="chips" id="dCats"></div></div>
+            <p class="form-error" id="docErr" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-block">Add to panel</button>
+          </form>
+        </aside>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="settings">
+      <div class="grid-2 even">
+        <section class="card">
+          <h2 class="card-title">Team access</h2>
+          <p class="card-sub" data-live-only>People listed here can open this console with Google. The first admin is added directly in Firebase (see GO-LIVE.md).</p>
+          <p class="card-sub" data-demo-only>Demo admins sign in with the password <code>admin123</code>.</p>
+          <div class="plist" id="adminList" style="margin-top:1rem"></div>
+          <form id="adminForm" class="form-grid two" style="margin-top:1rem" novalidate>
+            <div class="field"><label for="aName">Name</label><input class="input" id="aName" placeholder="Istuti" /></div>
+            <div class="field"><label for="aEmail">Google email</label><input class="input" id="aEmail" type="email" placeholder="name@gmail.com" /></div>
+            <p class="form-error" id="adminErr" role="alert" style="grid-column:1/-1"></p>
+            <button type="submit" class="btn btn-dark btn-sm" style="grid-column:1/-1;justify-self:start">Add team member</button>
+          </form>
+        </section>
+        <div class="stack">
+          <section class="card">
+            <h2 class="card-title">Data</h2>
+            <p class="card-sub" id="dataSub"></p>
+            <div class="row" style="margin-top:1.25rem">
+              <button type="button" class="btn btn-ghost btn-sm" id="exportBtn">Download JSON</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="seedBtn">Add website experts to panel</button>
+              <button type="button" class="btn btn-dark btn-sm" id="resetBtn" data-demo-only>Reset demo data</button>
+            </div>
+          </section>
+          <section class="card">
+            <h2 class="card-title">Status</h2>
+            <dl class="kv" id="statusKv" style="margin-top:0.75rem"></dl>
+            <div class="notice" style="margin-top:1rem" data-demo-only><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>This is demo mode: data lives in this browser only. Paste your Firebase config into <strong>portal-config.js</strong> to go live with Google sign-in, phone OTP and a shared database. Steps are in <strong>GO-LIVE.md</strong>.</span></div>
+            <div class="notice ok" style="margin-top:1rem" data-live-only><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><span>Live. Sign-in is handled by Firebase Authentication and access is enforced by <strong>firestore.rules</strong>. Changes here appear for everyone within seconds.</span></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="dash-foot">© <span id="yr"></span> NARI Health · Team console</footer>
+
+  <script src="portal-config.js"></script>
+  <script src="portal-data.js"></script>
+  <script src="portal.js"></script>
+  <script>
+  NariPortal.ready('admin').then(function (me) {
+    if (!me) return;
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
+    $('yr').textContent = new Date().getFullYear();
+    UI.renderNav($('nav'), me, 'Team', me.email);
+    $('subline').textContent = 'Today is ' + NP.fmt.date(NP.today()) + '.';
+    $('dataSub').textContent = NP.isLive ? 'Download a snapshot of everything currently loaded, or import the experts listed on the website.' : 'This prototype stores everything in this browser only. Export a snapshot or reset to the demo dataset.';
+
+    function tile(label, value, delta) { return '<div class="stat"><span class="label"><span class="dot"></span>' + esc(label) + '</span><span class="value">' + value + '</span><span class="delta">' + esc(delta) + '</span></div>'; }
+
+    /* ---------- Overview ---------- */
+    function renderOverview() {
+      var all = NP.appointments.list(); var today = NP.today();
+      var pending = all.filter(function (a) { return a.status === 'pending'; });
+      var todays = all.filter(function (a) { return a.date === today && a.status !== 'cancelled'; });
+      var upcoming = all.filter(NP.appointments.isUpcoming);
+      var docRefCount = all.filter(function (a) { return a.referredBy && a.referredBy.type === 'doctor'; }).length;
+      $('stats').innerHTML =
+        tile('Consultations', all.length, upcoming.length + ' upcoming') +
+        tile('Pending confirmation', pending.length, pending.length ? 'Confirm below' : 'All confirmed') +
+        tile('Today', todays.length, todays.length ? 'Consultations scheduled' : 'Nothing scheduled today') +
+        tile('Doctor referrals', all.length ? Math.round(docRefCount / all.length * 100) + '%' : '0%', docRefCount + ' of ' + all.length + ' bookings');
+      $('cApt').textContent = all.length; $('cMem').textContent = NP.members.list().length; $('cDoc').textContent = NP.doctors.list().length;
+
+      var att = pending.filter(function (a) { return !NP.appointments.isPast(a); }).concat(todays.filter(function (a) { return a.status === 'confirmed'; }));
+      $('attention').innerHTML = att.length ? att.map(function (a) { return UI.apptCard(a, { who: 'admin', actions: aptActions }); }).join('') :
+        '<div class="empty"><span class="em-ic">' + UI.icon('check') + '</span><strong>All clear</strong>No pending requests and nothing waiting today.</div>';
+
+      var br = NP.stats.referralBreakdown();
+      $('refTotal').textContent = br.total + ' bookings, all time';
+      $('refBars').innerHTML = br.rows.map(function (r) {
+        var pct = br.total ? Math.round(r.count / br.total * 100) : 0;
+        return '<div class="bar-row"><span class="bl">' + UI.icon(r.label.indexOf('Dr') === 0 ? 'stethoscope' : 'share', 'ic sm') + '<span>' + esc(r.label) + '</span></span><span class="bv">' + r.count + ' · ' + pct + '%</span><div class="track"><div class="fill" style="width:' + pct + '%"></div></div></div>';
+      }).join('') || '<p class="small muted">No bookings yet.</p>';
+
+      $('docRefs').innerHTML = NP.doctors.list().map(function (d) {
+        var n = NP.appointments.membersReferredBy(d.id).length;
+        return '<div class="pitem"><div class="person">' + UI.avatar(d, 'sm') + '<div><div class="p-name">' + esc(d.name) + '</div><div class="p-sub">' + esc(d.role) + ' · ' + esc(d.refCode) + '</div></div></div><div class="stats-inline"><div><strong>' + n + '</strong>' + esc(NP.MEMBERS.toLowerCase()) + '</div></div></div>';
+      }).join('') || '<p class="small muted">No doctors on the panel yet. Add one under Doctors.</p>';
+    }
+
+    /* ---------- Appointments ---------- */
+    function aptActions(a) {
+      var h = '';
+      if (a.status === 'pending') h += '<button type="button" class="btn btn-primary btn-xs" data-status="confirmed" data-id="' + esc(a.id) + '">Confirm</button>';
+      if (a.status === 'confirmed') h += '<button type="button" class="btn btn-dark btn-xs" data-status="completed" data-id="' + esc(a.id) + '">Complete</button>';
+      if (a.status === 'pending' || a.status === 'confirmed') h += '<button type="button" class="btn btn-ghost btn-xs" data-status="cancelled" data-id="' + esc(a.id) + '">Cancel</button>';
+      if (a.status === 'cancelled') h += '<button type="button" class="btn btn-ghost btn-xs" data-status="pending" data-id="' + esc(a.id) + '">Reopen</button>';
+      var m = NP.members.get(a.memberId);
+      if (m && m.phone) h += '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="https://wa.me/91' + esc(m.phone) + '?text=' + encodeURIComponent('Hi ' + NP.fmt.firstName(m.name) + ', this is NARI Health about your consultation on ' + NP.fmt.date(a.date) + ' at ' + NP.fmt.time(a.time) + '.') + '">WhatsApp</a>';
+      return h;
+    }
+    function docOptions(sel) {
+      return '<option value=""' + (!sel ? ' selected' : '') + '>Unassigned</option>' + NP.doctors.list().map(function (d) { return '<option value="' + esc(d.id) + '"' + (sel === d.id ? ' selected' : '') + (!d.active ? ' disabled' : '') + '>' + esc(d.name) + '</option>'; }).join('');
+    }
+    function renderAppointments() {
+      var q = $('aptSearch').value.trim().toLowerCase(), st = $('aptStatus').value, dsel = $('aptDoctor').value, when = $('aptWhen').value;
+      var list = NP.appointments.list().slice().reverse().filter(function (a) {
+        var m = NP.members.get(a.memberId) || { name: '', phone: '' };
+        if (q && (m.name + ' ' + m.phone + ' ' + a.category).toLowerCase().indexOf(q) < 0) return false;
+        if (st && a.status !== st) return false;
+        if (dsel === 'none' && a.doctorId) return false; if (dsel && dsel !== 'none' && a.doctorId !== dsel) return false;
+        if (when === 'upcoming' && NP.appointments.isPast(a)) return false; if (when === 'past' && !NP.appointments.isPast(a)) return false;
+        return true;
+      });
+      if (when === 'upcoming') list.reverse();
+      $('aptTable').querySelector('tbody').innerHTML = list.map(function (a) {
+        var m = NP.members.get(a.memberId); var mode = NP.fmt.mode(a.mode);
+        return '<tr>' +
+          '<td><div style="font-weight:600">' + esc(NP.fmt.date(a.date)) + '</div><div class="small muted">' + esc(NP.fmt.time(a.time)) + ' · ' + esc(NP.fmt.relative(a.date)) + '</div></td>' +
+          '<td><div class="person">' + UI.avatar(m, 'sm') + '<div><div class="p-name">' + esc(m ? m.name : '—') + '</div><div class="p-sub">' + esc(m ? NP.fmt.phone(m.phone) : '') + '</div></div></div></td>' +
+          '<td><div>' + esc(a.category) + '</div><div class="small muted">' + esc(mode.label) + '</div>' + (a.notes ? '<div class="small muted" title="' + esc(a.notes) + '" style="max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">“' + esc(a.notes) + '”</div>' : '') + '</td>' +
+          '<td><select class="select" style="padding:.45rem 2.2rem .45rem .7rem;font-size:.8125rem;min-width:11rem;background-color:#fff" data-assign="' + esc(a.id) + '">' + docOptions(a.doctorId) + '</select></td>' +
+          '<td>' + esc(NP.referral.describe(a.referredBy)) + '</td>' +
+          '<td>' + UI.statusBadge(a.status) + '</td>' +
+          '<td><div class="actions">' + aptActions(a) + '</div></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty" style="border:0">No consultations match these filters.</div></td></tr>';
+      $('aptCount').textContent = 'Showing ' + list.length + ' of ' + NP.appointments.list().length + ' consultations.';
+    }
+    ['aptSearch', 'aptStatus', 'aptDoctor', 'aptWhen'].forEach(function (id) { $(id).addEventListener(id === 'aptSearch' ? 'input' : 'change', renderAppointments); });
+    document.addEventListener('change', function (e) {
+      var id = e.target.getAttribute && e.target.getAttribute('data-assign'); if (!id) return;
+      NP.appointments.assignDoctor(id, e.target.value); UI.toast(e.target.value ? 'Expert assigned.' : 'Expert unassigned.', 'success'); renderOverview(); renderMembers(); renderDoctors();
+    });
+
+    /* ---------- Members ---------- */
+    function renderMembers() {
+      var q = $('memSearch').value.trim().toLowerCase();
+      var rows = NP.members.list().filter(function (m) { return !q || (m.name + ' ' + m.phone + ' ' + (m.email || '') + ' ' + (m.city || '')).toLowerCase().indexOf(q) >= 0; }).sort(function (a, b) { return (a.createdAt || '') < (b.createdAt || '') ? 1 : -1; });
+      $('memTable').querySelector('tbody').innerHTML = rows.map(function (m) {
+        var apts = NP.appointments.forMember(m.id); var next = apts.filter(NP.appointments.isUpcoming)[0];
+        var firstRef = apts.slice().sort(function (a, b) { return a.createdAt > b.createdAt ? 1 : -1; })[0];
+        return '<tr>' +
+          '<td><div class="person">' + UI.avatar(m, 'sm') + '<div><div class="p-name">' + esc(m.name) + '</div><div class="p-sub">' + esc(NP.fmt.phone(m.phone)) + (m.email ? ' · ' + esc(m.email) : '') + '</div></div></div></td>' +
+          '<td>' + esc(m.city || '—') + '</td><td>' + esc(NP.fmt.date(m.createdAt)) + '</td><td class="num">' + apts.length + '</td>' +
+          '<td>' + (next ? esc(NP.fmt.date(next.date)) + ' <span class="small muted">' + esc(NP.fmt.time(next.time)) + '</span>' : '<span class="muted">—</span>') + '</td>' +
+          '<td>' + esc(firstRef ? NP.referral.describe(firstRef.referredBy) : '—') + '</td>' +
+          '<td><div class="actions">' + (m.phone ? '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="https://wa.me/91' + esc(m.phone) + '">WhatsApp</a>' : '') + '<button type="button" class="btn btn-ghost btn-xs" data-view-mem="' + esc(m.id) + '">Consultations</button></div></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty" style="border:0">No ' + esc(NP.MEMBERS.toLowerCase()) + ' match.</div></td></tr>';
+    }
+    $('memSearch').addEventListener('input', renderMembers);
+
+    /* ---------- Doctors ---------- */
+    $('dCats').innerHTML = NP.CATEGORIES.map(function (c) { return '<label class="chip"><input type="checkbox" name="dcat" value="' + esc(c) + '"><span>' + esc(c) + '</span></label>'; }).join('');
+    function renderDoctors() {
+      $('docTable').querySelector('tbody').innerHTML = NP.doctors.list().map(function (d) {
+        return '<tr>' +
+          '<td><div class="person">' + UI.avatar(d, 'sm') + '<div><div class="p-name">' + esc(d.name) + '</div><div class="p-sub">' + esc(d.role) + ' · ' + esc(NP.doctors.emailOf(d.id) || 'no email on file') + '</div></div></div></td>' +
+          '<td><code style="font-weight:700;letter-spacing:.06em">' + esc(d.refCode) + '</code></td>' +
+          '<td class="num">' + NP.appointments.membersReferredBy(d.id).length + '</td><td class="num">' + NP.appointments.forDoctor(d.id).length + '</td>' +
+          '<td>' + (d.active ? '<span class="badge confirmed">' + UI.icon('check', '') + 'Active</span>' : '<span class="badge cancelled">' + UI.icon('x', '') + 'Paused</span>') + '</td>' +
+          '<td><div class="actions"><button type="button" class="btn btn-ghost btn-xs" data-copy="' + esc(NP.referral.linkFor(d.refCode)) + '">Copy link</button><button type="button" class="btn ' + (d.active ? 'btn-ghost' : 'btn-primary') + ' btn-xs" data-toggle-doc="' + esc(d.id) + '">' + (d.active ? 'Pause' : 'Activate') + '</button></div></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="6"><div class="empty" style="border:0">No doctors yet. Add one on the right, or use Settings → “Add website experts to panel”.</div></td></tr>';
+      var sel = $('aptDoctor').value;
+      $('aptDoctor').innerHTML = '<option value="">All experts</option><option value="none">Unassigned</option>' + NP.doctors.list().map(function (d) { return '<option value="' + esc(d.id) + '">' + esc(d.name) + '</option>'; }).join('');
+      $('aptDoctor').value = sel;
+    }
+    $('docForm').addEventListener('submit', function (e) {
+      e.preventDefault(); UI.showError('docErr', '');
+      var name = $('dName').value.trim(), role = $('dRole').value.trim(), email = $('dEmail').value.trim();
+      if (name.length < 3 || !role || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { UI.showError('docErr', 'Name, speciality and a valid email are required.'); return; }
+      if (NP.doctors.emailTaken(email)) { UI.showError('docErr', 'Someone with this email is already on the panel or team.'); return; }
+      var cats = Array.prototype.map.call(document.querySelectorAll('input[name="dcat"]:checked'), function (c) { return c.value; });
+      NP.doctors.create({ name: name, role: role, email: email, exp: $('dExp').value, password: $('dPw').value || 'doctor123', categories: cats }).then(function (d) {
+        UI.toast('<strong>' + esc(d.name) + '</strong> added. Referral code <strong>' + esc(d.refCode) + '</strong>.', 'success', 5000);
+        $('docForm').reset(); $('dPw').value = 'doctor123'; renderAll();
+      });
+    });
+
+    /* ---------- Settings ---------- */
+    function renderSettings() {
+      $('adminList').innerHTML = NP.staff.admins().map(function (a) {
+        return '<div class="pitem"><div class="person">' + UI.avatar(a, 'sm') + '<div><div class="p-name">' + esc(a.name || 'Team member') + '</div><div class="p-sub">' + esc(a.email) + '</div></div></div>' +
+          (a.email === me.email ? '<span class="badge neutral">You</span>' : '<button type="button" class="btn btn-ghost btn-xs" data-remove-admin="' + esc(a.email) + '">Remove</button>') + '</div>';
+      }).join('') || '<p class="small muted">No admins listed yet.</p>';
+      $('statusKv').innerHTML =
+        '<div><dt>Mode</dt><dd>' + (NP.isLive ? 'Live (Firebase)' : 'Demo (this browser)') + '</dd></div>' +
+        (NP.isLive ? '<div><dt>Project</dt><dd>' + esc(NP.CONFIG.firebase.projectId || '') + '</dd></div>' : '') +
+        '<div><dt>Doctors on panel</dt><dd>' + NP.doctors.list(true).length + ' active</dd></div>' +
+        '<div><dt>' + esc(NP.MEMBERS) + '</dt><dd>' + NP.members.list().length + '</dd></div>' +
+        '<div><dt>Consultations</dt><dd>' + NP.appointments.list().length + '</dd></div>' +
+        '<div><dt>WhatsApp line</dt><dd>+' + esc(NP.CONFIG.whatsapp || '') + '</dd></div>';
+    }
+    $('adminForm').addEventListener('submit', function (e) {
+      e.preventDefault(); UI.showError('adminErr', '');
+      var email = $('aEmail').value.trim(), name = $('aName').value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { UI.showError('adminErr', 'Enter a valid Google email.'); return; }
+      if (NP.doctors.emailTaken(email)) { UI.showError('adminErr', 'This email is already on the team or panel.'); return; }
+      NP.staff.addAdmin(email, name).then(function () { UI.toast(esc(email) + ' can now sign in to the console.', 'success'); $('adminForm').reset(); renderSettings(); });
+    });
+    $('exportBtn').addEventListener('click', function () {
+      var blob = new Blob([NP.exportJSON()], { type: 'application/json' }); var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'nari-portal-' + NP.today() + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    });
+    $('seedBtn').addEventListener('click', function () {
+      UI.confirmDialog('Add website experts?', 'Adds the doctors listed in portal-config.js to the panel. Doctors already on the panel are skipped.', 'Add experts').then(function (ok) {
+        if (!ok) return;
+        NP.doctors.seedFromConfig().then(function (n) { UI.toast(n ? n + ' expert' + (n === 1 ? '' : 's') + ' added to the panel.' : 'All website experts are already on the panel.', 'success'); renderAll(); });
+      });
+    });
+    $('resetBtn').addEventListener('click', function () {
+      UI.confirmDialog('Reset all demo data?', 'Every consultation, member and doctor added in this browser will be replaced with the demo dataset. You will be signed out.', 'Reset everything', true).then(function (ok) {
+        if (ok) { NP.resetDemo(); window.location.href = 'admin-login.html'; }
+      });
+    });
+
+    /* ---------- Delegated clicks ---------- */
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-status],[data-goto],[data-copy],[data-toggle-doc],[data-view-mem],[data-remove-admin]') : null; if (!t) return;
+      if (t.hasAttribute('data-goto')) { var tab = document.querySelector('.tab[data-tab="' + t.getAttribute('data-goto') + '"]'); if (tab) tab.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (t.hasAttribute('data-copy')) { UI.copyText(t.getAttribute('data-copy')).then(function (ok) { UI.toast(ok ? 'Referral link copied.' : 'Could not copy.', ok ? 'success' : 'error'); }); return; }
+      if (t.hasAttribute('data-toggle-doc')) { var d = NP.doctors.get(t.getAttribute('data-toggle-doc')); NP.doctors.update(d.id, { active: !d.active }); UI.toast(d.name + (d.active ? ' is active again.' : ' paused. They can no longer sign in or be booked.'), 'info'); renderAll(); return; }
+      if (t.hasAttribute('data-view-mem')) { var m = NP.members.get(t.getAttribute('data-view-mem')); $('aptSearch').value = m ? (m.phone || m.name) : ''; $('aptStatus').value = ''; $('aptDoctor').value = ''; $('aptWhen').value = ''; document.querySelector('.tab[data-tab="appointments"]').click(); renderAppointments(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (t.hasAttribute('data-remove-admin')) {
+        var em = t.getAttribute('data-remove-admin');
+        UI.confirmDialog('Remove ' + em + '?', 'They will no longer be able to open this console.', 'Remove', true).then(function (ok) { if (ok) NP.staff.remove(em).then(function () { UI.toast('Removed.', 'info'); renderSettings(); }); });
+        return;
+      }
+      var st = t.getAttribute('data-status'), id = t.getAttribute('data-id');
+      var go = function () { NP.appointments.setStatus(id, st); UI.toast('Consultation marked ' + st + '.', st === 'cancelled' ? 'info' : 'success'); renderAll(); };
+      if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'Remember to let the ' + NP.MEMBER.toLowerCase() + ' know on WhatsApp.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();
+    });
+
+    function renderAll() { renderDoctors(); renderOverview(); renderAppointments(); renderMembers(); renderSettings(); }
+    UI.initTabs($('tabs'));
+    NP.subscribe(renderAll);
+    renderAll();
+    UI.pageReady();
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor panel — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="portal.css" />
+</head>
+<body class="portal loading">
+  <div class="page-loader" id="loader"><div class="ring"></div><p>Opening your panel…</p></div>
+  <header class="dash-nav" id="nav"></header>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow">Doctor panel</p>
+        <h1 id="greeting">Welcome</h1>
+        <p id="subline"></p>
+      </div>
+      <div class="row">
+        <a href="#" class="btn btn-wa btn-sm" id="shareWa" target="_blank" rel="noreferrer"></a>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="grid-2 section-gap">
+      <section>
+        <div class="tabs" id="tabs">
+          <button type="button" class="tab active" data-tab="referred">Referred <span data-member-word="plural">members</span> <span class="count" id="cRef">0</span></button>
+          <button type="button" class="tab" data-tab="mine">My consultations <span class="count" id="cMine">0</span></button>
+          <button type="button" class="tab" data-tab="activity">Referral activity <span class="count" id="cAct">0</span></button>
+        </div>
+
+        <div class="tab-panel active" id="referred">
+          <div class="toolbar">
+            <div class="input-group iconed grow"><input class="input" id="searchRef" type="search" placeholder="Search by name or phone" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          </div>
+          <div class="plist" id="refList"></div>
+        </div>
+
+        <div class="tab-panel" id="mine">
+          <div class="toolbar">
+            <select class="select" id="mineFilter"><option value="upcoming">Upcoming</option><option value="all">All</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
+          </div>
+          <div class="appt-list" id="mineList"></div>
+        </div>
+
+        <div class="tab-panel" id="activity">
+          <p class="small muted" style="margin-bottom:1rem">Every consultation booked with you as the referrer, newest first, whichever expert it was with.</p>
+          <div class="appt-list" id="actList"></div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card ref-card">
+          <h2 class="card-title">Your referral code</h2>
+          <p class="card-sub">Share it with the women you see. When they book with it, they show up under Referred members and you can follow their care.</p>
+          <div class="ref-code" style="margin-top:1rem"><code id="refCode"></code><button type="button" class="btn btn-ghost btn-sm" id="copyCode">Copy</button></div>
+          <p class="ref-link" id="refLink"></p>
+          <div class="row" style="margin-top:1rem">
+            <button type="button" class="btn btn-ghost btn-sm" id="copyLink">Copy link</button>
+            <a href="#" class="btn btn-ghost btn-sm" id="shareWa2" target="_blank" rel="noreferrer">Share on WhatsApp</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head" style="margin-bottom:1rem"><h2 class="card-title">Your profile</h2><span class="badge confirmed">Verified</span></div>
+          <div class="person" id="profile"></div>
+          <div class="chips" id="profileCats" style="margin-top:1rem"></div>
+          <p class="small muted" style="margin-top:1rem">To change your details or availability, write to <a id="mailTo" href="#" style="color:var(--primary);font-weight:600"></a>.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="dash-foot">© <span id="yr"></span> NARI Health · Member data is confidential. Do not share screenshots.</footer>
+
+  <script src="portal-config.js"></script>
+  <script src="portal-data.js"></script>
+  <script src="portal.js"></script>
+  <script>
+  NariPortal.ready('doctor').then(function (me) {
+    if (!me) return;
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
+    var mail = NP.CONFIG.supportEmail || 'trust@narihealth.in'; $('mailTo').textContent = mail; $('mailTo').href = 'mailto:' + mail;
+
+    $('yr').textContent = new Date().getFullYear();
+    UI.renderNav($('nav'), me, 'Doctor', me.role);
+    $('greeting').textContent = UI.greeting(me.name);
+    $('subline').textContent = me.role + ' · NARI panel';
+
+    /* Referral card */
+    var link = NP.referral.linkFor(me.refCode);
+    var waMsg = 'Hi! I recommend NARI Health for verified women\'s health consultations. Book with my referral code ' + me.refCode + ' here: ' + link;
+    var waHref = 'https://wa.me/?text=' + encodeURIComponent(waMsg);
+    $('refCode').textContent = me.refCode; $('refLink').textContent = link;
+    $('shareWa').innerHTML = UI.WA_SVG + 'Share referral link'; $('shareWa').href = waHref; $('shareWa2').href = waHref;
+    $('copyCode').addEventListener('click', function () { UI.copyText(me.refCode).then(function (ok) { UI.toast(ok ? 'Code copied.' : 'Could not copy. Select it manually.', ok ? 'success' : 'error'); }); });
+    $('copyLink').addEventListener('click', function () { UI.copyText(link).then(function (ok) { UI.toast(ok ? 'Link copied.' : 'Could not copy. Select it manually.', ok ? 'success' : 'error'); }); });
+
+    /* Profile */
+    $('profile').innerHTML = UI.avatar(me, 'lg') + '<div><div class="p-name" style="font-size:1rem">' + esc(me.name) + '</div><div class="p-sub">' + esc(me.role) + (me.exp ? ' · ' + esc(me.exp) + ' experience' : '') + '</div><div class="p-sub">' + esc(me.email || '') + '</div></div>';
+    $('profileCats').innerHTML = (me.categories || []).map(function (c) { return '<span class="badge neutral">' + esc(c) + '</span>'; }).join('') || '<span class="small muted">No specialities listed.</span>';
+
+    /* Stats */
+    function renderStats() {
+      var refd = NP.appointments.membersReferredBy(me.id);
+      var refApts = NP.appointments.referredByDoctor(me.id);
+      var mine = NP.appointments.forDoctor(me.id);
+      var upcoming = mine.filter(NP.appointments.isUpcoming);
+      var pending = mine.filter(function (a) { return a.status === 'pending' && !NP.appointments.isPast(a); });
+      $('stats').innerHTML =
+        tile(NP.MEMBERS + ' you referred', refd.length, refApts.length + ' consultation' + (refApts.length === 1 ? '' : 's') + ' via your code') +
+        tile('Upcoming with you', upcoming.length, upcoming.length ? 'Next ' + NP.fmt.relative(upcoming[0].date).toLowerCase() : 'Nothing scheduled') +
+        tile('Awaiting your confirmation', pending.length, pending.length ? 'Confirm from My consultations' : 'All caught up') +
+        tile('Completed consultations', mine.filter(function (a) { return a.status === 'completed'; }).length, 'All time');
+      $('cRef').textContent = refd.length; $('cMine').textContent = mine.length; $('cAct').textContent = refApts.length;
+      function tile(label, value, delta) { return '<div class="stat"><span class="label"><span class="dot"></span>' + esc(label) + '</span><span class="value">' + value + '</span><span class="delta">' + esc(delta) + '</span></div>'; }
+    }
+
+    /* Referred members */
+    function renderReferred() {
+      var q = $('searchRef').value.trim().toLowerCase();
+      var rows = NP.appointments.membersReferredBy(me.id).filter(function (r) { return !q || r.member.name.toLowerCase().indexOf(q) >= 0 || (r.member.phone || '').indexOf(q.replace(/\D/g, '')) >= 0; });
+      if (!rows.length) { $('refList').innerHTML = '<div class="empty"><span class="em-ic">' + UI.icon('users') + '</span><strong>' + (q ? 'No matches' : 'No referred ' + NP.MEMBERS.toLowerCase() + ' yet') + '</strong>' + (q ? 'Try a different name or number.' : 'Share your referral code and they will appear here.') + '</div>'; return; }
+      $('refList').innerHTML = rows.map(function (r) {
+        var m = r.member; var open = r.appointments.filter(NP.appointments.isUpcoming).length;
+        return '<div class="pitem" data-pid="' + esc(m.id) + '">' +
+          '<div class="person">' + UI.avatar(m) + '<div><div class="p-name">' + esc(m.name) + '</div><div class="p-sub">' + esc(NP.fmt.phone(m.phone)) + (m.city ? ' · ' + esc(m.city) : '') + ' · referred ' + esc(NP.fmt.date(r.firstReferred)) + '</div></div></div>' +
+          '<div class="stats-inline"><div><strong>' + r.appointments.length + '</strong>visits</div><div><strong>' + open + '</strong>upcoming</div><div><strong>' + esc(r.lastVisit ? NP.fmt.date(r.lastVisit) : '—') + '</strong>last seen</div></div>' +
+          '<button type="button" class="btn btn-ghost btn-xs" data-expand="' + esc(m.id) + '">Details</button>' +
+          '<div class="appt-list hidden" id="exp_' + esc(m.id) + '" style="grid-column:1/-1;width:100%;margin-top:.5rem">' + r.appointments.slice().reverse().map(function (a) { return UI.apptCard(a, { who: 'doctor' }); }).join('') + '</div>' +
+        '</div>';
+      }).join('');
+    }
+    $('searchRef').addEventListener('input', renderReferred);
+
+    /* My consultations */
+    function mineActions(a) {
+      var html = '';
+      if (a.status === 'pending') html += '<button type="button" class="btn btn-primary btn-xs" data-status="confirmed" data-id="' + esc(a.id) + '">Confirm</button>';
+      if (a.status === 'confirmed') html += '<button type="button" class="btn btn-dark btn-xs" data-status="completed" data-id="' + esc(a.id) + '">Mark completed</button>';
+      if (a.status === 'pending' || a.status === 'confirmed') html += '<button type="button" class="btn btn-ghost btn-xs" data-status="cancelled" data-id="' + esc(a.id) + '">Cancel</button>';
+      var m = NP.members.get(a.memberId);
+      if (m && m.phone) html += '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="https://wa.me/91' + esc(m.phone) + '?text=' + encodeURIComponent('Hi ' + NP.fmt.firstName(m.name) + ', this is ' + me.name + ' from NARI Health about your consultation on ' + NP.fmt.date(a.date) + '.') + '">WhatsApp</a>';
+      return html;
+    }
+    function renderMine() {
+      var f = $('mineFilter').value; var list = NP.appointments.forDoctor(me.id);
+      if (f === 'upcoming') list = list.filter(NP.appointments.isUpcoming); else if (f !== 'all') list = list.filter(function (a) { return a.status === f; });
+      if (f !== 'upcoming') list = list.slice().reverse();
+      $('mineList').innerHTML = list.length ? list.map(function (a) { return UI.apptCard(a, { who: 'doctor', actions: mineActions }); }).join('') :
+        '<div class="empty"><span class="em-ic">' + UI.icon('calendar') + '</span><strong>Nothing here</strong>No consultations match this filter.</div>';
+    }
+    $('mineFilter').addEventListener('change', renderMine);
+
+    /* Referral activity */
+    function renderActivity() {
+      var list = NP.appointments.referredByDoctor(me.id).slice().reverse();
+      $('actList').innerHTML = list.length ? list.map(function (a) { return UI.apptCard(a, { who: 'doctor' }); }).join('') :
+        '<div class="empty"><span class="em-ic">' + UI.icon('share') + '</span><strong>No referral bookings yet</strong>Consultations booked with your code will show here.</div>';
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-status],[data-expand]') : null; if (!t) return;
+      var ex = t.getAttribute('data-expand');
+      if (ex) { var box = $('exp_' + ex); box.classList.toggle('hidden'); t.textContent = box.classList.contains('hidden') ? 'Details' : 'Hide'; return; }
+      var st = t.getAttribute('data-status'), id = t.getAttribute('data-id');
+      var go = function () { NP.appointments.setStatus(id, st); UI.toast('Marked as ' + st + '.', st === 'cancelled' ? 'info' : 'success'); renderAll(); };
+      if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'The ' + NP.MEMBER.toLowerCase() + ' will be notified by the NARI team.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();
+    });
+
+    function renderAll() { renderStats(); renderReferred(); renderMine(); renderActivity(); }
+    UI.initTabs($('tabs'));
+    NP.subscribe(renderAll);
+    renderAll();
+    UI.pageReady();
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor sign in — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="portal.css" />
+</head>
+<body class="portal">
+  <main class="auth-page">
+    <aside class="auth-panel doctor">
+      <div class="blob a"></div><div class="blob b"></div>
+      <a href="index.html" class="auth-brand">
+        <img src="https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/9acd6eddb9cebb990d19c12ee018b0f9.png" alt="NARI Health" />
+      </a>
+      <div class="auth-panel-copy">
+        <span class="auth-eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+          For NARI panel doctors
+        </span>
+        <h1 class="auth-title">Every member you refer, <em>in one calm view.</em></h1>
+        <p class="auth-sub">See who booked through your referral, what they came in for, and where they are in their care. Confirm and complete your own consultations too.</p>
+        <ul class="auth-points">
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Referred members, grouped and searchable</li>
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>Personal referral code and WhatsApp share link</li>
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Your upcoming consultations</li>
+        </ul>
+      </div>
+      <p class="auth-panel-foot">Access is by invitation from the NARI team. Need an account? Write to <a id="mailTo" href="#" style="color:#fff;text-decoration:underline"></a>.</p>
+    </aside>
+
+    <section class="auth-form-wrap">
+      <div class="bg-blob a"></div><div class="bg-blob b"></div>
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <span class="auth-role-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Verified doctor</span>
+          <h1>Doctor sign in</h1>
+          <p class="lead" data-live-only>Use the Google account whose email is registered with the NARI panel.</p>
+          <p class="lead" data-demo-only>Use the email registered with the NARI panel.</p>
+        </div>
+
+        <p class="form-error" id="err" role="alert" style="margin-bottom:1rem"></p>
+
+        <!-- Live: Google only -->
+        <div class="stack" data-live-only>
+          <div id="googleWrap"></div>
+          <p class="small muted" style="text-align:center;line-height:1.6">Only emails added by the NARI admin can open the doctor panel. Nothing to remember, nothing to reset.</p>
+        </div>
+
+        <!-- Demo: email + password -->
+        <form class="auth-form" id="doctorForm" novalidate data-demo-only>
+          <div class="field">
+            <label for="email">Work email</label>
+            <div class="input-group iconed">
+              <input class="input" id="email" type="email" autocomplete="username" placeholder="you@narihealth.in" required />
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+          </div>
+          <div class="field">
+            <div class="row between"><label for="password">Password</label><button type="button" class="btn-link small" id="forgot">Forgot password?</button></div>
+            <div class="input-group iconed">
+              <input class="input" id="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+              <button type="button" class="input-icon" data-toggle-pw="password" aria-label="Show password" style="display:flex;background:none;border:0;padding:0;color:var(--muted)"></button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-dark btn-block" id="loginBtn">Sign in to your panel
+            <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <details class="demo-box" data-demo-only>
+          <summary><svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Demo accounts</summary>
+          <ul id="demoList"></ul>
+          <p style="margin-top:.6rem">Password for all demo doctors: <code>doctor123</code></p>
+        </details>
+
+        <div class="auth-switch">
+          <a href="member-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-member-word>Member</span>&nbsp;sign in</a>
+          <a href="admin-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Team</a>
+          <a href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>All options</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="portal-config.js"></script>
+  <script src="portal-data.js"></script>
+  <script src="portal.js"></script>
+  <script>
+  (function () {
+    var NP = NariPortal, UI = PortalUI, $ = UI.$;
+    var next = UI.nextParam('doctor.html');
+    var mail = NP.CONFIG.supportEmail || 'trust@narihealth.in'; $('mailTo').textContent = mail; $('mailTo').href = 'mailto:' + mail;
+    var errMsg = UI.param('error'); if (errMsg) UI.showError('err', errMsg);
+    $('googleWrap').innerHTML = UI.googleButton('googleBtn', 'Sign in with Google');
+    UI.initPasswordToggles();
+
+    NP.readyPublic().then(function () { return NP.auth.resolve('doctor'); }).then(function (r) {
+      if (r.status === 'ok') { window.location.replace(next); return; }
+      if (!NP.isLive) {
+        var list = $('demoList');
+        NP.doctors.list().forEach(function (d) {
+          var email = NP.doctors.emailOf(d.id);
+          var li = document.createElement('li');
+          li.innerHTML = '<button type="button" data-email="' + UI.esc(email) + '">' + UI.esc(d.name) + '</button> · <code>' + UI.esc(email) + '</code>';
+          list.appendChild(li);
+        });
+        list.addEventListener('click', function (e) {
+          var em = e.target.getAttribute && e.target.getAttribute('data-email');
+          if (em) { $('email').value = em; $('password').value = 'doctor123'; $('password').focus(); }
+        });
+      }
+    });
+
+    $('googleBtn').addEventListener('click', function () {
+      UI.showError('err', ''); var btn = $('googleBtn'); UI.busy(btn, true, 'Opening Google…');
+      NP.auth.signInWithGoogle('doctor').then(function (r) {
+        UI.busy(btn, false);
+        if (!r.ok) { UI.showError('err', r.error); return; }
+        UI.toast('Welcome, ' + UI.esc(r.user.name) + '.', 'success', 1800);
+        setTimeout(function () { window.location.href = next; }, 300);
+      });
+    });
+
+    $('forgot').addEventListener('click', function () {
+      UI.toast('Password resets are handled by the NARI team. Write to <strong>' + UI.esc(mail) + '</strong>.', 'info', 5000);
+    });
+
+    $('doctorForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      UI.showError('err', '');
+      var email = $('email').value.trim(), pw = $('password').value;
+      if (!email || !pw) { UI.showError('err', 'Enter your email and password.'); return; }
+      var r = NP.auth.loginStaff('doctor', email, pw);
+      if (!r.ok) { UI.showError('err', r.error); $('password').classList.add('error'); return; }
+      UI.toast('Welcome, ' + UI.esc(r.user.name) + '.', 'success', 1800);
+      setTimeout(function () { window.location.href = next; }, 300);
+    });
+  })();
+  </script>
+</body>
+</html>
