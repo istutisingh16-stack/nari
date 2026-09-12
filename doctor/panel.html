@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Doctor panel — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="../favicon.ico" type="image/x-icon" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="portal.css" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../portal.css" />
 </head>
 <body class="portal loading">
   <div class="page-loader" id="loader"><div class="ring"></div><p>Opening your panel…</p></div>
@@ -24,6 +24,7 @@
         <p id="subline"></p>
       </div>
       <div class="row">
+        <button type="button" class="btn btn-primary btn-sm" id="addMemberBtn"></button>
         <a href="#" class="btn btn-wa btn-sm" id="shareWa" target="_blank" rel="noreferrer"></a>
       </div>
     </div>
@@ -33,7 +34,7 @@
     <div class="grid-2 section-gap">
       <section>
         <div class="tabs" id="tabs">
-          <button type="button" class="tab active" data-tab="referred">Referred <span data-member-word="plural">members</span> <span class="count" id="cRef">0</span></button>
+          <button type="button" class="tab active" data-tab="referred">My <span data-member-word="plural">members</span> <span class="count" id="cRef">0</span></button>
           <button type="button" class="tab" data-tab="mine">My consultations <span class="count" id="cMine">0</span></button>
           <button type="button" class="tab" data-tab="activity">Referral activity <span class="count" id="cAct">0</span></button>
         </div>
@@ -41,6 +42,7 @@
         <div class="tab-panel active" id="referred">
           <div class="toolbar">
             <div class="input-group iconed grow"><input class="input" id="searchRef" type="search" placeholder="Search by name or phone" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <select class="select" id="refFilter"><option value="">Everyone</option><option value="waiting">Not signed up yet</option><option value="active">Signed up</option></select>
           </div>
           <div class="plist" id="refList"></div>
         </div>
@@ -59,9 +61,28 @@
       </section>
 
       <aside class="stack">
+        <section class="card" id="addCard">
+          <div class="card-head" style="margin-bottom:1rem">
+            <div><h2 class="card-title">Add a <span data-member-word>member</span></h2><p class="card-sub">She appears in your list right away. When she signs in, she confirms her mobile number with an SMS code. If it is this number, her account is linked to you and she sees you as her referring doctor.</p></div>
+          </div>
+          <form id="inviteForm" class="stack" novalidate>
+            <div class="form-grid two">
+              <div class="field"><label for="iName">Full name</label><input class="input" id="iName" placeholder="e.g. Lakshmi Iyer" required /></div>
+              <div class="field"><label for="iPhone">Mobile number</label><div class="input-group"><span class="prefix">+91</span><input class="input" id="iPhone" type="tel" inputmode="numeric" placeholder="98765 43210" maxlength="12" required /></div><span class="hint">The number she will receive her sign-in code on.</span></div>
+            </div>
+            <div class="form-grid two">
+              <div class="field"><label for="iCity">City <span class="muted" style="font-weight:400">(optional)</span></label><input class="input" id="iCity" placeholder="e.g. Coimbatore" /></div>
+              <div class="field"><label for="iEmail">Email <span class="muted" style="font-weight:400">(optional, links Google sign-in)</span></label><input class="input" id="iEmail" type="email" placeholder="name@gmail.com" /></div>
+            </div>
+            <div class="field"><label for="iNote">Note for the NARI team <span class="muted" style="font-weight:400">(optional)</span></label><textarea class="textarea" id="iNote" style="min-height:70px" maxlength="500" placeholder="e.g. Post-natal follow-up, prefers mornings."></textarea></div>
+            <p class="form-error" id="inviteErr" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-block" id="inviteBtn">Add to my <span data-member-word="plural">members</span></button>
+          </form>
+        </section>
+
         <section class="card ref-card">
           <h2 class="card-title">Your referral code</h2>
-          <p class="card-sub">Share it with the women you see. When they book with it, they show up under Referred members and you can follow their care.</p>
+          <p class="card-sub">Share it with the women you see. Bookings made with it show up under your members too.</p>
           <div class="ref-code" style="margin-top:1rem"><code id="refCode"></code><button type="button" class="btn btn-ghost btn-sm" id="copyCode">Copy</button></div>
           <p class="ref-link" id="refLink"></p>
           <div class="row" style="margin-top:1rem">
@@ -82,9 +103,9 @@
 
   <footer class="dash-foot">© <span id="yr"></span> NARI Health · Member data is confidential. Do not share screenshots.</footer>
 
-  <script src="portal-config.js"></script>
-  <script src="portal-data.js"></script>
-  <script src="portal.js"></script>
+  <script src="../portal-config.js"></script>
+  <script src="../portal-data.js"></script>
+  <script src="../portal.js"></script>
   <script>
   NariPortal.ready('doctor').then(function (me) {
     if (!me) return;
@@ -92,9 +113,11 @@
     var mail = NP.CONFIG.supportEmail || 'trust@narihealth.in'; $('mailTo').textContent = mail; $('mailTo').href = 'mailto:' + mail;
 
     $('yr').textContent = new Date().getFullYear();
-    UI.renderNav($('nav'), me, 'Doctor', me.role);
+    UI.renderNav($('nav'), me, 'Doctor', me.role, 'doctor');
     $('greeting').textContent = UI.greeting(me.name);
     $('subline').textContent = me.role + ' · NARI panel';
+    $('addMemberBtn').innerHTML = UI.icon('plus', 'ic sm') + 'Add a ' + NP.MEMBER.toLowerCase();
+    $('addMemberBtn').addEventListener('click', function () { $('addCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(function () { $('iName').focus(); }, 400); });
 
     /* Referral card */
     var link = NP.referral.linkFor(me.refCode);
@@ -109,15 +132,30 @@
     $('profile').innerHTML = UI.avatar(me, 'lg') + '<div><div class="p-name" style="font-size:1rem">' + esc(me.name) + '</div><div class="p-sub">' + esc(me.role) + (me.exp ? ' · ' + esc(me.exp) + ' experience' : '') + '</div><div class="p-sub">' + esc(me.email || '') + '</div></div>';
     $('profileCats').innerHTML = (me.categories || []).map(function (c) { return '<span class="badge neutral">' + esc(c) + '</span>'; }).join('') || '<span class="small muted">No specialities listed.</span>';
 
+    /* Add a member */
+    $('iPhone').addEventListener('input', function () { var v = this.value.replace(/\D/g, '').slice(0, 10); this.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; });
+    $('inviteForm').addEventListener('submit', function (e) {
+      e.preventDefault(); UI.showError('inviteErr', '');
+      var name = $('iName').value.trim();
+      if (name.length < 2) { UI.showError('inviteErr', 'Enter her name.'); $('iName').focus(); return; }
+      var btn = $('inviteBtn'); UI.busy(btn, true, 'Adding…');
+      NP.invites.create({ name: name, phone: $('iPhone').value, city: $('iCity').value, email: $('iEmail').value, note: $('iNote').value }, me.id).then(function (inv) {
+        UI.busy(btn, false); $('inviteForm').reset();
+        UI.toast('<strong>' + esc(inv.name) + '</strong> added. She will be linked to you when she signs in with ' + esc(NP.fmt.phone(inv.phone)) + '.', 'success', 6000);
+        renderAll();
+      }, function (err) { UI.busy(btn, false); UI.showError('inviteErr', err && err.message || 'Could not add.'); });
+    });
+
     /* Stats */
     function renderStats() {
       var refd = NP.appointments.membersReferredBy(me.id);
+      var waiting = refd.filter(function (r) { return r.invited && !r.signedUp; }).length;
       var refApts = NP.appointments.referredByDoctor(me.id);
       var mine = NP.appointments.forDoctor(me.id);
       var upcoming = mine.filter(NP.appointments.isUpcoming);
       var pending = mine.filter(function (a) { return a.status === 'pending' && !NP.appointments.isPast(a); });
       $('stats').innerHTML =
-        tile(NP.MEMBERS + ' you referred', refd.length, refApts.length + ' consultation' + (refApts.length === 1 ? '' : 's') + ' via your code') +
+        tile('Your ' + NP.MEMBERS.toLowerCase(), refd.length, waiting ? waiting + ' not signed up yet' : refApts.length + ' consultation' + (refApts.length === 1 ? '' : 's') + ' via you') +
         tile('Upcoming with you', upcoming.length, upcoming.length ? 'Next ' + NP.fmt.relative(upcoming[0].date).toLowerCase() : 'Nothing scheduled') +
         tile('Awaiting your confirmation', pending.length, pending.length ? 'Confirm from My consultations' : 'All caught up') +
         tile('Completed consultations', mine.filter(function (a) { return a.status === 'completed'; }).length, 'All time');
@@ -125,22 +163,34 @@
       function tile(label, value, delta) { return '<div class="stat"><span class="label"><span class="dot"></span>' + esc(label) + '</span><span class="value">' + value + '</span><span class="delta">' + esc(delta) + '</span></div>'; }
     }
 
-    /* Referred members */
+    /* My members */
     function renderReferred() {
-      var q = $('searchRef').value.trim().toLowerCase();
-      var rows = NP.appointments.membersReferredBy(me.id).filter(function (r) { return !q || r.member.name.toLowerCase().indexOf(q) >= 0 || (r.member.phone || '').indexOf(q.replace(/\D/g, '')) >= 0; });
-      if (!rows.length) { $('refList').innerHTML = '<div class="empty"><span class="em-ic">' + UI.icon('users') + '</span><strong>' + (q ? 'No matches' : 'No referred ' + NP.MEMBERS.toLowerCase() + ' yet') + '</strong>' + (q ? 'Try a different name or number.' : 'Share your referral code and they will appear here.') + '</div>'; return; }
+      var q = $('searchRef').value.trim().toLowerCase(), f = $('refFilter').value;
+      var rows = NP.appointments.membersReferredBy(me.id).filter(function (r) {
+        if (f === 'waiting' && !(r.invited && !r.signedUp)) return false;
+        if (f === 'active' && r.invited && !r.signedUp) return false;
+        return !q || (r.member.name || '').toLowerCase().indexOf(q) >= 0 || (r.member.phone || '').indexOf(q.replace(/\D/g, '')) >= 0;
+      });
+      if (!rows.length) { $('refList').innerHTML = '<div class="empty"><span class="em-ic">' + UI.icon('users') + '</span><strong>' + (q || f ? 'No matches' : 'No ' + NP.MEMBERS.toLowerCase() + ' yet') + '</strong>' + (q || f ? 'Try a different filter.' : 'Add the women you see, or share your referral code.') + '</div>'; return; }
       $('refList').innerHTML = rows.map(function (r) {
         var m = r.member; var open = r.appointments.filter(NP.appointments.isUpcoming).length;
+        var waiting = r.invited && !r.signedUp;
+        var inviteMsg = 'Hi ' + NP.fmt.firstName(m.name) + ', this is ' + me.name + '. I\'ve added you to NARI Health so you can book consultations easily. Sign in with this number here: ' + link;
         return '<div class="pitem" data-pid="' + esc(m.id) + '">' +
-          '<div class="person">' + UI.avatar(m) + '<div><div class="p-name">' + esc(m.name) + '</div><div class="p-sub">' + esc(NP.fmt.phone(m.phone)) + (m.city ? ' · ' + esc(m.city) : '') + ' · referred ' + esc(NP.fmt.date(r.firstReferred)) + '</div></div></div>' +
+          '<div class="person">' + UI.avatar(m) + '<div><div class="p-name">' + esc(m.name) + (waiting ? ' <span class="badge pending">' + UI.icon('clock', '') + 'Not signed up yet</span>' : r.invited ? ' <span class="badge confirmed">' + UI.icon('check', '') + 'Added by you</span>' : '') + '</div>' +
+            '<div class="p-sub">' + esc(NP.fmt.phone(m.phone)) + (m.city ? ' · ' + esc(m.city) : '') + (r.firstReferred ? ' · since ' + esc(NP.fmt.date(r.firstReferred)) : '') + '</div>' + (r.note ? '<div class="p-sub">“' + esc(r.note) + '”</div>' : '') + '</div></div>' +
           '<div class="stats-inline"><div><strong>' + r.appointments.length + '</strong>visits</div><div><strong>' + open + '</strong>upcoming</div><div><strong>' + esc(r.lastVisit ? NP.fmt.date(r.lastVisit) : '—') + '</strong>last seen</div></div>' +
-          '<button type="button" class="btn btn-ghost btn-xs" data-expand="' + esc(m.id) + '">Details</button>' +
-          '<div class="appt-list hidden" id="exp_' + esc(m.id) + '" style="grid-column:1/-1;width:100%;margin-top:.5rem">' + r.appointments.slice().reverse().map(function (a) { return UI.apptCard(a, { who: 'doctor' }); }).join('') + '</div>' +
+          '<div class="actions" style="display:flex;gap:.4rem">' +
+            (waiting && m.phone ? '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="https://wa.me/91' + esc(m.phone) + '?text=' + encodeURIComponent(inviteMsg) + '">Invite on WhatsApp</a>' : '') +
+            (r.appointments.length ? '<button type="button" class="btn btn-ghost btn-xs" data-expand="' + esc(m.id) + '">Details</button>' : '') +
+            (waiting ? '<button type="button" class="btn btn-ghost btn-xs" data-remove-invite="' + esc(m.phone) + '" title="Remove">' + UI.icon('x', 'ic sm') + '</button>' : '') +
+          '</div>' +
+          (r.appointments.length ? '<div class="appt-list hidden" id="exp_' + esc(m.id) + '" style="grid-column:1/-1;width:100%;margin-top:.5rem">' + r.appointments.slice().reverse().map(function (a) { return UI.apptCard(a, { who: 'doctor' }); }).join('') + '</div>' : '') +
         '</div>';
       }).join('');
     }
     $('searchRef').addEventListener('input', renderReferred);
+    $('refFilter').addEventListener('change', renderReferred);
 
     /* My consultations */
     function mineActions(a) {
@@ -165,13 +215,15 @@
     function renderActivity() {
       var list = NP.appointments.referredByDoctor(me.id).slice().reverse();
       $('actList').innerHTML = list.length ? list.map(function (a) { return UI.apptCard(a, { who: 'doctor' }); }).join('') :
-        '<div class="empty"><span class="em-ic">' + UI.icon('share') + '</span><strong>No referral bookings yet</strong>Consultations booked with your code will show here.</div>';
+        '<div class="empty"><span class="em-ic">' + UI.icon('share') + '</span><strong>No referral bookings yet</strong>Consultations booked by your ' + esc(NP.MEMBERS.toLowerCase()) + ' will show here.</div>';
     }
 
     document.addEventListener('click', function (e) {
-      var t = e.target.closest ? e.target.closest('[data-status],[data-expand]') : null; if (!t) return;
+      var t = e.target.closest ? e.target.closest('[data-status],[data-expand],[data-remove-invite]') : null; if (!t) return;
       var ex = t.getAttribute('data-expand');
       if (ex) { var box = $('exp_' + ex); box.classList.toggle('hidden'); t.textContent = box.classList.contains('hidden') ? 'Details' : 'Hide'; return; }
+      var ph = t.getAttribute('data-remove-invite');
+      if (ph) { UI.confirmDialog('Remove this ' + NP.MEMBER.toLowerCase() + '?', 'She has not signed up yet, so nothing else is affected.', 'Remove', true).then(function (ok) { if (ok) NP.invites.remove(ph).then(function () { UI.toast('Removed.', 'info'); renderAll(); }); }); return; }
       var st = t.getAttribute('data-status'), id = t.getAttribute('data-id');
       var go = function () { NP.appointments.setStatus(id, st); UI.toast('Marked as ' + st + '.', st === 'cancelled' ? 'info' : 'success'); renderAll(); };
       if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'The ' + NP.MEMBER.toLowerCase() + ' will be notified by the NARI team.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();

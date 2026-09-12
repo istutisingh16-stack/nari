@@ -8,7 +8,7 @@
   /* ---------- Data ---------- */
   var CATEGORIES = [
     { label: "Women's Health", tint: '#FCEEEE', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
-    { label: 'PMOS(PCOS)', tint: '#F3F0FF', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
+    { label: 'PCOS', tint: '#F3F0FF', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
     { label: 'Pregnancy', tint: '#FFF4E8', icon: '<path d="M9 12h6M12 9v6"/><circle cx="12" cy="12" r="10"/>' },
     { label: 'Periods', tint: '#FCEEEE', icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>' },
     { label: 'Mental Health', tint: '#EAF4FF', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/>' },
@@ -43,7 +43,10 @@
     ['How soon can I get a slot?', 'Most requests are confirmed within a few hours, often for the same or next day. Our care coordinator confirms on WhatsApp.'],
     ['Is my information private?', 'Yes. Your bookings are visible only to you, your expert and the NARI care coordinator. We never sell or share your data.'],
     ['Are the experts really verified?', 'Every professional is licence-verified and reviewed before joining the NARI panel.'],
-    ['Can I see a doctor in person?', 'Yes. Choose “Clinic visit” when you book and we will arrange a partner clinic near you.']
+    ['Can I see a doctor in person?', 'Yes. Choose “Clinic visit” when you book and we will arrange a partner clinic near you.'],
+    ['Which cities do you serve?', 'Video consultations are available anywhere in India. In-person physiotherapy and clinic visits are arranged in Bulandshahr, Noida, Greater Noida and across Delhi NCR (Delhi, Ghaziabad, Gurugram, Faridabad), with home physiotherapy visits on request.'],
+    ['Do you have female physiotherapists?', 'Yes. NARI is built for women, and our physiotherapy panel is led by women. You can ask for a female physiotherapist for pelvic floor, post-natal, PCOS-related or pain-related care, online or at a partner clinic near you.'],
+    ['Is NARI a good option for women\'s health near me if I am not in a metro?', 'Yes. Most of our members consult by video from home, including smaller cities and towns such as Bulandshahr, Khurja and Sikandrabad. Where we have partner clinics, you can choose an in-person visit instead.']
   ];
 
   var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';

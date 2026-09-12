@@ -97,6 +97,10 @@
 
       <!-- Appointments -->
       <aside class="stack">
+        <section class="card tinted hidden" id="refDocCard">
+          <div class="person"><span id="refDocAvatar"></span><div><p class="eyebrow" style="margin-bottom:.2rem">Your referring doctor</p><div class="p-name" style="font-size:1rem" id="refDocName"></div><div class="p-sub" id="refDocRole"></div></div></div>
+          <p class="small muted" style="margin-top:.85rem;line-height:1.55" id="refDocText"></p>
+        </section>
         <section class="card">
           <div class="card-head" style="margin-bottom:1rem">
             <div>
@@ -137,17 +141,17 @@
     var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
 
     $('yr').textContent = new Date().getFullYear();
-    UI.renderNav($('nav'), me, NP.MEMBER, me.phone ? NP.fmt.phone(me.phone) : (me.email || ''));
+    UI.renderNav($('nav'), me, NP.MEMBER, me.phone ? NP.fmt.phone(me.phone) : (me.email || ''), 'member');
     $('greeting').textContent = UI.greeting(NP.fmt.firstName(me.name));
     var waMsg = 'Hi NARI Health, this is ' + me.name + '. I\'d like some help choosing a consultation.';
     $('waQuick').innerHTML = UI.WA_SVG + 'Chat with us'; $('waQuick').href = NP.waLink(waMsg);
     $('waCard').innerHTML = UI.WA_SVG + 'Message the care team'; $('waCard').href = NP.waLink(waMsg);
     $('profile').innerHTML =
       '<div><dt>Name</dt><dd>' + esc(me.name) + '</dd></div>' +
-      '<div><dt>WhatsApp</dt><dd>' + esc(NP.fmt.phone(me.phone)) + '</dd></div>' +
+      '<div><dt>Mobile</dt><dd>' + esc(NP.fmt.phone(me.phone)) + ' <span class="badge confirmed" style="margin-left:.35rem">' + UI.icon('check', '') + 'Verified</span></dd></div>' +
       (me.email ? '<div><dt>Email</dt><dd>' + esc(me.email) + '</dd></div>' : '') +
       '<div><dt>City</dt><dd>' + esc(me.city || '—') + '</dd></div>' +
-      '<div><dt>Signed in with</dt><dd>' + (me.provider === 'google' ? 'Google' : 'Mobile OTP') + '</dd></div>';
+      '<div><dt>Signed in with</dt><dd>' + (me.email ? 'Google · mobile OTP' : 'Mobile OTP') + '</dd></div>';
 
     /* ---------- Form setup ---------- */
     var catSel = $('category'), docSel = $('doctorSel'), refSel = $('refSel'), refCode = $('refCode'), dateEl = $('date'), timeEl = $('time');
@@ -190,6 +194,13 @@
     fillRefs();
 
     var pendingRef = NP.referral.capture();
+    var myDoc = NP.members.referrerOf(me);
+    if (myDoc) {
+      $('refDocCard').classList.remove('hidden');
+      $('refDocAvatar').innerHTML = UI.avatar(myDoc, 'lg'); $('refDocName').textContent = myDoc.name; $('refDocRole').textContent = myDoc.role + (myDoc.exp ? ' · ' + myDoc.exp : '');
+      $('refDocText').textContent = myDoc.name + ' added you to NARI Health. Your bookings are noted as referred by ' + NP.fmt.firstName(myDoc.name.replace(/^dr\.?\s*/i, '')) + ', so they can follow your care. You can still book any expert.';
+      if (!pendingRef) pendingRef = myDoc;
+    }
     if (pendingRef) { refCode.value = pendingRef.refCode; refSel.value = 'doctor:' + pendingRef.id; $('refCodeHint').textContent = 'Referred by ' + pendingRef.name + '.'; $('refCodeHint').style.color = 'var(--good)'; }
 
     refCode.addEventListener('input', function () {
@@ -233,6 +244,7 @@
       NP.appointments.create({ memberId: me.id, doctorId: docSel.value || null, category: catSel.value, mode: selectedMode(), date: dateEl.value, time: timeEl.value, notes: $('notes').value, referredBy: currentRef() }).then(function (a) {
         UI.busy(btn, false);
         NP.referral.clear();
+        if (myDoc) { refSel.value = 'doctor:' + myDoc.id; refCode.value = myDoc.refCode; }
         UI.toast('<strong>Requested!</strong> Our care coordinator will confirm ' + esc(NP.fmt.date(a.date)) + ' at ' + esc(NP.fmt.time(a.time)) + ' on WhatsApp.', 'success', 5000);
         $('notes').value = ''; catSel.selectedIndex = 0; fillDoctors(); updateSummary();
         render();

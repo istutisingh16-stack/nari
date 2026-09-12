@@ -2,10 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /login.html
 Disallow: /member-login.html
-Disallow: /doctor-login.html
-Disallow: /admin-login.html
+Disallow: /doctor/
+Disallow: /admin/
 Disallow: /member.html
-Disallow: /doctor.html
-Disallow: /admin.html
 
 Sitemap: https://narihealth.in/sitemap.xml

@@ -20,13 +20,16 @@ cheapest way to get one plus Google and phone sign-in without running a server:
 | Need | Firebase free tier |
 |---|---|
 | Google sign-in | Free, unlimited |
-| Phone OTP by SMS | Test numbers are free; real SMS in India costs a few paise to about ₹1 each and needs the pay-as-you-go plan with a card on file. **Check the current price in the console before enabling for the public.** WhatsApp OTP is not available through Firebase (see below). |
+| Phone OTP by SMS | Test numbers are free. Real SMS needs the **Blaze (pay-as-you-go)** plan with a card on file; in India each code costs a few paise to about ₹1. **Check the current price in the console before enabling for the public.** WhatsApp OTP is not available through Firebase (see below). |
 | Database (Firestore) | 1 GiB storage, 50k reads / 20k writes per day. A clinic doing 200 bookings a day stays well inside this. |
 | Hosting | Not needed; GitHub Pages continues to serve the site |
 
-If you would rather avoid SMS cost entirely, keep only "Continue with Google"
-(delete the phone section of `member-login.html`). Members still enter their
-WhatsApp number in the profile step, so the care team can reach them.
+Member sign-in is **Google, then one SMS code** to confirm her mobile number.
+The number is linked to her Google account, so the SMS is sent **once per
+member**, not on every visit: later sign-ins with Google go straight in. That
+verified number is what links her to the doctor who added her. Until Phone
+sign-in billing is enabled, real numbers see "SMS codes are not switched on
+for this project yet"; test numbers (step 2) work regardless.
 
 ### Steps
 
@@ -44,9 +47,13 @@ as soon as it is deployed. Step 1 is done; start at step 2.
    to live the moment both are present.
 2. **Enable sign-in methods.**
    https://console.firebase.google.com/project/nari-health-33e31/authentication/providers
-   → enable **Google** (choose a support email) and **Phone**. Under Phone →
+   → enable **Google** (choose a support email), **Phone**, and
+   **Email/Password** (needed for doctor and team credentials). Under Phone →
    *Phone numbers for testing*, add your own number with a fixed code
    (e.g. `+91 98765 43210 → 123456`) so you can test without SMS charges.
+   For real members' numbers, upgrade the project to **Blaze** (Project
+   settings → Usage and billing) and set a budget alert; Firebase refuses to
+   send SMS on the free plan.
 3. **Authorise your domains.** Authentication → Settings → Authorized domains →
    add `narihealth.in`, `www.narihealth.in`, your `*.github.io` host, and
    `localhost`.
@@ -59,15 +66,25 @@ as soon as it is deployed. Step 1 is done; start at step 2.
    contents of `firestore.rules` → Publish.
 6. **Add the first admin.** Firestore → Data → Start collection `staff` →
    Document ID = your Google email (e.g. `istuti@gmail.com`) → fields
-   `role` = `admin` (string), `name` = `Istuti` (string) → Save.
+   `role` = `admin` (string), `name` = `Istuti` (string) → Save. Sign in at
+   `/admin/` with Google. Every further doctor or admin is created from the
+   console with an email and temporary password; nobody else needs the Firebase
+   console again.
 7. **Deploy.** Commit and push. GitHub Pages redeploys in about a minute.
-8. **Sign in** at `admin-login.html` with that Google account →
-   Settings → "Add website experts to panel" → this writes the four doctors
-   from `portal-config.js`. Edit their emails first if they will sign in.
-9. **Invite doctors.** Admin → Doctors → Add a doctor with their Gmail. They
-   open `doctor-login.html` and press "Sign in with Google". Nothing to reset.
-10. **Test as a member** from your phone: `member-login.html` → Google or your
-    test number → book → confirm it appears in the team console within seconds.
+8. **Sign in** at `/admin/` with that Google account → Team & settings →
+   "Add website experts to panel" → this writes the four doctors from
+   `portal-config.js` without passwords. Press **Reset password** next to each
+   to email them a set-password link, or add doctors one by one instead.
+9. **Add doctors.** Admin → Doctors → Add a doctor: name, speciality, sign-in
+   email and a temporary password (the console generates one). Share both with
+   the doctor privately. They open `/doctor/`, sign in, and can change the
+   password with "Forgot password". Doctors can then add their own members
+   from the panel.
+10. **Test as a member** from your phone: `member-login.html` → Google → your
+    test number → the fixed code → book → confirm it appears in the team
+    console within seconds. To test the doctor link, first add that same test
+    number from `/doctor/` → Add a member, then sign in as the member; the
+    doctor's name should appear under "Your referring doctor".
 
 ### Can the OTP come on WhatsApp instead of SMS, for free?
 
@@ -89,12 +106,12 @@ Short answer: **no, not for free, and not through Firebase.**
   in the normal WhatsApp app, so it would be a second number, not
   `+91 63995 07521`.
 
-What is free today: **Google sign-in**, unlimited. Most Indian smartphone
-users have a Google account, so it is a sensible default. SMS OTP costs a few
-paise to about a rupee per code on the pay-as-you-go plan; test numbers are
-free. If you later pass a few hundred sign-ups a day and want WhatsApp OTP,
-budget a day of setup and the per-message fee; the data layer already has
-`sendOtp` / `verifyOtp` as the only two functions that would change.
+What is free today: **Google sign-in**, unlimited. SMS OTP costs a few paise
+to about a rupee per code on the pay-as-you-go plan, and is sent once per
+member (the number stays linked to her account); test numbers are free. If
+you later pass a few hundred sign-ups a day and want WhatsApp OTP, budget a
+day of setup and the per-message fee; the data layer already has `sendOtp` /
+`verifyOtp` as the only two functions that would change.
 
 ### Costs to watch
 
@@ -103,6 +120,18 @@ budget a day of setup and the per-message fee; the data layer already has
 - Firestore reads are the only other meter. The console loads everything once
   and then listens for changes, which is cheap; avoid leaving twenty admin tabs
   open all day.
+
+### The three entrances
+
+| Who | URL | Listed on the website? |
+|---|---|---|
+| Members | `/member-login.html` | Yes ("Sign in" and "Book a consultation") |
+| Doctors | `/doctor/` | No. Share it with doctors directly. |
+| Team | `/admin/` | No. |
+
+Hiding the URLs is convenience, not the security. The security is that the
+`staff` list is writable only by admins, and anyone not on it is refused at
+sign-in even with a valid Google account or password.
 
 ### Security notes
 

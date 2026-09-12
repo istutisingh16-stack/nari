@@ -485,3 +485,9 @@ body.loading .dash-main, body.loading .dash-nav { visibility: hidden; }
   .auth-panel, .ref-card, .auth-float, .btn-primary { animation: none !important; }
   .role-card, .stat, .appt, .btn { transition: none !important; }
 }
+
+/* Firebase phone sign-in needs a reCAPTCHA token; the verifier is invisible and the badge is hidden.
+   Google permits hiding the badge only if the attribution text is visible on the page (member-login.html, step 2). */
+.grecaptcha-badge { visibility: hidden !important; }
+.recaptcha-note { font-size: 0.6875rem; color: var(--muted); text-align: center; line-height: 1.5; }
+.recaptcha-note a { color: var(--muted); text-decoration: underline; }

@@ -1,35 +1,41 @@
 # NARI Health
 
-> NARI is a women-led holistic health platform in India offering physiotherapy, psychology, and nutrition consultations — online and via home visits.
+> NARI Health is a women-led women's health platform in India. It connects women with licence-verified gynaecologists, female physiotherapists, psychologists and nutritionists for private video consultations anywhere in India, and clinic or home visits in Bulandshahr, Noida, Greater Noida and Delhi NCR (Delhi, Ghaziabad, Gurugram, Faridabad).
 
-NARI was founded to give women integrated, evidence-based care in a single place. The platform brings together certified physiotherapists, licensed psychologists, and clinical nutritionists who specialize in women's health concerns including PCOS, hormonal imbalance, pelvic floor conditions, mental wellness, and nutrition.
+NARI treats women as members, not patients. There are no subscriptions: a 25-minute private video consultation is ₹499 and clinic visits are quoted at booking. Bookings are confirmed by a care coordinator on WhatsApp. Members sign in with Google and a one-time SMS code. Doctors on the panel can refer members and follow their care.
 
 ## Services
 
-- **Physiotherapy** — Women's health physiotherapy: PCOS, pelvic floor, posture, chronic pain
-- **Psychology** — Evidence-based mental health support; understanding the emotional dimensions of women's health
-- **Nutrition** — Personalized nutrition plans; hormonal health, cycle syncing, long-term wellbeing
+- **Women's physiotherapy** — pelvic floor, post-natal recovery (back, core, diastasis recti), pregnancy pain, PCOS movement plans, neck/back/knee pain, menopause-related strength and balance. Female physiotherapists available. Best known for physiotherapy for women in Bulandshahr, Noida and Delhi NCR.
+- **Gynaecology** — periods, PCOS, pregnancy, menopause, general women's health.
+- **Psychology** — anxiety, low mood, stress, sleep.
+- **Nutrition** — PCOS, weight and hormonal nutrition.
 
-## Plans
+## Service areas
 
-- Saathi (Basic): ₹199/session — 1-on-1 consultation, basic assessment, session summary
-- Shakti (PRO): ₹2,999/month — 4 physio sessions, diet plan, mental support, 24/7 WhatsApp care, progress tracking
-- Sampurna (Premium): ₹7,499/month — Full hormonal reset protocol, all specialties, priority appointments, community access
+- Video consultations: anywhere in India.
+- In-person and home visits (through partner clinics, on request): Bulandshahr (incl. Khurja, Sikandrabad, Gulaothi, Anupshahr), Noida, Greater Noida, Noida Extension, Ghaziabad, Delhi, Gurugram, Faridabad.
+
+## Pricing
+
+- Video consultation (25 min): ₹499, paid only after the slot is confirmed.
+- Clinic or home visit: quoted at booking. No subscriptions or packages.
 
 ## Contact
 
-- Email: narihealthh@gmail.com
+- WhatsApp: +91 63995 07521
+- Email: trust@narihealth.in
 - Instagram: @_nari.health
 - Website: https://narihealth.in
-
-## Hours
-
-- Sunday: 9:00 AM – 6:00 PM
-- Monday: 11:00 AM – 2:00 PM
-- Tuesday – Friday: 9:00 AM – 6:00 PM
 
 ## Pages
 
 - [Home](https://narihealth.in/)
+- [Physiotherapy in Bulandshahr](https://narihealth.in/physiotherapy-bulandshahr.html)
+- [Physiotherapy in Noida](https://narihealth.in/physiotherapy-noida.html)
+- [Physiotherapy in Delhi NCR](https://narihealth.in/physiotherapy-delhi-ncr.html)
+- [Female physiotherapist near me](https://narihealth.in/female-physiotherapist-near-me.html)
+- [Women's health near me](https://narihealth.in/womens-health-near-me.html)
+- [Book a consultation](https://narihealth.in/member-login.html)
 - [Privacy Policy](https://narihealth.in/privacy.html)
 - [Terms of Service](https://narihealth.in/terms.html)

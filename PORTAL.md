@@ -6,10 +6,23 @@ two modes, chosen by `portal-config.js`:
 
 | Mode | When | Sign-in | Data |
 |---|---|---|---|
-| **Demo** | `firebase: null` (default) | Simulated Google, on-screen OTP, demo staff passwords | `localStorage` in this browser only |
-| **Live** | Firebase config pasted in | Google, phone OTP via SMS (Firebase Authentication) | Cloud Firestore, shared, protected by `firestore.rules` |
+| **Demo** | `firebase: null` | Simulated Google, on-screen OTP, demo staff passwords | `localStorage` in this browser only |
+| **Live** | Firebase config present (current) | Members: Google, then a one-time SMS code to their mobile (linked to the same account). Staff: email + password (or Google). All via Firebase Authentication | Cloud Firestore, shared, protected by `firestore.rules` |
 
 Going live is described step by step in [GO-LIVE.md](GO-LIVE.md).
+
+## Three separate entrances
+
+| Who | URL | How they get in |
+|---|---|---|
+| Members | `/member-login.html` (the only sign-in linked from the website) | Google first, then mobile number + 6-digit SMS OTP (once per account). Anyone can join. |
+| Doctors | `/doctor/` (unlisted, not linked anywhere public, `noindex`) | Email + password created by an admin, or Google with that same email. |
+| Team | `/admin/` (unlisted, `noindex`) | Email + password created by another admin, or Google with a listed email. |
+
+Nobody can become a doctor or admin by signing up: the `staff` collection is
+writable only by admins, and a person whose email is not in it is refused at
+sign-in even if they hold a valid Google or password account. `/login.html`
+simply forwards to the member sign-in.
 
 ## Vocabulary
 
@@ -22,23 +35,44 @@ WhatsApp is a **support channel**, not a product. There is no paid or
 subscription WhatsApp consult anywhere in the portal or the landing page.
 Consultation modes and prices live in `portal-config.js → modes`.
 
-## Pages
+## What each portal does
 
-| URL | Who | What |
-|---|---|---|
-| `login.html` | everyone | Role chooser. Linked from the navbar "Sign in". |
-| `member-login.html` | members | Continue with Google **or** mobile number + 6-digit OTP. New members finish a short profile (name, city, WhatsApp number). Accepts `?ref=NH-CODE` referral links. |
-| `doctor-login.html` | panel doctors | Live: Google sign-in with the email the team registered. Demo: email + password. |
-| `admin-login.html` | NARI team | Live: Google sign-in for emails in the `staff` collection with `role: admin`. Demo: email + password. |
-| `member.html` | members | Book a consultation (concern, expert, mode, date/time, notes, how they heard about NARI + referral code). Upcoming and past consultations, cancel, WhatsApp the care team. |
-| `doctor.html` | doctors | Stats, **referred members**, own consultations with confirm / complete / cancel, referral code + shareable link + WhatsApp share. |
-| `admin.html` | team | Overview (stat tiles, needs-attention queue, referral source breakdown, per-doctor referral counts), all consultations (search, filter, assign expert, change status), members, doctors (add, pause, copy referral link), settings (team access, export JSON, import website experts, status). |
+| Page | What |
+|---|---|
+| `member-login.html` | Four steps: **Continue with Google** → **mobile number** → **6-digit SMS code** → short profile (name, city; new members only). The verified number is linked to the Google account with `user.linkWithPhoneNumber`, so the ID token carries `phone_number`. On later visits Google alone signs her straight in. Accepts `?ref=NH-CODE` referral links. If a doctor had added this member with that number, her account is linked to that doctor automatically. |
+| `member.html` | Book a consultation (concern, expert, mode, date/time, notes, how they heard about NARI + referral code). Upcoming and past consultations, cancel, WhatsApp the care team. Shows **"Your referring doctor"** when a doctor added or referred her, and pre-fills the referral on every booking. |
+| `doctor/panel.html` | Stats; **My members** (women the doctor added, plus anyone who booked with the doctor's code), with "Not signed up yet" status, WhatsApp invite, and consultation history; **Add a member** form (name, phone, city, optional email and note); own consultations with confirm / complete / cancel; referral code + link + WhatsApp share. |
+| `admin/console.html` | Overview (stat tiles, needs-attention queue, referral source breakdown, per-doctor member counts); all consultations (search, filter, assign expert, change status); members including those added by doctors but not yet signed up; doctors (add with sign-in credentials, pause, reset password, copy referral link); team access (add admins with credentials, reset password, remove); export JSON; import website experts. |
+
+### Doctor-added members, end to end
+
+1. Doctor fills **Add a member** → an `invites/{phone}` document is written
+   with `doctorId`. She appears immediately in the doctor's list as
+   "Not signed up yet", and in the admin console.
+2. The doctor can press **Invite on WhatsApp** to send her the sign-in link.
+3. She signs in at `member-login.html` with Google and then confirms **that
+   same mobile number** with the SMS code. On her first load the portal finds
+   the invite, marks it claimed, and writes `referredByDoctorId` on her profile.
+   (If the doctor also recorded her email, the email match works as a fallback.)
+4. Her portal now shows the doctor under "Your referring doctor" and every
+   booking is pre-filled as referred by that doctor.
+5. The doctor's list flips her to signed up and shows her visits as they happen.
+
+Only a verified match claims an invite: the phone number she proved with the
+SMS code (`request.auth.token.phone_number`), or the email of the Google
+account she signed in with. Nobody can claim an invite by typing someone
+else's number, because the number on a profile must equal the verified one
+(`firestore.rules` → `phoneMatchesToken`).
+
+If a mobile number is already verified on a *different* Firebase account, the
+link step fails with a clear message ("already linked to a different NARI
+account"); she should sign in with the Google account she used before.
 
 ## Demo accounts (demo mode only)
 
 | Role | Sign in with |
 |---|---|
-| Member | any 10-digit number; the code is shown on screen. `98765 01001` is a returning demo member. "Continue with Google" signs in as a sample Google account. |
+| Member | "Continue with Google" signs in as a sample Google account (Kavita R.), then any 10-digit number; the code is shown on screen. `98765 01001` (Priya S.) and `98765 01003` (Kavita R.) are returning demo members. |
 | Doctor | `sudha@` / `hanifa@` / `nisha@` / `sneha@narihealth.in`, password `doctor123` |
 | Team | `admin@narihealth.in`, password `admin123` |
 
@@ -47,14 +81,15 @@ A referral link looks like `member-login.html?ref=NH-SUDHA`.
 
 ## How it is built
 
-- `portal-config.js` — the only file to edit to go live. Firebase config, brand
-  words, WhatsApp number, consultation modes, categories, seed doctors.
+- `portal-config.js` — Firebase config, brand words, WhatsApp number,
+  consultation modes, categories, seed doctors.
 - `portal-data.js` — the **only** file that reads or writes data. Exposes
   `NariPortal`. Pages call `NariPortal.ready(role)` and get a Promise for the
   signed-in user; after that every read is synchronous from an in-memory cache
   and writes update the cache first, then persist (localStorage or Firestore).
   In live mode Firestore listeners keep the cache fresh and pages re-render via
-  `NariPortal.subscribe(fn)`.
+  `NariPortal.subscribe(fn)`. `NariPortal.ROOT` is the absolute site root, so
+  pages under `/doctor/` and `/admin/` redirect correctly on any host.
 - `portal.js` — shared UI: icons, toasts, badges, consultation cards, navbar,
   tabs, confirm dialog, Google button, busy states, demo/live toggles
   (`data-demo-only`, `data-live-only`).
@@ -67,7 +102,8 @@ A referral link looks like `member-login.html?ref=NH-SUDHA`.
 |---|---|---|
 | `doctors` | `doctorId` | `name, role, exp, refCode, active, img, categories[]` — public, no email |
 | `staff` | email | `role: 'admin' \| 'doctor', doctorId?, name` (+ `password` in demo only) |
-| `members` | Firebase uid (demo: generated id) | `name, phone, email, city, img, provider, createdAt` |
+| `members` | Firebase uid (demo: generated id) | `name, phone, email, city, img, provider, createdAt, referredByDoctorId?` |
+| `invites` | 10-digit phone | `phone, phoneE164, name, city, email, note, doctorId, createdAt, claimedBy, claimedAt` |
 | `appointments` | generated id | `memberId, memberName, memberPhone, memberCity, doctorId, category, mode, date, time, notes, status, referredBy, referredDoctorId, createdAt` |
 
 Member details are copied onto each appointment so doctors can see who booked
@@ -77,14 +113,27 @@ duplicates the doctor id so Firestore can query it.
 
 ### Access (enforced by `firestore.rules`)
 
-- Members read and write their own profile, create their own bookings (always
-  `pending`), and may only change a booking's status to `cancelled`.
-- Doctors read bookings where they are the expert or the referrer, and may
-  change the status of their own consultations.
+- Members read their own profile. Writing it, and creating a booking (always
+  `pending`), requires the SMS-verified `phone_number` claim, and the `phone`
+  saved on the profile must be that number. Members may only change a
+  booking's status to `cancelled`.
+- Doctors read bookings where they are the expert or the referrer, change the
+  status of their own consultations, and create / read / remove their own
+  invites.
+- A signed-in member can read and claim only the invite that matches her
+  verified phone or her account email.
 - Admins read and write everything. Admin is granted by a `staff/{email}`
   document with `role: 'admin'`.
 - Doctor profiles are publicly readable so the booking form and referral links
   work before sign-in.
+
+### Staff credentials
+
+Admins create doctor and admin sign-ins from the console. The browser uses a
+second Firebase app instance to call `createUserWithEmailAndPassword`, so the
+admin stays signed in. If the email already has an account the record is still
+added and the person uses **Forgot password**. Admins can also send a
+password-reset email from the console.
 
 The portal pages are excluded from search engines via `robots.txt` and a
 `noindex` meta tag.

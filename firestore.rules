@@ -8,12 +8,25 @@ rules_version = '2';
 //   doctors/{doctorId}      public profile of a panel doctor (no email, no password)
 //   staff/{email}           { role: 'admin' | 'doctor', doctorId?, name }  — who may sign in as staff
 //   members/{uid}           one document per signed-in member, keyed by their Firebase uid
+//   invites/{phone}         a member added by a doctor before she signs up herself
 //   appointments/{id}       bookings; member details are copied on so doctors never read /members
+//
+// Members sign in with Google and then verify their mobile number by SMS code. The number is linked
+// to the same account, so request.auth.token.phone_number is present for every real member. Rules
+// below require it before a member can save a profile or book, and use it to match doctor invites.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    function hasEmail() { return signedIn() && request.auth.token.email is string && request.auth.token.email_verified == true; }
+    // A member who has completed the SMS step (Google-only accounts have no phone_number claim yet).
+    function phoneVerified() { return signedIn() && 'phone_number' in request.auth.token && request.auth.token.phone_number is string; }
+    // The 10-digit number saved on a profile must be the one verified on the account.
+    function phoneMatchesToken(p) { return p is string && p.matches('^[0-9]{10}$') && request.auth.token.phone_number.matches('^\\+[0-9]*' + p + '$'); }
+    // Staff sign in with email + password (created by an admin) or with Google.
+    function hasEmail() {
+      return signedIn() && request.auth.token.email is string
+        && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'password');
+    }
     function myEmail() { return request.auth.token.email; }
     function isStaff() { return hasEmail() && exists(/databases/$(database)/documents/staff/$(myEmail())); }
     function staffDoc() { return get(/databases/$(database)/documents/staff/$(myEmail())).data; }
@@ -21,6 +34,13 @@ service cloud.firestore {
     function isDoctor() { return isStaff() && staffDoc().role == 'doctor'; }
     function myDoctorId() { return staffDoc().doctorId; }
     function onlyChanges(fields) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields); }
+    // The invite belongs to the signed-in person if her verified phone or her account email matches.
+    function inviteIsMine() {
+      return signedIn() && (
+        (phoneVerified() && resource.data.phoneE164 == request.auth.token.phone_number)
+        || ('email' in request.auth.token && resource.data.email is string && resource.data.email != '' && resource.data.email == request.auth.token.email)
+      );
+    }
 
     // Doctors are public so the booking form and referral links work before sign-in.
     match /doctors/{doctorId} {
@@ -35,12 +55,25 @@ service cloud.firestore {
     }
 
     // Members own their profile. Admins can read everyone (for the console).
+    // Writing a profile needs the SMS-verified number, and the saved phone must be that number.
     match /members/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
-      allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['id', 'name', 'phone', 'email', 'city', 'img', 'provider', 'createdAt'])
-        && request.resource.data.name is string && request.resource.data.name.size() <= 80;
+      allow create, update: if phoneVerified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['id', 'name', 'phone', 'email', 'city', 'img', 'provider', 'createdAt', 'referredByDoctorId'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && phoneMatchesToken(request.resource.data.phone);
       allow delete: if isAdmin();
+    }
+
+    // Doctors add members; the member later claims the invite when she signs in.
+    match /invites/{phone} {
+      allow read: if isAdmin() || (isDoctor() && resource.data.doctorId == myDoctorId()) || inviteIsMine();
+      allow create: if isAdmin()
+        || (isDoctor() && request.resource.data.doctorId == myDoctorId() && request.resource.data.phone == phone && request.resource.data.claimedBy == null);
+      allow update: if isAdmin()
+        || (isDoctor() && resource.data.doctorId == myDoctorId())
+        || (inviteIsMine() && resource.data.claimedBy == null && onlyChanges(['claimedBy', 'claimedAt']) && request.resource.data.claimedBy == request.auth.uid);
+      allow delete: if isAdmin() || (isDoctor() && resource.data.doctorId == myDoctorId());
     }
 
     match /appointments/{id} {
@@ -48,9 +81,9 @@ service cloud.firestore {
         || (signedIn() && resource.data.memberId == request.auth.uid)
         || (isDoctor() && (resource.data.doctorId == myDoctorId() || resource.data.referredDoctorId == myDoctorId()));
 
-      // Members create their own bookings, always starting as pending.
+      // Members create their own bookings, always starting as pending. Only members with a verified number can book.
       allow create: if isAdmin()
-        || (signedIn() && request.resource.data.memberId == request.auth.uid
+        || (phoneVerified() && request.resource.data.memberId == request.auth.uid
             && request.resource.data.status == 'pending'
             && request.resource.data.notes is string && request.resource.data.notes.size() <= 1000);
 
