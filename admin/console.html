@@ -25,6 +25,7 @@
       </div>
       <div class="tabs" id="tabs">
         <button type="button" class="tab active" data-tab="overview">Overview</button>
+        <button type="button" class="tab" data-tab="leads">Enquiries <span class="count" id="cLead">0</span></button>
         <button type="button" class="tab" data-tab="appointments">Consultations <span class="count" id="cApt">0</span></button>
         <button type="button" class="tab" data-tab="members"><span data-member-word="plural">Members</span> <span class="count" id="cMem">0</span></button>
         <button type="button" class="tab" data-tab="doctors">Doctors <span class="count" id="cDoc">0</span></button>
@@ -34,6 +35,7 @@
 
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="overview">
+      <div class="notice hidden" id="leadBanner" style="margin-bottom:1.25rem;align-items:center"></div>
       <div class="stats" id="stats"></div>
       <div class="grid-2 section-gap">
         <section class="card">
@@ -50,6 +52,21 @@
             <div class="plist" id="docRefs"></div>
           </section>
         </aside>
+      </div>
+    </div>
+
+    <!-- LEADS (website call-back enquiries) -->
+    <div class="tab-panel" id="leads">
+      <div class="toolbar">
+        <div class="input-group iconed grow"><input class="input" id="leadSearch" type="search" placeholder="Search name, phone or concern" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <select class="select" id="leadStatus"><option value="open">New + contacted</option><option value="">All</option><option value="new">New</option><option value="contacted">Contacted</option><option value="booked">Booked</option><option value="closed">Closed</option></select>
+      </div>
+      <p class="small muted" style="margin-bottom:1rem">People who asked for a call back on the website. Call or WhatsApp them, then mark the outcome. When she books, mark <strong>Booked</strong> and add her as a member from the doctor panel or ask her to sign in.</p>
+      <div class="table-wrap">
+        <table class="table" id="leadTable">
+          <thead><tr><th>When</th><th>Who</th><th>Needs help with</th><th>Best time</th><th>Source</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
 
@@ -202,6 +219,39 @@
       }).join('') || '<p class="small muted">No doctors on the panel yet. Add one under Doctors.</p>';
     }
 
+    /* ---------- Leads ---------- */
+    function renderLeads() {
+      var q = $('leadSearch').value.trim().toLowerCase(), st = $('leadStatus').value;
+      var all = NP.leads.list();
+      var list = all.filter(function (l) {
+        if (st === 'open' && l.status !== 'new' && l.status !== 'contacted') return false;
+        if (st && st !== 'open' && l.status !== st) return false;
+        return !q || (l.name + ' ' + l.phone + ' ' + l.concern).toLowerCase().indexOf(q) >= 0;
+      });
+      var fresh = NP.leads.countNew();
+      $('cLead').textContent = fresh || all.length;
+      var b = $('leadBanner'); b.classList.toggle('hidden', !fresh);
+      if (fresh) b.innerHTML = UI.icon('phone', '') + '<span style="flex:1"><strong>' + fresh + ' new enquir' + (fresh === 1 ? 'y' : 'ies') + '</strong> from the website waiting for a call back.</span><button type="button" class="btn btn-primary btn-xs" data-goto="leads">Open enquiries</button>';
+      $('leadTable').querySelector('tbody').innerHTML = list.map(function (l) {
+        var wa = 'https://wa.me/91' + esc(l.phone) + '?text=' + encodeURIComponent('Hi ' + NP.fmt.firstName(l.name) + ', this is NARI Health. You asked for a call back about ' + l.concern + '. When is a good time to talk?');
+        return '<tr>' +
+          '<td><div style="font-weight:600">' + esc(NP.fmt.dateTime(l.createdAt)) + '</div><div class="small muted">' + esc(NP.fmt.ago(l.createdAt)) + '</div></td>' +
+          '<td><div class="person">' + UI.avatar({ name: l.name }, 'sm') + '<div><div class="p-name">' + esc(l.name) + '</div><div class="p-sub">' + esc(NP.fmt.phone(l.phone)) + '</div></div></div></td>' +
+          '<td>' + esc(l.concern) + '</td>' +
+          '<td>' + esc(NP.leads.TIMES[l.time] || l.time || '—') + '</td>' +
+          '<td class="small muted" style="max-width:14rem">' + esc(NP.leads.sourceOf(l)) + '</td>' +
+          '<td><select class="select" style="padding:.45rem 2.2rem .45rem .7rem;font-size:.8125rem;min-width:9rem;background-color:#fff" data-lead-status="' + esc(l.id) + '">' + NP.leads.STATUSES.map(function (s) { return '<option value="' + s + '"' + (s === l.status ? ' selected' : '') + '>' + NP.fmt.status(s) + '</option>'; }).join('') + '</select></td>' +
+          '<td><div class="actions"><a class="btn btn-soft btn-xs" href="tel:+91' + esc(l.phone) + '">Call</a><a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="' + wa + '">WhatsApp</a><button type="button" class="btn btn-ghost btn-xs" data-remove-lead="' + esc(l.id) + '" title="Delete">' + UI.icon('x', 'ic sm') + '</button></div></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty" style="border:0">No enquiries match. New call-back requests from the website appear here within seconds.</div></td></tr>';
+    }
+    $('leadSearch').addEventListener('input', renderLeads);
+    $('leadStatus').addEventListener('change', renderLeads);
+    document.addEventListener('change', function (e) {
+      var id = e.target.getAttribute && e.target.getAttribute('data-lead-status'); if (!id) return;
+      NP.leads.setStatus(id, e.target.value).then(function () { UI.toast('Enquiry marked ' + e.target.value + '.', 'success'); renderLeads(); });
+    });
+
     /* ---------- Appointments ---------- */
     function aptActions(a) {
       var h = '';
@@ -353,7 +403,8 @@
 
     /* ---------- Delegated clicks ---------- */
     document.addEventListener('click', function (e) {
-      var t = e.target.closest ? e.target.closest('[data-status],[data-goto],[data-copy],[data-toggle-doc],[data-view-mem],[data-remove-admin],[data-reset]') : null; if (!t) return;
+      var t = e.target.closest ? e.target.closest('[data-status],[data-goto],[data-copy],[data-toggle-doc],[data-view-mem],[data-remove-admin],[data-reset],[data-remove-lead]') : null; if (!t) return;
+      if (t.hasAttribute('data-remove-lead')) { var lid = t.getAttribute('data-remove-lead'); UI.confirmDialog('Delete this enquiry?', 'Use this only for spam or duplicates. Otherwise mark it Closed so you keep the history.', 'Delete', true).then(function (ok) { if (ok) NP.leads.remove(lid).then(function () { UI.toast('Enquiry deleted.', 'info'); renderLeads(); }); }); return; }
       if (t.hasAttribute('data-goto')) { var tab = document.querySelector('.tab[data-tab="' + t.getAttribute('data-goto') + '"]'); if (tab) tab.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
       if (t.hasAttribute('data-copy')) { UI.copyText(t.getAttribute('data-copy')).then(function (ok) { UI.toast(ok ? 'Referral link copied.' : 'Could not copy.', ok ? 'success' : 'error'); }); return; }
       if (t.hasAttribute('data-reset')) { var em = t.getAttribute('data-reset'); NP.auth.resetPassword(em).then(function (r) { UI.toast(r.ok ? 'Password reset email sent to <strong>' + esc(em) + '</strong>.' : esc(r.error), r.ok ? 'success' : 'error', 6000); }); return; }
@@ -369,7 +420,7 @@
       if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'Remember to let the ' + NP.MEMBER.toLowerCase() + ' know on WhatsApp.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();
     });
 
-    function renderAll() { renderDoctors(); renderOverview(); renderAppointments(); renderMembers(); renderSettings(); }
+    function renderAll() { renderDoctors(); renderOverview(); renderLeads(); renderAppointments(); renderMembers(); renderSettings(); }
     UI.initTabs($('tabs'));
     NP.subscribe(renderAll);
     renderAll();

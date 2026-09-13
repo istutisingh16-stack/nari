@@ -70,7 +70,7 @@
   function fail(msg) { emit('nari:error', { message: msg }); }
 
   /* ---------- in-memory cache (both backends) ---------- */
-  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [] };
+  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [] };
   var listeners = [];
   function notify() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
 
@@ -122,7 +122,11 @@
       { id: '9876501003', phone: '9876501003', phoneE164: CC + '9876501003', name: 'Kavita R.', city: 'Jaipur', email: 'kavita.r@gmail.com', note: '', doctorId: 'doc_sudha', createdAt: daysFromToday(-31), claimedBy: 'mem_3', claimedAt: daysFromToday(-30) }
     ];
     members[2].referredByDoctorId = 'doc_sudha';
-    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites };
+    var leads = [
+      { id: 'lead_demo1', name: 'Shalini Verma', phone: '9876503001', concern: 'PCOS', time: 'evening', page: 'home', ref: '', utm: { source: 'instagram', medium: 'social', campaign: '' }, status: 'new', createdAt: new Date(Date.now() - 3 * 3600e3).toISOString() },
+      { id: 'lead_demo2', name: 'Pooja Rathi', phone: '9876503002', concern: 'Physiotherapy / pain', time: 'morning', page: 'physiotherapy-bulandshahr', ref: 'NH-SUDHA', utm: { source: '', medium: '', campaign: '' }, status: 'contacted', createdAt: new Date(Date.now() - 30 * 3600e3).toISOString() }
+    ];
+    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites, leads: leads };
   }
 
   /* ====================================================================
@@ -134,6 +138,10 @@
     init: function () {
       var saved = read(DB_KEY);
       if (!saved || saved.version !== 3) { saved = seedDB(); write(DB_KEY, saved); }
+      if (!saved.leads) saved.leads = [];
+      /* Enquiries submitted from the public pages in demo mode land in a side key; fold them in. */
+      var pending = read('nari_portal_leads');
+      if (pending && pending.length) { pending.forEach(function (l) { if (indexOf(saved.leads, 'leads', l.id) < 0) saved.leads.push(l); }); remove('nari_portal_leads'); write(DB_KEY, saved); }
       db = saved;
       return Promise.resolve();
     },
@@ -204,6 +212,7 @@
     if (liveSets.members) db.members = liveSets.members;
     if (liveSets.staff) db.staff = liveSets.staff;
     if (liveSets.invites) db.invites = liveSets.invites;
+    if (liveSets.leads) db.leads = liveSets.leads;
   }
   var FIRST_LOAD_TIMEOUT = 12000;
   function watch(key, query) {
@@ -232,6 +241,7 @@
       jobs.push(watch('members', fs.collection('members')));
       jobs.push(watch('staff', fs.collection('staff')));
       jobs.push(watch('invites', fs.collection('invites')));
+      jobs.push(watch('leads', fs.collection('leads')));
     }
     if (!role) jobs.length = 1; /* login pages only need doctors for referral lookups */
     return Promise.all(jobs);
@@ -641,6 +651,28 @@
   };
 
   /* ====================================================================
+     LEADS — call-back enquiries from the public pages (lead-form.js writes them; admins work them here)
+     ==================================================================== */
+  var LEAD_STATUSES = ['new', 'contacted', 'booked', 'closed'];
+  var leads = {
+    STATUSES: LEAD_STATUSES,
+    TIMES: { morning: 'Morning (9 am – 12 pm)', afternoon: 'Afternoon (12 – 4 pm)', evening: 'Evening (4 – 8 pm)' },
+    list: function () { return db.leads.slice().sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : -1; }); },
+    get: function (id) { return byId(db.leads, id); },
+    countNew: function () { return db.leads.filter(function (l) { return l.status === 'new'; }).length; },
+    setStatus: function (id, status) { if (LEAD_STATUSES.indexOf(status) < 0) return Promise.reject(new Error('Bad status')); return store.patch('leads', id, { status: status }); },
+    remove: function (id) { return store.remove('leads', id); },
+    /* Where the enquiry came from, for the console: referring doctor, campaign, or page. */
+    sourceOf: function (l) {
+      var parts = [];
+      var d = l.ref ? doctors.byRefCode(l.ref) : null; if (d) parts.push('Referred by ' + d.name); else if (l.ref) parts.push('Code ' + l.ref);
+      if (l.utm && l.utm.source) parts.push(l.utm.source + (l.utm.campaign ? ' · ' + l.utm.campaign : ''));
+      parts.push(l.page === 'home' ? 'Home page' : String(l.page || '').replace(/-/g, ' '));
+      return parts.join(' · ');
+    }
+  };
+
+  /* ====================================================================
      REFERRALS (from ?ref= links)
      ==================================================================== */
   var referral = {
@@ -686,7 +718,10 @@
     initials: function (name) { return String(name || '?').replace(/^dr\.?\s*/i, '').split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(''); },
     phone: function (p) { p = normPhone(p); return p ? CC + ' ' + p.slice(0, 5) + ' ' + p.slice(5) : '—'; },
     status: function (s) { return s.charAt(0).toUpperCase() + s.slice(1); },
-    firstName: function (name) { return String(name || '').trim().split(/\s+/)[0] || ''; }
+    firstName: function (name) { return String(name || '').trim().split(/\s+/)[0] || ''; },
+    /* Full ISO timestamp → '12 Sep, 3:40 PM' plus a relative hint. */
+    dateTime: function (iso) { var d = new Date(iso); if (isNaN(d)) return iso || '—'; var h = d.getHours(), ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + h + ':' + pad(d.getMinutes()) + ' ' + ap; },
+    ago: function (iso) { var ms = Date.now() - new Date(iso).getTime(); if (isNaN(ms)) return ''; var m = Math.round(ms / 60000); if (m < 60) return m <= 1 ? 'just now' : m + ' min ago'; var h = Math.round(m / 60); if (h < 24) return h + ' hr ago'; var dd = Math.round(h / 24); return dd === 1 ? 'yesterday' : dd + ' days ago'; }
   };
 
   /* ====================================================================
@@ -735,7 +770,7 @@
     isLive: LIVE, CONFIG: CFG, MEMBER: MEMBER, MEMBERS: MEMBERS,
     CATEGORIES: CATEGORIES, MODES: MODES, SOURCES: SOURCES, SLOTS: SLOTS, STATUSES: STATUSES,
     ready: ready, readyPublic: readyPublic, subscribe: subscribe,
-    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
+    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
     fmt: fmt, today: todayIso, daysFromToday: daysFromToday, normPhone: normPhone, waLink: waLink,
     resetDemo: resetDemo, exportJSON: exportJSON, uid: uid,
     _db: function () { return db; }

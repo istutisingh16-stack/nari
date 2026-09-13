@@ -10,6 +10,7 @@ rules_version = '2';
 //   members/{uid}           one document per signed-in member, keyed by their Firebase uid
 //   invites/{phone}         a member added by a doctor before she signs up herself
 //   appointments/{id}       bookings; member details are copied on so doctors never read /members
+//   leads/{id}              website call-back enquiries (no sign-in); admins only
 //
 // Members sign in with Google and then verify their mobile number by SMS code. The number is linked
 // to the same account, so request.auth.token.phone_number is present for every real member. Rules
@@ -74,6 +75,23 @@ service cloud.firestore {
         || (isDoctor() && resource.data.doctorId == myDoctorId())
         || (inviteIsMine() && resource.data.claimedBy == null && onlyChanges(['claimedBy', 'claimedAt']) && request.resource.data.claimedBy == request.auth.uid);
       allow delete: if isAdmin() || (isDoctor() && resource.data.doctorId == myDoctorId());
+    }
+
+    // Website enquiries ("Get a free call back" on the public pages). Anyone may create one, with strict
+    // shape and size checks; only admins can read or change them. The browser also uses a honeypot field.
+    match /leads/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['id', 'name', 'phone', 'concern', 'time', 'page', 'ref', 'utm', 'status', 'createdAt'])
+        && request.resource.data.id == id
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string && request.resource.data.phone.matches('^[6-9][0-9]{9}$')
+        && request.resource.data.concern is string && request.resource.data.concern.size() <= 60
+        && request.resource.data.time in ['morning', 'afternoon', 'evening']
+        && request.resource.data.page is string && request.resource.data.page.size() <= 60
+        && request.resource.data.ref is string && request.resource.data.ref.size() <= 20
+        && request.resource.data.utm is map && request.resource.data.utm.keys().hasOnly(['source', 'medium', 'campaign'])
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 40;
     }
 
     match /appointments/{id} {

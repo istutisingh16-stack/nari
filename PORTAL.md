@@ -35,6 +35,18 @@ WhatsApp is a **support channel**, not a product. There is no paid or
 subscription WhatsApp consult anywhere in the portal or the landing page.
 Consultation modes and prices live in `portal-config.js → modes`.
 
+## Call-back enquiries (no sign-in)
+
+The home page and the five local landing pages carry a **"Get a free call back"**
+form (`lead-form.js`): name, mobile, concern, best time to call. It writes a
+`leads/{id}` document straight to Firestore with no account, so a visitor from an
+ad is captured in one step. The team console shows them under **Enquiries** with
+Call / WhatsApp buttons and a status. If Firestore is unreachable the form opens
+WhatsApp with the details pre-filled instead. A hidden honeypot field and strict
+rules (`firestore.rules` → `leads`) keep bots out. `?ref=NH-CODE` and `utm_*`
+parameters on the URL are saved on the lead so you can see which doctor or
+campaign sent her.
+
 ## What each portal does
 
 | Page | What |
@@ -105,6 +117,7 @@ A referral link looks like `member-login.html?ref=NH-SUDHA`.
 | `members` | Firebase uid (demo: generated id) | `name, phone, email, city, img, provider, createdAt, referredByDoctorId?` |
 | `invites` | 10-digit phone | `phone, phoneE164, name, city, email, note, doctorId, createdAt, claimedBy, claimedAt` |
 | `appointments` | generated id | `memberId, memberName, memberPhone, memberCity, doctorId, category, mode, date, time, notes, status, referredBy, referredDoctorId, createdAt` |
+| `leads` | generated id | `name, phone, concern, time (morning/afternoon/evening), page, ref, utm{source,medium,campaign}, status (new/contacted/booked/closed), createdAt` — written without sign-in by `lead-form.js` |
 
 Member details are copied onto each appointment so doctors can see who booked
 without being able to read the `members` collection. `referredBy` is either
