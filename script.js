@@ -11,6 +11,7 @@
     { label: 'PCOS', tint: '#F3F0FF', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
     { label: 'Pregnancy', tint: '#FFF4E8', icon: '<path d="M9 12h6M12 9v6"/><circle cx="12" cy="12" r="10"/>' },
     { label: 'Periods', tint: '#FCEEEE', icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>' },
+    { label: 'Stomach & Digestion', tint: '#F0F7EE', icon: '<path d="M9 3v3a3 3 0 0 0 3 3h1.5a5.5 5.5 0 0 1 0 11H10a3 3 0 0 1-3-3v-1"/><path d="M15 3v2"/><path d="M6 14h2"/>' },
     { label: 'Mental Health', tint: '#EAF4FF', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/>' },
     { label: 'Nutrition', tint: '#EDF9EF', icon: '<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06z"/><path d="M10 2c1 .5 2 2 2 5"/>' },
     { label: 'Sleep', tint: '#F1F0FB', icon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>' },
@@ -27,19 +28,14 @@
   ];
 
   var REVIEWS = [
-    { img: 'https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png', name: 'Priya S.', city: 'Chennai', text: 'Got a clear answer about my PCOS reports in ten minutes. No panic-Googling at 2am.' },
-    { img: 'https://images.hostinger.com/a24c2559-102e-4ffa-84c6-fdc8899cc74c.png', name: 'Divya M.', city: 'Hyderabad', text: 'The doctor was kind and specific. Booking a follow-up took one message.' },
-    { img: 'https://images.hostinger.com/62fcdbf3-7fa2-4760-85a2-76b8f9e72cbe.png', name: 'Kavita R.', city: 'Jaipur', text: 'The nutritionist gave me advice I actually trusted. I have recommended NARI to my whole family.' }
-  ];
-
-  var VIDEO_REVIEWS = [
-    { img: 'https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png', name: 'Priya S.', city: 'Chennai', duration: '1:12', text: 'How NARI helped me understand my PCOS diagnosis.' },
-    { img: 'https://images.hostinger.com/a24c2559-102e-4ffa-84c6-fdc8899cc74c.png', name: 'Divya M.', city: 'Hyderabad', duration: '0:58', text: 'I got a same-day care plan after one video call.' },
-    { img: 'https://images.hostinger.com/62fcdbf3-7fa2-4760-85a2-76b8f9e72cbe.png', name: 'Kavita R.', city: 'Jaipur', duration: '1:34', text: 'Why I recommend NARI Health to every woman I know.' }
+    { name: 'Priya S.', city: 'Chennai', text: 'Got a clear answer about my PCOS reports in ten minutes. No panic-Googling at 2am.' },
+    { name: 'Divya M.', city: 'Hyderabad', text: 'The doctor was kind and specific. Booking a follow-up took one message.' },
+    { name: 'Kavita R.', city: 'Jaipur', text: 'The nutritionist gave me advice I actually trusted. I have recommended NARI to my whole family.' }
   ];
 
   var FAQS = [
-    ['How much does a consultation cost?', 'Video consultations start at ₹499 and clinic visits are quoted when you book. You pay only after your slot is confirmed. There are no subscriptions, packages or hidden charges.'],
+    ['How much does a consultation cost?', 'A single video consultation is ₹199. If you want ongoing care, the monthly membership is ₹799 a month (auto-renews, cancel any time) or a one-month pass is ₹999 with nothing recurring. Both give unlimited consultations. Clinic visits are quoted when you book. Pay through Paytm from your NARI account; no hidden charges.'],
+    ['How do I pay?', 'From your NARI account, choose a plan and press Pay. Paytm opens with the amount filled in. After paying, enter the UPI reference number and the care team confirms it, usually within a few hours.'],
     ['How soon can I get a slot?', 'Most requests are confirmed within a few hours, often for the same or next day. Our care coordinator confirms on WhatsApp.'],
     ['Is my information private?', 'Yes. Your bookings are visible only to you, your expert and the NARI care coordinator. We never sell or share your data.'],
     ['Are the experts really verified?', 'Every professional is licence-verified and reviewed before joining the NARI panel.'],
@@ -133,47 +129,11 @@
     expertsTimer = setInterval(function () { expertsGoTo(expertsIdx + 1); }, 3000);
   }
 
-  /* ---------- Render Video testimonials ---------- */
-  function renderVideos() {
-    var grid = document.getElementById('videoGrid');
-    if (!grid) return;
-    VIDEO_REVIEWS.forEach(function (v, i) {
-      var wrap = el('div', 'reveal');
-      wrap.setAttribute('data-delay', String(i * 100));
-      var card = el('div', 'video-card');
-      card.innerHTML =
-        '<div class="video-thumb">' +
-          '<img src="' + v.img + '" alt="' + v.name + '" loading="lazy" />' +
-          '<div class="video-overlay"></div>' +
-          '<button type="button" class="video-play" aria-label="Play video testimonial from ' + v.name + '">' +
-            '<span class="video-play-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>' +
-          '</button>' +
-          '<span class="video-duration">' + v.duration + '</span>' +
-        '</div>' +
-        '<div class="video-body">' +
-          '<div class="stars">' + starSvg + starSvg + starSvg + starSvg + starSvg + '</div>' +
-          '<p class="video-quote">"' + v.text + '"</p>' +
-          '<div class="video-author"><img src="' + v.img + '" alt="' + v.name + '" loading="lazy" />' +
-            '<span class="name">' + v.name + '</span><span class="city">· ' + v.city + '</span></div>' +
-        '</div>';
-      var playBtn = card.querySelector('.video-play');
-      var thumb = card.querySelector('.video-thumb');
-      playBtn.addEventListener('click', function () {
-        thumb.innerHTML =
-          '<div class="video-playing"><div style="text-align:center">' +
-            '<div class="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>' +
-            '<p>Video testimonial — coming soon</p></div></div>';
-      });
-      wrap.appendChild(card);
-      grid.appendChild(wrap);
-    });
-  }
-
   /* ---------- Render written reviews ---------- */
   function reviewCardHTML(r) {
     return '<div class="stars">' + starSvg + starSvg + starSvg + starSvg + starSvg + '</div>' +
       '<blockquote>“' + r.text + '”</blockquote>' +
-      '<figcaption><img src="' + r.img + '" alt="' + r.name + '" loading="lazy" />' +
+      '<figcaption><span class="rv-avatar" aria-hidden="true">' + r.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').replace(/\W/g, '').slice(0, 2) + '</span>' +
         '<span><span class="name">' + r.name + '</span><br><span class="city">' + r.city + '</span></span></figcaption>';
   }
   function renderReviews() {
@@ -511,7 +471,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     renderCategories();
     renderExperts();
-    renderVideos();
     renderReviews();
     renderFAQ();
     initNavbar();

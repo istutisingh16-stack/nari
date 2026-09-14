@@ -491,3 +491,67 @@ body.loading .dash-main, body.loading .dash-nav { visibility: hidden; }
 .grecaptcha-badge { visibility: hidden !important; }
 .recaptcha-note { font-size: 0.6875rem; color: var(--muted); text-align: center; line-height: 1.5; }
 .recaptcha-note a { color: var(--muted); text-decoration: underline; }
+
+/* ====================================================================
+   PLANS & PAYMENTS (member page)
+   ==================================================================== */
+.plans { display: grid; gap: 0.75rem; }
+@media (min-width: 640px) { .plans { grid-template-columns: repeat(3, 1fr); } }
+.plan { position: relative; }
+.plan input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.plan .pc { display: grid; gap: 0.35rem; align-content: start; height: 100%; padding: 1.1rem 1.1rem 1rem; border-radius: 1.25rem; border: 1px solid var(--line-strong); background: #fff; transition: all 0.15s; }
+.plan .pc .pc-badge { position: absolute; top: -0.6rem; left: 1rem; padding: 0.2rem 0.65rem; border-radius: 9999px; background: var(--grad-brand); color: #fff; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.plan .pc .pc-label { font-weight: 700; font-size: 0.9375rem; color: var(--ink); }
+.plan .pc .pc-price { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; font-size: 1.6rem; letter-spacing: -0.03em; color: var(--ink); line-height: 1.1; }
+.plan .pc .pc-price small { display: block; font-family: "Inter", sans-serif; font-size: 0.75rem; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 0.15rem; }
+.plan .pc .pc-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+.plan .pc .pc-tag { font-size: 0.6875rem; font-weight: 600; color: var(--primary); display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.2rem; }
+.plan .pc .pc-tag svg { width: 0.75rem; height: 0.75rem; }
+.plan input:checked + .pc { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary), 0 12px 30px -20px rgba(201, 31, 53, 0.6); background: linear-gradient(180deg, #fff, var(--blush)); }
+.plan input:focus-visible + .pc { box-shadow: var(--focus); }
+.pay-brand { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; letter-spacing: -0.02em; }
+.pay-brand .pt { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 0.4rem; background: #0f4a8a; color: #fff; font-size: 0.7rem; font-weight: 800; }
+.pay-brand .pt-name { color: #0f4a8a; }
+.pay-steps { display: grid; gap: 0.6rem; counter-reset: s; }
+.pay-steps li { display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.8125rem; line-height: 1.55; color: var(--ink-soft); }
+.pay-steps li > span { flex: 1; min-width: 0; }
+.pay-steps li::before { counter-increment: s; content: counter(s); flex-shrink: 0; display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--blush); color: var(--primary); font-weight: 700; font-size: 0.75rem; }
+.upi-box { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: 1rem; background: var(--cream); border: 1px dashed var(--line-strong); font-size: 0.875rem; }
+.upi-box code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; color: var(--ink); }
+.entitle { display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1.1rem; border-radius: 1.1rem; background: var(--good-bg); border: 1px solid rgba(20, 133, 58, 0.25); color: #0b4d1f; font-size: 0.875rem; line-height: 1.5; }
+.entitle svg { width: 1.1rem; height: 1.1rem; color: var(--good); flex-shrink: 0; }
+.entitle strong { color: inherit; }
+.pay-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); font-size: 0.8125rem; }
+.pay-row:last-child { border-bottom: 0; }
+.pay-row .pr-main { display: grid; gap: 0.15rem; min-width: 0; }
+.pay-row .pr-main strong { color: var(--ink); }
+.pay-row .pr-main span { color: var(--muted); font-size: 0.75rem; }
+.pay-row .pr-amt { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; color: var(--ink); white-space: nowrap; }
+.badge.paid { background: var(--good-bg); color: var(--good); }
+.badge.claimed { background: #e8f0fe; color: #1a56c4; }
+.badge.initiated { background: var(--warning-bg); color: var(--warning); }
+.badge.failed, .badge.refunded { background: var(--critical-bg); color: var(--critical); }
+
+/* ====================================================================
+   CALM (member pages: <body class="portal calm">)
+   Same light theme, with the pink turned down: neutral off-white ground, grey-beige tints,
+   red kept for buttons and small accents only.
+   ==================================================================== */
+body.portal.calm {
+  --bg: #FBFAF8; --tint: #F3EFED; --blush: #F3EFED; --cream: #F7F5F3;
+  --line: rgba(40, 32, 34, 0.08); --line-strong: rgba(40, 32, 34, 0.16);
+  background-color: var(--bg);
+  background-image: radial-gradient(900px 420px at 100% -10%, rgba(201, 31, 53, 0.035), transparent 60%);
+}
+body.portal.calm .card.tinted { background: #F7F5F3; border-color: var(--line); }
+body.portal.calm .badge.role, body.portal.calm .auth-role-pill, body.portal.calm .tab .count { background: #F3EFED; color: #7a2a35; }
+body.portal.calm .mode-card input:checked + .mc, body.portal.calm .plan input:checked + .pc { background: #fff; box-shadow: inset 0 0 0 1px var(--primary), 0 12px 30px -20px rgba(40, 32, 34, 0.35); }
+body.portal.calm .appt .when { background: #2a2224; box-shadow: none; }
+body.portal.calm .card.ink { background: linear-gradient(160deg, #1f191b 0%, #2a2224 100%); }
+body.portal.calm .auth-panel.member { background: linear-gradient(160deg, #1d1719 0%, #2b1f22 55%, #5a1420 100%); background-size: 200% 200%; }
+body.portal.calm .auth-panel.member .blob.a { background: #C91F35; opacity: 0.35; }
+body.portal.calm .auth-panel.member .blob.b { background: #C91F35; opacity: 0.15; }
+body.portal.calm .auth-panel.member .auth-title em { color: #ff8b9a; }
+body.portal.calm .auth-form-wrap .bg-blob.a { background: #F3EFED; }
+body.portal.calm .auth-form-wrap .bg-blob.b { background: rgba(201, 31, 53, 0.04); }
+body.portal.calm .pay-brand .pt { background: #0f4a8a; }

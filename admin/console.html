@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../portal.css" />
 </head>
 <body class="portal loading">
-  <div class="page-loader" id="loader"><div class="ring"></div><p>Loading the console…</p></div>
+  <script src="../loader.js"></script>
   <header class="dash-nav" id="nav"></header>
 
   <main class="dash-main">
@@ -27,6 +27,7 @@
         <button type="button" class="tab active" data-tab="overview">Overview</button>
         <button type="button" class="tab" data-tab="leads">Enquiries <span class="count" id="cLead">0</span></button>
         <button type="button" class="tab" data-tab="appointments">Consultations <span class="count" id="cApt">0</span></button>
+        <button type="button" class="tab" data-tab="payments">Payments <span class="count" id="cPay">0</span></button>
         <button type="button" class="tab" data-tab="members"><span data-member-word="plural">Members</span> <span class="count" id="cMem">0</span></button>
         <button type="button" class="tab" data-tab="doctors">Doctors <span class="count" id="cDoc">0</span></button>
         <button type="button" class="tab" data-tab="settings">Team &amp; settings</button>
@@ -36,6 +37,7 @@
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="overview">
       <div class="notice hidden" id="leadBanner" style="margin-bottom:1.25rem;align-items:center"></div>
+      <div class="notice hidden" id="payBanner" style="margin-bottom:1.25rem;align-items:center"></div>
       <div class="stats" id="stats"></div>
       <div class="grid-2 section-gap">
         <section class="card">
@@ -85,6 +87,22 @@
         </table>
       </div>
       <p class="small muted" id="aptCount" style="margin-top:.75rem"></p>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="tab-panel" id="payments">
+      <div class="toolbar">
+        <div class="input-group iconed grow"><input class="input" id="paySearch" type="search" placeholder="Search name, phone, plan or reference" /><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <select class="select" id="payStatus"><option value="open">To verify</option><option value="">All</option><option value="claimed">Claimed</option><option value="initiated">Not completed</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option></select>
+      </div>
+      <p class="small muted" style="margin-bottom:1rem" id="payHelp"></p>
+      <div class="table-wrap">
+        <table class="table" id="payTable">
+          <thead><tr><th>When</th><th data-member-word>Member</th><th>Plan</th><th class="num">Amount</th><th>Reference</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="small muted" id="payCount" style="margin-top:.75rem"></p>
     </div>
 
     <!-- MEMBERS -->
@@ -142,7 +160,7 @@
           <form id="adminForm" class="form-grid two" style="margin-top:1rem" novalidate autocomplete="off">
             <div class="field"><label for="aName">Name</label><input class="input" id="aName" placeholder="Istuti" /></div>
             <div class="field"><label for="aEmail">Sign-in email</label><input class="input" id="aEmail" type="email" placeholder="name@narihealth.in" autocomplete="off" /></div>
-            <div class="field" style="grid-column:1/-1"><label for="aPw">Temporary password <span class="muted" style="font-weight:400">(at least 6 characters; leave blank if they will use Google with this email)</span></label><input class="input" id="aPw" type="text" autocomplete="new-password" /></div>
+            <div class="field" style="grid-column:1/-1"><label for="aPw">Temporary password <span class="muted" style="font-weight:400">(at least 6 characters; leave blank if they will sign in with Google using this email)</span></label><input class="input" id="aPw" type="text" autocomplete="new-password" /></div>
             <p class="form-error" id="adminErr" role="alert" style="grid-column:1/-1"></p>
             <button type="submit" class="btn btn-dark btn-sm" style="grid-column:1/-1;justify-self:start" id="adminBtn">Add team member</button>
           </form>
@@ -251,6 +269,48 @@
       var id = e.target.getAttribute && e.target.getAttribute('data-lead-status'); if (!id) return;
       NP.leads.setStatus(id, e.target.value).then(function () { UI.toast('Enquiry marked ' + e.target.value + '.', 'success'); renderLeads(); });
     });
+
+    /* ---------- Payments ---------- */
+    var PAYS = NP.payments;
+    var PAY_LABEL = { initiated: 'Not completed', claimed: 'Claimed', paid: 'Paid', failed: 'Failed', refunded: 'Refunded' };
+    $('payHelp').innerHTML = PAYS.upiId
+      ? 'Members pay through Paytm to <strong>' + esc(PAYS.upiId) + '</strong> and enter the UPI reference. Check it against your Paytm for Business statement, then mark <strong>Paid</strong> so their plan goes live. Monthly memberships without a Paytm subscription link need a manual reminder each month.'
+      : '<strong>Paytm is not configured yet.</strong> Set <code>payments.upiId</code> in portal-config.js (your Paytm for Business UPI ID). Until then "Pay" sends members to WhatsApp and their request is listed here as Not completed.';
+    function renderPayments() {
+      var q = $('paySearch').value.trim().toLowerCase(), st = $('payStatus').value;
+      var all = PAYS.list();
+      var list = all.filter(function (p) {
+        if (st === 'open' && p.status !== 'claimed' && p.status !== 'initiated') return false;
+        if (st && st !== 'open' && p.status !== st) return false;
+        return !q || (p.memberName + ' ' + p.memberPhone + ' ' + p.planLabel + ' ' + (p.txnRef || '')).toLowerCase().indexOf(q) >= 0;
+      });
+      var claimed = PAYS.countBy('claimed');
+      $('cPay').textContent = claimed || all.length;
+      var b = $('payBanner'); b.classList.toggle('hidden', !claimed);
+      if (claimed) b.innerHTML = UI.icon('shieldCheck', '') + '<span style="flex:1"><strong>' + claimed + ' payment' + (claimed === 1 ? '' : 's') + '</strong> waiting to be verified against Paytm.</span><button type="button" class="btn btn-primary btn-xs" data-goto="payments">Verify payments</button>';
+      $('payTable').querySelector('tbody').innerHTML = list.map(function (p) {
+        var wa = p.memberPhone ? 'https://wa.me/91' + esc(p.memberPhone) + '?text=' + encodeURIComponent('Hi ' + NP.fmt.firstName(p.memberName) + ', this is NARI Health about your ' + p.planLabel + ' payment of ₹' + p.amount + '.') : '';
+        var acts = '';
+        if (p.status === 'claimed' || p.status === 'initiated') acts += '<button type="button" class="btn btn-primary btn-xs" data-pay-status="paid" data-pay="' + esc(p.id) + '">Mark paid</button>';
+        if (p.status === 'claimed') acts += '<button type="button" class="btn btn-ghost btn-xs" data-pay-status="failed" data-pay="' + esc(p.id) + '">Not received</button>';
+        if (p.status === 'paid') acts += '<button type="button" class="btn btn-ghost btn-xs" data-pay-status="refunded" data-pay="' + esc(p.id) + '">Refunded</button>';
+        if (wa) acts += '<a class="btn btn-soft btn-xs" target="_blank" rel="noreferrer" href="' + wa + '">WhatsApp</a>';
+        if (p.status === 'initiated' || p.status === 'failed') acts += '<button type="button" class="btn btn-ghost btn-xs" data-remove-pay="' + esc(p.id) + '" title="Delete">' + UI.icon('x', 'ic sm') + '</button>';
+        return '<tr>' +
+          '<td><div style="font-weight:600">' + esc(NP.fmt.dateTime(p.createdAt)) + '</div><div class="small muted">' + esc(NP.fmt.ago(p.createdAt)) + (p.paidAt ? ' · paid ' + esc(NP.fmt.dateTime(p.paidAt)) : '') + '</div></td>' +
+          '<td><div class="person">' + UI.avatar({ name: p.memberName }, 'sm') + '<div><div class="p-name">' + esc(p.memberName || '—') + '</div><div class="p-sub">' + esc(NP.fmt.phone(p.memberPhone)) + '</div></div></div></td>' +
+          '<td>' + esc(p.planLabel) + (p.recurring ? '<div class="small muted">Monthly auto-renew</div>' : '') + '</td>' +
+          '<td class="num" style="font-weight:700">' + esc(PAYS.rupees(p.amount)) + '</td>' +
+          '<td>' + (p.txnRef ? '<code style="font-weight:600">' + esc(p.txnRef) + '</code>' : '<span class="muted">—</span>') + '</td>' +
+          '<td><span class="badge ' + esc(p.status) + '">' + esc(PAY_LABEL[p.status] || p.status) + '</span></td>' +
+          '<td><div class="actions">' + acts + '</div></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty" style="border:0">No payments match. When a member pays through Paytm and enters her reference, it appears here within seconds.</div></td></tr>';
+      var paidTotal = all.filter(function (p) { return p.status === 'paid'; }).reduce(function (s, p) { return s + Number(p.amount || 0); }, 0);
+      $('payCount').textContent = 'Showing ' + list.length + ' of ' + all.length + ' payments · ' + PAYS.rupees(paidTotal) + ' collected, all time.';
+    }
+    $('paySearch').addEventListener('input', renderPayments);
+    $('payStatus').addEventListener('change', renderPayments);
 
     /* ---------- Appointments ---------- */
     function aptActions(a) {
@@ -369,7 +429,9 @@
         '<div><dt>Doctors on panel</dt><dd>' + NP.doctors.list(true).length + ' active</dd></div>' +
         '<div><dt>' + esc(NP.MEMBERS) + '</dt><dd>' + NP.members.list().length + ' signed up · ' + NP.invites.list().filter(function (i) { return !i.claimedBy; }).length + ' added by doctors</dd></div>' +
         '<div><dt>Consultations</dt><dd>' + NP.appointments.list().length + '</dd></div>' +
-        '<div><dt>WhatsApp line</dt><dd>+' + esc(NP.CONFIG.whatsapp || '') + '</dd></div>';
+        '<div><dt>WhatsApp line</dt><dd>+' + esc(NP.CONFIG.whatsapp || '') + '</dd></div>' +
+        '<div><dt>Paytm UPI ID</dt><dd>' + (PAYS.upiId ? esc(PAYS.upiId) : '<span style="color:var(--warning)">Not set (portal-config.js → payments.upiId)</span>') + '</dd></div>' +
+        '<div><dt>Plans</dt><dd>' + PAYS.PLANS.map(function (p) { return esc(PAYS.rupees(p.price) + ' ' + (p.per || '')); }).join(' · ') + '</dd></div>';
     }
     $('adminForm').addEventListener('submit', function (e) {
       e.preventDefault(); UI.showError('adminErr', '');
@@ -403,7 +465,15 @@
 
     /* ---------- Delegated clicks ---------- */
     document.addEventListener('click', function (e) {
-      var t = e.target.closest ? e.target.closest('[data-status],[data-goto],[data-copy],[data-toggle-doc],[data-view-mem],[data-remove-admin],[data-reset],[data-remove-lead]') : null; if (!t) return;
+      var t = e.target.closest ? e.target.closest('[data-status],[data-goto],[data-copy],[data-toggle-doc],[data-view-mem],[data-remove-admin],[data-reset],[data-remove-lead],[data-pay-status],[data-remove-pay]') : null; if (!t) return;
+      if (t.hasAttribute('data-pay-status')) {
+        var pid = t.getAttribute('data-pay'), pst = t.getAttribute('data-pay-status'), pay = PAYS.get(pid);
+        var doPay = function () { PAYS.setStatus(pid, pst).then(function () { UI.toast('Payment marked ' + (PAY_LABEL[pst] || pst).toLowerCase() + '.', pst === 'paid' ? 'success' : 'info'); renderPayments(); }); };
+        if (pst === 'paid' && pay && !pay.txnRef) UI.confirmDialog('Mark as paid without a reference?', 'The ' + NP.MEMBER.toLowerCase() + ' has not entered a UPI reference yet. Only do this if you can see ₹' + pay.amount + ' from ' + esc(pay.memberName) + ' in Paytm.', 'Yes, mark paid').then(function (ok) { if (ok) doPay(); });
+        else doPay();
+        return;
+      }
+      if (t.hasAttribute('data-remove-pay')) { var rp = t.getAttribute('data-remove-pay'); UI.confirmDialog('Delete this payment record?', 'Only for abandoned or duplicate attempts. Paid records should stay for accounting.', 'Delete', true).then(function (ok) { if (ok) PAYS.remove(rp).then(function () { UI.toast('Payment record deleted.', 'info'); renderPayments(); }); }); return; }
       if (t.hasAttribute('data-remove-lead')) { var lid = t.getAttribute('data-remove-lead'); UI.confirmDialog('Delete this enquiry?', 'Use this only for spam or duplicates. Otherwise mark it Closed so you keep the history.', 'Delete', true).then(function (ok) { if (ok) NP.leads.remove(lid).then(function () { UI.toast('Enquiry deleted.', 'info'); renderLeads(); }); }); return; }
       if (t.hasAttribute('data-goto')) { var tab = document.querySelector('.tab[data-tab="' + t.getAttribute('data-goto') + '"]'); if (tab) tab.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
       if (t.hasAttribute('data-copy')) { UI.copyText(t.getAttribute('data-copy')).then(function (ok) { UI.toast(ok ? 'Referral link copied.' : 'Could not copy.', ok ? 'success' : 'error'); }); return; }
@@ -420,7 +490,7 @@
       if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'Remember to let the ' + NP.MEMBER.toLowerCase() + ' know on WhatsApp.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();
     });
 
-    function renderAll() { renderDoctors(); renderOverview(); renderLeads(); renderAppointments(); renderMembers(); renderSettings(); }
+    function renderAll() { renderDoctors(); renderOverview(); renderLeads(); renderPayments(); renderAppointments(); renderMembers(); renderSettings(); }
     UI.initTabs($('tabs'));
     NP.subscribe(renderAll);
     renderAll();

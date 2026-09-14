@@ -119,7 +119,7 @@
     container.innerHTML =
       '<div class="dash-nav-inner">' +
         '<a href="' + esc(NP.ROOT + 'index.html') + '" class="dash-brand" aria-label="NARI Health home">' +
-          '<img src="https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/9acd6eddb9cebb990d19c12ee018b0f9.png" alt="NARI Health">' +
+          '<img src="' + esc(NP.ROOT + 'assets/logo.png') + '" alt="NARI Health" width="52" height="36">' +
           '<span class="divider"></span><span class="badge role">' + esc(roleLabel) + '</span>' +
           (NP.isLive ? '' : '<span class="badge demo" title="Data lives in this browser only">Demo</span>') +
         '</a>' +
@@ -137,7 +137,7 @@
   }
 
   /* ---------- Page loader ---------- */
-  function pageReady() { document.body.classList.remove('loading'); var l = $('loader'); if (l) l.remove(); }
+  function pageReady() { document.body.classList.remove('loading'); if (global.NariLoader) global.NariLoader.hide(); else { var l = $('loader'); if (l) l.remove(); } }
   function greeting(name) { var h = new Date().getHours(); return (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (name ? ', ' + name : ''); }
 
   /* ---------- Tabs ---------- */

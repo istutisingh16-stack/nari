@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My consultations — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#FFFDFC" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,8 +13,8 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="portal.css" />
 </head>
-<body class="portal loading">
-  <div class="page-loader" id="loader"><div class="ring"></div><p>Opening your space…</p></div>
+<body class="portal calm loading">
+  <script src="loader.js"></script>
   <header class="dash-nav" id="nav"></header>
 
   <main class="dash-main">
@@ -91,12 +92,29 @@
           <button type="submit" class="btn btn-primary btn-block" id="bookBtn">Request this slot
             <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
-          <p class="small muted" style="text-align:center">No subscriptions, no hidden charges. You pay only once your consultation is confirmed, and you can cancel any time before it starts.</p>
+          <p class="small muted" style="text-align:center" id="bookFine">No hidden charges. ₹199 per consultation, or unlimited consultations on a membership. Cancel any time before it starts.</p>
         </form>
       </section>
 
-      <!-- Appointments -->
+      <!-- Plan, appointments, profile -->
       <aside class="stack">
+        <!-- Plan & payment -->
+        <section class="card" id="planCard">
+          <div class="card-head" style="margin-bottom:1rem">
+            <div>
+              <h2 class="card-title">Your plan</h2>
+              <p class="card-sub" id="planSub">Pick how you'd like to pay. Paytm opens with the amount filled in.</p>
+            </div>
+            <span class="pay-brand" title="Payments via Paytm"><span class="pt">P</span><span class="pt-name">Paytm</span></span>
+          </div>
+          <div id="entitle" class="entitle hidden" style="margin-bottom:1rem"></div>
+          <div class="plans" id="plans" style="margin-top:.5rem"></div>
+          <p class="form-error" id="payErr" role="alert" style="margin-top:1rem"></p>
+          <button type="button" class="btn btn-primary btn-block" id="payBtn" style="margin-top:1rem"></button>
+          <p class="small muted" style="text-align:center;margin-top:.75rem;line-height:1.55" id="payFine"></p>
+          <div id="payHistory" style="margin-top:1rem"></div>
+        </section>
+
         <section class="card tinted hidden" id="refDocCard">
           <div class="person"><span id="refDocAvatar"></span><div><p class="eyebrow" style="margin-bottom:.2rem">Your referring doctor</p><div class="p-name" style="font-size:1rem" id="refDocName"></div><div class="p-sub" id="refDocRole"></div></div></div>
           <p class="small muted" style="margin-top:.85rem;line-height:1.55" id="refDocText"></p>
@@ -138,7 +156,7 @@
   <script>
   NariPortal.ready('member').then(function (me) {
     if (!me) return;
-    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc, PAYS = NP.payments;
 
     $('yr').textContent = new Date().getFullYear();
     UI.renderNav($('nav'), me, NP.MEMBER, me.phone ? NP.fmt.phone(me.phone) : (me.email || ''), 'member');
@@ -151,7 +169,106 @@
       '<div><dt>Mobile</dt><dd>' + esc(NP.fmt.phone(me.phone)) + ' <span class="badge confirmed" style="margin-left:.35rem">' + UI.icon('check', '') + 'Verified</span></dd></div>' +
       (me.email ? '<div><dt>Email</dt><dd>' + esc(me.email) + '</dd></div>' : '') +
       '<div><dt>City</dt><dd>' + esc(me.city || '—') + '</dd></div>' +
-      '<div><dt>Signed in with</dt><dd>' + (me.email ? 'Google · mobile OTP' : 'Mobile OTP') + '</dd></div>';
+      '<div><dt>Signed in with</dt><dd>Mobile number + SMS code</dd></div>';
+
+    /* ---------- Plans & payments ---------- */
+    var selectedPlan = (PAYS.defaultPlan() || {}).id;
+    function planCard(p) {
+      return '<label class="plan"><input type="radio" name="plan" value="' + esc(p.id) + '"' + (p.id === selectedPlan ? ' checked' : '') + '><span class="pc">' +
+        (p.badge ? '<span class="pc-badge">' + esc(p.badge) + '</span>' : '') +
+        '<span class="pc-label">' + esc(p.label) + '</span>' +
+        '<span class="pc-price">' + esc(PAYS.rupees(p.price)) + '<small>' + esc(p.per || '') + '</small></span>' +
+        '<span class="pc-desc">' + esc(p.desc || '') + '</span>' +
+        (p.recurring ? '<span class="pc-tag">' + UI.icon('refresh', '') + 'Auto-renews monthly · cancel anytime</span>' : '') +
+      '</span></label>';
+    }
+    function renderPlans() {
+      $('plans').innerHTML = PAYS.PLANS.map(planCard).join('');
+      var plan = PAYS.plan(selectedPlan) || PAYS.PLANS[0];
+      $('payBtn').innerHTML = 'Pay ' + esc(PAYS.rupees(plan.price)) + (plan.recurring ? '/month' : '') + ' with Paytm ' + UI.icon('arrowRight', 'ic sm');
+      $('payFine').textContent = plan.recurring
+        ? 'Paytm opens with ₹' + plan.price + ' ready. Renews every month; message us on WhatsApp any time to stop.'
+        : 'Paytm opens with ₹' + plan.price + ' ready. One payment, nothing recurring.';
+      var ent = PAYS.entitlement(me.id), e = $('entitle');
+      e.classList.toggle('hidden', !ent);
+      if (ent && ent.kind === 'plan') e.innerHTML = UI.icon('shieldCheck', '') + '<span><strong>' + esc(ent.plan.label) + ' active</strong> until ' + esc(NP.fmt.date(ent.until.toISOString().slice(0, 10))) + '. Book as many consultations as you need.</span>';
+      else if (ent) e.innerHTML = UI.icon('shieldCheck', '') + '<span><strong>' + ent.count + ' paid consultation' + (ent.count > 1 ? 's' : '') + '</strong> ready to use. Book a slot and we confirm it on WhatsApp.</span>';
+      $('planSub').textContent = ent ? 'Add another plan or pay for a single consultation.' : 'Pick how you\'d like to pay. Paytm opens with the amount filled in.';
+      $('bookFine').textContent = ent ? 'Your plan covers this consultation. Cancel any time before it starts.' : 'No hidden charges. ₹199 per consultation, or unlimited consultations on a membership. Cancel any time before it starts.';
+      renderPayHistory();
+    }
+    function renderPayHistory() {
+      var list = PAYS.forMember(me.id);
+      if (!list.length) { $('payHistory').innerHTML = ''; return; }
+      $('payHistory').innerHTML = '<p class="eyebrow" style="margin-bottom:.35rem">Payments</p>' + list.slice(0, 6).map(function (p) {
+        var label = { initiated: 'Not completed', claimed: 'Being verified', paid: 'Paid', failed: 'Failed', refunded: 'Refunded' }[p.status] || p.status;
+        var act = p.status === 'initiated' ? ' <button type="button" class="btn-link small" data-claim="' + esc(p.id) + '">I have paid</button>' : '';
+        return '<div class="pay-row"><div class="pr-main"><strong>' + esc(p.planLabel) + '</strong><span>' + esc(NP.fmt.dateTime(p.createdAt)) + (p.txnRef ? ' · Ref ' + esc(p.txnRef) : '') + act + '</span></div><div class="row" style="gap:.5rem"><span class="badge ' + esc(p.status) + '">' + esc(label) + '</span><span class="pr-amt">' + esc(PAYS.rupees(p.amount)) + '</span></div></div>';
+      }).join('');
+    }
+    $('plans').addEventListener('change', function (e) { if (e.target.name === 'plan') { selectedPlan = e.target.value; renderPlans(); } });
+
+    /* Opens Paytm. On a phone the paytmmp:// intent opens the Paytm app; if nothing happens within 1.6 s
+       (app not installed) the generic upi:// link lets her pick any UPI app. */
+    function openPay(r) {
+      if (r.method === 'app') {
+        var left = Date.now();
+        window.location.href = r.links.paytm;
+        setTimeout(function () { if (document.visibilityState === 'visible' && Date.now() - left < 2200) window.location.href = r.links.upi; }, 1600);
+      } else if (r.method === 'page' || r.method === 'whatsapp') {
+        window.open(r.url, '_blank', 'noopener');
+      }
+    }
+    function payDialog(r) {
+      var plan = r.plan, p = r.payment;
+      var how;
+      if (r.method === 'whatsapp') how = '<p class="small muted" style="line-height:1.6">Online payment is being switched on. We opened WhatsApp so the NARI team can send you a Paytm link for <strong>' + esc(PAYS.rupees(plan.price)) + '</strong>. Your request is saved as <code>' + esc(p.id) + '</code>.</p>';
+      else how = '<ol class="pay-steps">' +
+          '<li><span>Paytm ' + (r.method === 'page' ? 'opened in a new tab' : r.method === 'app' ? 'should have opened on your phone' : 'can be opened on your phone') + ' with <strong>' + esc(PAYS.rupees(plan.price)) + '</strong> filled in' + (plan.recurring ? ' (first month; renewals follow monthly)' : '') + '.</span></li>' +
+          (r.method === 'upi' ? '<li><span>On this device, pay from any UPI app to the ID below with the note <em>' + esc(plan.label) + '</em>:<div class="upi-box" style="margin-top:.5rem"><code>' + esc(PAYS.upiId) + '</code><button type="button" class="btn btn-ghost btn-xs" data-copy-upi>Copy</button></div></span></li>' : '') +
+          '<li><span>After paying, copy the <strong>UPI reference / UTR number</strong> from Paytm (12 digits) and enter it below. The team verifies it and your plan goes live.</span></li>' +
+        '</ol>' +
+        '<div class="field" style="margin-top:1rem"><label for="txnRef">UPI reference number</label><input class="input" id="txnRef" inputmode="numeric" placeholder="e.g. 4231XXXX9012" maxlength="40" /></div>' +
+        '<p class="form-error" id="claimErr" role="alert" style="margin-top:.6rem"></p>' +
+        '<div class="row" style="margin-top:.75rem;gap:.5rem;flex-wrap:wrap">' +
+          (r.method !== 'whatsapp' ? '<a class="btn btn-ghost btn-sm" href="' + esc(r.url) + '" ' + (r.method === 'page' ? 'target="_blank" rel="noreferrer"' : '') + ' data-reopen>Open Paytm again</a>' : '') +
+        '</div>';
+      var bg = UI.el('div', 'modal-bg open');
+      bg.innerHTML = '<div class="modal" role="dialog" aria-modal="true"><div class="row between"><h3>' + esc(plan.label) + ' · ' + esc(PAYS.rupees(plan.price)) + '</h3><span class="pay-brand"><span class="pt">P</span><span class="pt-name">Paytm</span></span></div>' +
+        '<div style="margin-top:1rem">' + how + '</div>' +
+        '<div class="row" style="justify-content:flex-end;margin-top:1.25rem;gap:.5rem"><button type="button" class="btn btn-ghost btn-sm" data-act="later">Later</button>' + (r.method !== 'whatsapp' ? '<button type="button" class="btn btn-primary btn-sm" data-act="claim">I have paid</button>' : '') + '</div></div>';
+      document.body.appendChild(bg);
+      bg.addEventListener('click', function (e) {
+        var t = e.target.closest ? e.target.closest('[data-act],[data-copy-upi],[data-reopen]') : null;
+        if (e.target === bg) { bg.remove(); return; }
+        if (!t) return;
+        if (t.hasAttribute('data-copy-upi')) { UI.copyText(PAYS.upiId).then(function (ok) { UI.toast(ok ? 'UPI ID copied.' : 'Could not copy.', ok ? 'success' : 'error'); }); return; }
+        if (t.hasAttribute('data-reopen')) { if (r.method === 'app') { e.preventDefault(); openPay(r); } return; }
+        var act = t.getAttribute('data-act');
+        if (act === 'later') { bg.remove(); UI.toast('No problem. You can finish paying any time from "Your plan".', 'info'); return; }
+        if (act === 'claim') {
+          UI.showError('claimErr', '');
+          var ref = bg.querySelector('#txnRef').value;
+          PAYS.claim(p.id, ref).then(function () { bg.remove(); UI.toast('<strong>Thank you!</strong> We are verifying your payment. Your plan goes live as soon as it clears, usually within a few hours.', 'success', 6000); renderPlans(); },
+            function (err) { UI.showError('claimErr', err && err.message || 'Could not save. Try again.'); });
+        }
+      });
+    }
+    $('payBtn').addEventListener('click', function () {
+      UI.showError('payErr', '');
+      var btn = $('payBtn'); UI.busy(btn, true, 'Opening Paytm…');
+      PAYS.start(selectedPlan, me).then(function (r) {
+        UI.busy(btn, false); renderPlans();
+        openPay(r); payDialog(r);
+      }, function (e) { UI.busy(btn, false); UI.showError('payErr', e && e.message || 'Could not start the payment. Try again.'); });
+    });
+    document.addEventListener('click', function (e) {
+      var id = e.target.getAttribute && e.target.getAttribute('data-claim'); if (!id) return;
+      var p = PAYS.get(id); if (!p) return;
+      var plan = PAYS.plan(p.planId) || { label: p.planLabel, price: p.amount };
+      var l = PAYS.links(plan, p); var method = l.page ? 'page' : l.paytm ? (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'app' : 'upi') : 'whatsapp';
+      payDialog({ payment: p, plan: plan, method: method, url: method === 'page' ? l.page : method === 'app' ? l.paytm : method === 'upi' ? l.upi : l.whatsapp, links: l });
+    });
 
     /* ---------- Form setup ---------- */
     var catSel = $('category'), docSel = $('doctorSel'), refSel = $('refSel'), refCode = $('refCode'), dateEl = $('date'), timeEl = $('time');
@@ -226,10 +343,12 @@
 
     function updateSummary() {
       var doc = docSel.value ? NP.doctors.get(docSel.value) : null; var mode = NP.fmt.mode(selectedMode());
+      var ent = PAYS.entitlement(me.id);
+      var price = ent ? 'Covered by your plan' : (mode.price ? mode.price : '');
       $('summary').innerHTML =
         '<div><dt>Concern</dt><dd>' + esc(catSel.value || '—') + '</dd></div>' +
         '<div><dt>Expert</dt><dd>' + esc(doc ? doc.name : 'NARI will match you') + '</dd></div>' +
-        '<div><dt>Mode</dt><dd>' + esc(mode.label) + (mode.price ? ' · ' + esc(mode.price) : '') + '</dd></div>' +
+        '<div><dt>Mode</dt><dd>' + esc(mode.label) + (price ? ' · ' + esc(price) : '') + '</dd></div>' +
         '<div><dt>When</dt><dd>' + esc(dateEl.value ? NP.fmt.date(dateEl.value) : '—') + ', ' + esc(NP.fmt.time(timeEl.value)) + '</dd></div>' +
         '<div><dt>Referred by</dt><dd>' + esc(NP.referral.describe(currentRef())) + '</dd></div>';
     }
@@ -245,10 +364,11 @@
         UI.busy(btn, false);
         NP.referral.clear();
         if (myDoc) { refSel.value = 'doctor:' + myDoc.id; refCode.value = myDoc.refCode; }
-        UI.toast('<strong>Requested!</strong> Our care coordinator will confirm ' + esc(NP.fmt.date(a.date)) + ' at ' + esc(NP.fmt.time(a.time)) + ' on WhatsApp.', 'success', 5000);
+        var ent = PAYS.entitlement(me.id);
+        UI.toast('<strong>Requested!</strong> Our care coordinator will confirm ' + esc(NP.fmt.date(a.date)) + ' at ' + esc(NP.fmt.time(a.time)) + ' on WhatsApp.' + (ent ? '' : ' Pay under <strong>Your plan</strong> to confirm faster.'), 'success', 6000);
         $('notes').value = ''; catSel.selectedIndex = 0; fillDoctors(); updateSummary();
         render();
-        if (window.innerWidth < 1024) $('apptTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (window.innerWidth < 1024) $(ent ? 'apptTabs' : 'planCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, function () { UI.busy(btn, false); });
     });
 
@@ -271,6 +391,7 @@
         '<div class="empty"><span class="em-ic">' + UI.icon('calendar') + '</span><strong>No upcoming consultations</strong>Use the form to book your first one.</div>';
       $('listPast').innerHTML = past.length ? past.map(function (a) { return UI.apptCard(a, { who: 'member', actions: actions }); }).join('') :
         '<div class="empty"><span class="em-ic">' + UI.icon('clock') + '</span><strong>No past consultations</strong>Your history will appear here.</div>';
+      renderPlans();
     }
     document.addEventListener('click', function (e) {
       var id = e.target.getAttribute && e.target.getAttribute('data-cancel');
@@ -280,7 +401,7 @@
       });
     });
     UI.initTabs($('apptTabs'));
-    NP.subscribe(function () { fillDoctors(); fillRefs(); render(); });
+    NP.subscribe(function () { fillDoctors(); fillRefs(); render(); updateSummary(); });
     render();
     UI.pageReady();
   });

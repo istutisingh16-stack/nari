@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../portal.css" />
 </head>
 <body class="portal loading">
-  <div class="page-loader" id="loader"><div class="ring"></div><p>Opening your panel…</p></div>
+  <script src="../loader.js"></script>
   <header class="dash-nav" id="nav"></header>
 
   <main class="dash-main">
@@ -72,7 +72,7 @@
             </div>
             <div class="form-grid two">
               <div class="field"><label for="iCity">City <span class="muted" style="font-weight:400">(optional)</span></label><input class="input" id="iCity" placeholder="e.g. Coimbatore" /></div>
-              <div class="field"><label for="iEmail">Email <span class="muted" style="font-weight:400">(optional, links Google sign-in)</span></label><input class="input" id="iEmail" type="email" placeholder="name@gmail.com" /></div>
+              <div class="field"><label for="iEmail">Email <span class="muted" style="font-weight:400">(optional)</span></label><input class="input" id="iEmail" type="email" placeholder="name@gmail.com" /></div>
             </div>
             <div class="field"><label for="iNote">Note for the NARI team <span class="muted" style="font-weight:400">(optional)</span></label><textarea class="textarea" id="iNote" style="min-height:70px" maxlength="500" placeholder="e.g. Post-natal follow-up, prefers mornings."></textarea></div>
             <p class="form-error" id="inviteErr" role="alert"></p>

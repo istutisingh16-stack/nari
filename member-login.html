@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Member sign in — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#FFFDFC" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,13 +13,14 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="portal.css" />
 </head>
-<body class="portal">
+<body class="portal calm">
+  <script src="loader.js"></script>
   <main class="auth-page">
     <!-- Brand panel -->
     <aside class="auth-panel member">
       <div class="blob a"></div><div class="blob b"></div>
       <a href="index.html" class="auth-brand">
-        <img src="https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/9acd6eddb9cebb990d19c12ee018b0f9.png" alt="NARI Health" />
+        <img src="assets/logo.png" alt="NARI Health" width="64" height="44" />
       </a>
       <div class="auth-panel-copy">
         <span class="auth-eyebrow">
@@ -26,15 +28,15 @@
           For <span data-member-word="plural">Members</span>
         </span>
         <h1 class="auth-title">Your health, <em>on your terms.</em></h1>
-        <p class="auth-sub">Book a private consultation with a verified gynaecologist, psychologist, physiotherapist or nutritionist. One sign-in, no app, no waiting room.</p>
+        <p class="auth-sub">Book a private consultation with a verified gynaecologist, psychologist, physiotherapist or nutritionist. Just your mobile number, no app, no waiting room.</p>
         <ul class="auth-points">
-          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Book in under a minute</li>
+          <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Sign in in 20 seconds with one SMS code</li>
           <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>Licence-verified experts only</li>
           <li><span class="pt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Private. Only you and your expert see your bookings</li>
         </ul>
         <div class="auth-panel-quote">
           <p>“Got a clear answer about my PCOS reports in one call. No panic-Googling at 2am.”</p>
-          <div class="who"><img src="https://images.hostinger.com/2dfc825e-a1c1-490e-99c2-b77a6e4236d7.png" alt="" /> Priya S. · Chennai</div>
+          <div class="who"><span class="avatar sm" aria-hidden="true">PS</span> Priya S. · Chennai</div>
         </div>
       </div>
       <p class="auth-panel-foot">Trusted by 5,000+ women across India.</p>
@@ -47,47 +49,33 @@
         <div class="auth-card-head">
           <span class="auth-role-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-member-word>Member</span></span>
           <h1 id="cardTitle">Welcome to NARI</h1>
-          <p class="lead" id="cardLead">Sign in with Google, then confirm your mobile number with a one-time code. Under a minute.</p>
+          <p class="lead" id="cardLead">Enter your mobile number. We'll text you a 6-digit code. That's it.</p>
         </div>
 
         <div id="refBanner" class="ref-banner hidden" style="margin-bottom:1.25rem"></div>
         <p class="form-error" id="errTop" role="alert" style="margin-bottom:1rem"></p>
 
         <form class="auth-form" id="memberForm" novalidate>
-          <!-- Step 1: Google -->
+          <!-- Step 1: mobile number -->
           <div class="auth-step active" id="step1">
-            <div id="googleWrap"></div>
-            <p class="form-error" id="err1" role="alert"></p>
-            <label class="check"><input type="checkbox" id="agree" checked /> <span>I agree to the <a href="terms.html" target="_blank" style="color:var(--primary);font-weight:600">Terms</a> and <a href="privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Privacy Policy</a>.</span></label>
-            <ol class="small muted" style="display:grid;gap:.35rem;padding-left:1.2rem;line-height:1.55">
-              <li>Continue with your Google account.</li>
-              <li>Confirm your mobile number with a 6-digit SMS code (once).</li>
-              <li>Book your consultation.</li>
-            </ol>
-          </div>
-
-          <!-- Step 2: mobile number -->
-          <div class="auth-step" id="step2">
-            <div id="whoPill"></div>
-            <div class="notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>One more step: confirm your mobile number. If a NARI doctor added you with this number, your account links to them automatically.</span></div>
             <div class="field">
               <label for="phone">Mobile number</label>
               <div class="input-group">
                 <span class="prefix" id="cc">+91</span>
-                <input class="input" id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" maxlength="12" />
+                <input class="input" id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" maxlength="12" autofocus />
               </div>
-              <span class="hint">We'll text you a one-time code. Use the number you gave your doctor, if one referred you.</span>
+              <span class="hint">If a NARI doctor added you, use the number you gave them and your account links to them automatically.</span>
             </div>
-            <p class="form-error" id="err2" role="alert"></p>
+            <p class="form-error" id="err1" role="alert"></p>
             <button type="button" class="btn btn-primary btn-block" id="sendBtn">Send code
               <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
-            <p class="small muted" style="text-align:center"><button type="button" class="btn-link" id="switchAcct">Not you? Use a different Google account</button></p>
+            <label class="check"><input type="checkbox" id="agree" checked /> <span>I agree to the <a href="terms.html" target="_blank" style="color:var(--primary);font-weight:600">Terms</a> and <a href="privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Privacy Policy</a>.</span></label>
             <p class="recaptcha-note">Protected by reCAPTCHA. Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a> apply.</p>
           </div>
 
-          <!-- Step 3: one-time code -->
-          <div class="auth-step" id="step3">
+          <!-- Step 2: one-time code -->
+          <div class="auth-step" id="step2">
             <div class="otp-demo hidden" id="otpDemo" data-demo-only>
               <span>Demo mode: your code is</span><strong id="otpCode">000000</strong>
             </div>
@@ -96,35 +84,34 @@
               <input class="input otp-input" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" maxlength="6" />
               <span class="hint"><button type="button" class="btn-link" id="changeNum">Change number</button> · <button type="button" class="btn-link" id="resend">Resend code</button></span>
             </div>
-            <p class="form-error" id="err3" role="alert"></p>
+            <p class="form-error" id="err2" role="alert"></p>
             <button type="submit" class="btn btn-primary btn-block" id="verifyBtn">Verify and continue
               <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
           </div>
 
-          <!-- Step 4: finish profile (new members only) -->
-          <div class="auth-step" id="step4">
+          <!-- Step 3: finish profile (new members only) -->
+          <div class="auth-step" id="step3">
             <div id="welcomePill"></div>
             <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><span>Your number is verified. Tell us a little about you so your expert knows who they're talking to.</span></div>
             <div class="form-grid two">
               <div class="field"><label for="name">Your name</label><input class="input" id="name" type="text" autocomplete="name" placeholder="e.g. Ananya Gupta" /></div>
               <div class="field"><label for="city">City <span class="muted" style="font-weight:400">(optional)</span></label><input class="input" id="city" type="text" autocomplete="address-level2" placeholder="e.g. Delhi" /></div>
             </div>
-            <p class="form-error" id="err4" role="alert"></p>
+            <p class="form-error" id="err3" role="alert"></p>
             <button type="button" class="btn btn-primary btn-block" id="finishBtn">Create my account
               <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
           </div>
         </form>
-        <!-- Invisible reCAPTCHA for Firebase phone auth mounts here (kept outside the steps so it is never inside a hidden box). -->
+        <!-- Invisible reCAPTCHA for Firebase phone sign-in mounts here (kept outside the steps so it is never inside a hidden box). -->
         <div id="recaptcha-holder"></div>
 
         <details class="demo-box" data-demo-only>
           <summary><svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Trying the demo?</summary>
           <ul>
-            <li>“Continue with Google” signs you in as a sample Google account (Kavita R.).</li>
-            <li>Then enter any 10-digit number. The one-time code appears on screen instead of by SMS.</li>
-            <li>Returning demo member numbers: <code>98765 01001</code> (Priya S.), <code>98765 01003</code> (Kavita R.).</li>
+            <li>Enter any 10-digit number. The one-time code appears on screen instead of by SMS.</li>
+            <li>Returning demo members: <code>98765 01001</code> (Priya S.), <code>98765 01003</code> (Kavita R.).</li>
           </ul>
         </details>
 
@@ -145,52 +132,36 @@
     var next = UI.nextParam('member.html');
     $('cc').textContent = NP.CONFIG.phoneCountryCode || '+91';
     $('waLink').href = NP.waLink('Hi NARI Health, I have a question before booking.');
-    $('googleWrap').innerHTML = UI.googleButton('googleBtn', 'Continue with Google');
     var errMsg = UI.param('error'); if (errMsg) UI.showError('errTop', errMsg);
 
     var phoneEl = $('phone'), otpEl = $('otp');
-    var currentPhone = '', pendingAuth = null;
+    var currentPhone = '';
 
     function fmtPhoneInput(input) { var v = input.value.replace(/\D/g, '').slice(0, 10); input.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; }
     phoneEl.addEventListener('input', function () { fmtPhoneInput(phoneEl); });
     otpEl.addEventListener('input', function () { otpEl.value = otpEl.value.replace(/\D/g, '').slice(0, 6); if (otpEl.value.length === 6) verify(); });
 
-    /* Steps: 1 Google → 2 mobile number → 3 one-time code → 4 profile (new members only) */
+    /* Steps: 1 mobile number → 2 one-time code → 3 profile (new members only) */
     function goStep(n) {
-      [1, 2, 3, 4].forEach(function (i) { $('step' + i).classList.toggle('active', n === i); });
+      [1, 2, 3].forEach(function (i) { $('step' + i).classList.toggle('active', n === i); });
       var t = $('cardTitle'), l = $('cardLead');
-      if (n === 1) { t.textContent = 'Welcome to NARI'; l.textContent = 'Sign in with Google, then confirm your mobile number with a one-time code. Under a minute.'; }
-      if (n === 2) { t.textContent = 'Confirm your number'; l.textContent = 'We\'ll text a 6-digit code to your mobile. This happens only once.'; setTimeout(function () { phoneEl.focus(); }, 60); }
-      if (n === 3) { t.textContent = 'Check your phone'; l.textContent = 'Enter the code to finish signing in.'; setTimeout(function () { otpEl.focus(); }, 60); }
-      if (n === 4) { t.textContent = 'Almost there'; l.textContent = 'One last step and you can book your first consultation.'; setTimeout(function () { $('name').focus(); }, 60); }
-    }
-    function whoPill(au) {
-      return '<span class="welcome-pill">' + UI.avatar({ name: au.name || au.email, img: au.photo }) + '<span>Signed in as <strong>' + esc(au.email || au.name) + '</strong></span></span>';
+      if (n === 1) { t.textContent = 'Welcome to NARI'; l.textContent = 'Enter your mobile number. We\'ll text you a 6-digit code. That\'s it.'; setTimeout(function () { phoneEl.focus(); }, 60); }
+      if (n === 2) { t.textContent = 'Check your phone'; l.textContent = 'Enter the code to finish signing in.'; setTimeout(function () { otpEl.focus(); }, 60); }
+      if (n === 3) { t.textContent = 'Almost there'; l.textContent = 'One last step and you can book your first consultation.'; setTimeout(function () { $('name').focus(); }, 60); }
     }
 
     function finishSignIn(user, isNew) {
       UI.toast(isNew ? '<strong>Welcome to NARI, ' + esc(NP.fmt.firstName(user.name)) + '!</strong> Your account is ready.' : 'Welcome back, ' + esc(NP.fmt.firstName(user.name)) + '.', 'success', 2000);
       setTimeout(function () { window.location.href = next; }, 400);
     }
-    /* Google done, number not yet verified. `m` is the existing profile, if any, so we can pre-fill her number. */
-    function startPhone(au, m) {
-      pendingAuth = au;
-      $('whoPill').innerHTML = whoPill(au);
-      if (m && m.phone && !phoneEl.value) { phoneEl.value = m.phone; fmtPhoneInput(phoneEl); }
-      goStep(2);
-    }
-    /* Google + number done, no profile yet. */
+    /* Number verified, no profile yet. */
     function startProfile(au) {
-      pendingAuth = au;
-      $('name').value = au.name || '';
-      $('welcomePill').innerHTML = '<span class="welcome-pill">' + UI.avatar({ name: au.name || au.email, img: au.photo }) + '<span><strong>' + esc(au.email || au.name) + '</strong> · ' + esc(NP.fmt.phone(au.phone)) + ' verified</span></span>';
-      goStep(4);
+      $('welcomePill').innerHTML = '<span class="welcome-pill">' + UI.avatar({ name: au.name || '?' }) + '<span><strong>' + esc(NP.fmt.phone(au.phone)) + '</strong> verified</span></span>';
+      goStep(3);
     }
-    /* One place that decides where a sign-in result lands. */
     function route(r, errId) {
       if (!r.ok) { UI.showError(errId, r.error); return false; }
       if (r.status === 'ok') finishSignIn(r.user, false);
-      else if (r.status === 'phone') startPhone(r.authUser, r.member);
       else startProfile(r.authUser);
       return true;
     }
@@ -205,72 +176,60 @@
       return NP.auth.resolve('member');
     }).then(function (r) {
       if (r.status === 'ok') { window.location.replace(next); return; }
-      if (r.status === 'phone') startPhone(r.authUser, r.member);
       if (r.status === 'new') startProfile(r.authUser);
     });
 
-    /* ---- Step 1: Google ---- */
-    $('googleBtn').addEventListener('click', function () {
-      UI.showError('err1', ''); UI.showError('errTop', '');
-      if (!$('agree').checked) { UI.showError('err1', 'Please accept the Terms and Privacy Policy to continue.'); return; }
-      var btn = $('googleBtn'); UI.busy(btn, true, 'Opening Google…');
-      NP.auth.signInWithGoogle('member').then(function (r) { UI.busy(btn, false); route(r, 'err1'); });
-    });
-
-    /* ---- Step 2: mobile number → send code ---- */
+    /* ---- Step 1: mobile number → send code ---- */
     function sendCode() {
-      UI.showError('err2', ''); UI.showError('err3', ''); UI.showError('errTop', '');
+      UI.showError('err1', ''); UI.showError('err2', ''); UI.showError('errTop', '');
+      if (!$('agree').checked) { UI.showError('err1', 'Please accept the Terms and Privacy Policy to continue.'); return; }
       var btn = $('sendBtn'); UI.busy(btn, true, 'Sending…');
       NP.auth.sendOtp(phoneEl.value, 'recaptcha-holder').then(function (r) {
         UI.busy(btn, false);
-        if (!r.ok) { goStep(2); UI.showError('err2', r.error); phoneEl.classList.add('error'); return; }
+        if (!r.ok) { goStep(1); UI.showError('err1', r.error); phoneEl.classList.add('error'); return; }
         phoneEl.classList.remove('error');
         currentPhone = r.phone;
         $('sentTo').textContent = NP.fmt.phone(r.phone);
         if (r.demoCode) { $('otpCode').textContent = r.demoCode; $('otpDemo').classList.remove('hidden'); }
         otpEl.value = '';
-        goStep(3);
+        goStep(2);
         UI.toast('Code sent to ' + NP.fmt.phone(r.phone) + (r.demoCode ? '. <strong>Demo code: ' + r.demoCode + '</strong>' : '.'), 'success');
       });
     }
     $('sendBtn').addEventListener('click', sendCode);
     phoneEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendCode(); } });
     $('resend').addEventListener('click', sendCode);
-    $('changeNum').addEventListener('click', function () { goStep(2); });
-    $('switchAcct').addEventListener('click', function () {
-      var b = $('switchAcct'); b.disabled = true;
-      NP.auth.logout().then(function () { pendingAuth = null; phoneEl.value = ''; b.disabled = false; goStep(1); }, function () { b.disabled = false; goStep(1); });
-    });
+    $('changeNum').addEventListener('click', function () { goStep(1); });
 
-    /* ---- Step 3: verify code ---- */
+    /* ---- Step 2: verify code ---- */
     var verifying = false;
     function verify() {
       if (verifying) return;
-      UI.showError('err3', '');
-      if (otpEl.value.length < 6) { UI.showError('err3', 'Enter the 6-digit code.'); return; }
+      UI.showError('err2', '');
+      if (otpEl.value.length < 6) { UI.showError('err2', 'Enter the 6-digit code.'); return; }
       verifying = true; var btn = $('verifyBtn'); UI.busy(btn, true, 'Checking…');
       NP.auth.verifyOtp(currentPhone, otpEl.value).then(function (v) {
         verifying = false; UI.busy(btn, false);
         otpEl.classList.toggle('error', !v.ok);
-        route(v, 'err3');
+        route(v, 'err2');
       });
     }
     $('memberForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      if ($('step2').classList.contains('active')) sendCode();
-      else if ($('step3').classList.contains('active')) verify();
-      else if ($('step4').classList.contains('active')) finishProfile();
+      if ($('step1').classList.contains('active')) sendCode();
+      else if ($('step2').classList.contains('active')) verify();
+      else if ($('step3').classList.contains('active')) finishProfile();
     });
 
-    /* ---- Step 4: profile ---- */
+    /* ---- Step 3: profile ---- */
     function finishProfile() {
-      UI.showError('err4', '');
+      UI.showError('err3', '');
       var name = $('name').value.trim();
-      if (name.length < 2) { UI.showError('err4', 'Please tell us your name.'); $('name').focus(); return; }
+      if (name.length < 2) { UI.showError('err3', 'Please tell us your name.'); $('name').focus(); return; }
       var btn = $('finishBtn'); UI.busy(btn, true, 'Creating your account…');
       NP.members.completeProfile({ name: name, city: $('city').value }).then(function (m) {
         finishSignIn(m, true);
-      }, function (e) { UI.busy(btn, false); UI.showError('err4', e && e.message || 'Could not save your details. Try again.'); });
+      }, function (e) { UI.busy(btn, false); UI.showError('err3', e && e.message || 'Could not save your details. Try again.'); });
     }
     $('finishBtn').addEventListener('click', finishProfile);
   })();

@@ -24,9 +24,9 @@ cheapest way to get one plus Google and phone sign-in without running a server:
 | Database (Firestore) | 1 GiB storage, 50k reads / 20k writes per day. A clinic doing 200 bookings a day stays well inside this. |
 | Hosting | Not needed; GitHub Pages continues to serve the site |
 
-Member sign-in is **Google, then one SMS code** to confirm her mobile number.
-The number is linked to her Google account, so the SMS is sent **once per
-member**, not on every visit: later sign-ins with Google go straight in. That
+Member sign-in is **mobile number + one SMS code**, nothing else. Firebase
+remembers the device, so the SMS is usually sent once per device, not on every
+visit. That
 verified number is what links her to the doctor who added her. Until Phone
 sign-in billing is enabled, real numbers see "SMS codes are not switched on
 for this project yet"; test numbers (step 2) work regardless.
@@ -47,7 +47,7 @@ as soon as it is deployed. Step 1 is done; start at step 2.
    to live the moment both are present.
 2. **Enable sign-in methods.**
    https://console.firebase.google.com/project/nari-health-33e31/authentication/providers
-   → enable **Google** (choose a support email), **Phone**, and
+   → enable **Phone** (members), **Google** (staff; choose a support email), and
    **Email/Password** (needed for doctor and team credentials). Under Phone →
    *Phone numbers for testing*, add your own number with a fixed code
    (e.g. `+91 98765 43210 → 123456`) so you can test without SMS charges.
@@ -80,7 +80,7 @@ as soon as it is deployed. Step 1 is done; start at step 2.
    the doctor privately. They open `/doctor/`, sign in, and can change the
    password with "Forgot password". Doctors can then add their own members
    from the panel.
-10. **Test as a member** from your phone: `member-login.html` → Google → your
+10. **Test as a member** from your phone: `member-login.html` → your
     test number → the fixed code → book → confirm it appears in the team
     console within seconds. To test the doctor link, first add that same test
     number from `/doctor/` → Add a member, then sign in as the member; the
@@ -106,7 +106,7 @@ Short answer: **no, not for free, and not through Firebase.**
   in the normal WhatsApp app, so it would be a second number, not
   `+91 63995 07521`.
 
-What is free today: **Google sign-in**, unlimited. SMS OTP costs a few paise
+What is free today: **Google sign-in for staff**, unlimited. SMS OTP costs a few paise
 to about a rupee per code on the pay-as-you-go plan, and is sent once per
 member (the number stays linked to her account); test numbers are free. If
 you later pass a few hundred sign-ups a day and want WhatsApp OTP, budget a
@@ -242,3 +242,45 @@ the product:
 1. Firebase live (Part A) → 2. Razorpay links + programmes → 3. WhatsApp
 Business App templates → 4. Ratings + doctor availability → 5. Analytics and
 member referral → 6. WhatsApp API automation → 7. B2B page.
+
+## Payments (Paytm)
+
+1. Open the Paytm for Business app → Profile → copy your **UPI ID**
+   (looks like `1234567890@paytm`). Paste it into `portal-config.js` →
+   `payments.upiId`. From then on **Pay with Paytm** on the member page opens
+   Paytm with the amount filled in (₹799 by default).
+2. Optional but recommended: Paytm Business → **Payment Links** → create one
+   link per plan (₹999 pass, ₹199 single) and a **Subscription** link for the
+   ₹799/month plan. Paste each URL into `payments.plans[].link`. The
+   subscription link is what makes the ₹799 renew automatically; without it the
+   first month is a one-time payment and you remind the member each month.
+3. Publish the updated `firestore.rules` (it adds the `payments` collection).
+4. Verify payments in the console → **Payments**: compare the member's UPI
+   reference with your Paytm statement and press **Mark paid**. Her plan goes
+   live immediately.
+
+## If the SMS code does not arrive ("Verification failed" / security check)
+
+Phone sign-in needs a reCAPTCHA token from Google before Firebase sends the SMS.
+Check these in order; the page now shows the exact Firebase error code when it
+is not one it recognises.
+
+1. **Authorized domains.** Firebase console → Authentication → Settings →
+   Authorized domains must contain `narihealth.in`, `www.narihealth.in` and
+   any GitHub Pages address you test from. Missing domain = "SMS sign-in is not
+   enabled for <host> yet" (Firebase code `auth/captcha-check-failed`).
+2. **Phone provider on.** Authentication → Sign-in method → Phone → Enabled.
+3. **Billing.** New Firebase projects need the Blaze (pay-as-you-go) plan for
+   real SMS (`auth/billing-not-enabled`). A few paise per code.
+4. **API key restrictions.** Google Cloud → APIs & Services → Credentials → the
+   browser key: either no restrictions, or HTTP referrers that include
+   `narihealth.in/*`, and the Identity Toolkit API allowed.
+5. **Test without SMS.** Authentication → Sign-in method → Phone → *Phone
+   numbers for testing*: add your own number with a fixed code (e.g. 123456).
+   Sign-in then works instantly and costs nothing.
+6. If the invisible check keeps failing on a device, the page automatically
+   switches to the visible "I'm not a robot" box on the second attempt.
+
+"Missing or insufficient permissions" after sign-in means the published
+Firestore rules are older than the code. Paste `firestore.rules` into
+Firestore → Rules → Publish (step 5) and reload.

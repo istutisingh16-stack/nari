@@ -6,9 +6,10 @@
    • LIVE  (NARI_CONFIG.firebase set):   Firebase Authentication and Cloud
             Firestore. Access is enforced by firestore.rules, not by this file.
 
-   Member sign-in is two steps: Google, then a one-time SMS code to her mobile.
-   The verified number is linked to the same Firebase account, so the ID token
-   carries phone_number and a doctor's invite keyed by that number matches her.
+   Member sign-in is mobile number + one-time SMS code only (no Google, no
+   password). The ID token therefore always carries phone_number, and a doctor's
+   invite keyed by that number matches her automatically. Staff (doctors, team)
+   sign in with email + password or Google.
 
    Pages call NariPortal.ready(role) and get a Promise for the signed-in user.
    After that every read is synchronous from an in-memory cache; writes update
@@ -28,11 +29,18 @@
 
   var MEMBER = CFG.memberWord || 'Member';
   var MEMBERS = CFG.memberWordPlural || 'Members';
-  var CATEGORIES = CFG.categories || ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Mental Health', 'Nutrition', 'Sleep', 'Menopause', 'General Health', 'Pelvic Health'];
+  var CATEGORIES = CFG.categories || ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Stomach & Digestion', 'Mental Health', 'Nutrition', 'Sleep', 'Menopause', 'General Health', 'Pelvic Health'];
   var MODES = CFG.modes || [
-    { id: 'video', label: 'Video consultation', price: '₹499', desc: '25-minute private video call' },
+    { id: 'video', label: 'Video consultation', price: '₹199', desc: '25-minute private video call' },
     { id: 'clinic', label: 'Clinic visit', price: 'On request', desc: 'In person at a partner clinic' }
   ];
+  var PAY = CFG.payments || {};
+  var PLANS = PAY.plans || [
+    { id: 'sub', label: 'Monthly membership', price: 799, per: '/month', recurring: true, default: true, desc: 'Unlimited consultations. ₹799 every month.', days: 30 },
+    { id: 'month', label: '1-month pass', price: 999, per: 'for 30 days', recurring: false, desc: 'Unlimited consultations for 30 days.', days: 30 },
+    { id: 'single', label: 'Single consultation', price: 199, per: 'one time', recurring: false, desc: 'One consultation.', days: 0 }
+  ];
+  var PAY_STATUSES = ['initiated', 'claimed', 'paid', 'failed', 'refunded'];
   var SOURCES = CFG.sources || ['Friend or family', 'Instagram', 'Google search', 'WhatsApp forward', 'Other'];
   var SLOTS = CFG.slots || ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
   var STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'];
@@ -70,7 +78,7 @@
   function fail(msg) { emit('nari:error', { message: msg }); }
 
   /* ---------- in-memory cache (both backends) ---------- */
-  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [] };
+  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [], payments: [] };
   var listeners = [];
   function notify() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
 
@@ -84,9 +92,9 @@
     var members = [
       { id: 'mem_1', name: 'Priya S.', phone: '9876501001', city: 'Chennai', createdAt: daysFromToday(-40), provider: 'phone' },
       { id: 'mem_2', name: 'Divya M.', phone: '9876501002', city: 'Hyderabad', createdAt: daysFromToday(-35), provider: 'phone' },
-      { id: 'mem_3', name: 'Kavita R.', phone: '9876501003', city: 'Jaipur', createdAt: daysFromToday(-30), provider: 'google', email: 'kavita.r@gmail.com' },
+      { id: 'mem_3', name: 'Kavita R.', phone: '9876501003', city: 'Jaipur', createdAt: daysFromToday(-30), provider: 'phone', email: 'kavita.r@gmail.com' },
       { id: 'mem_4', name: 'Ananya Gupta', phone: '9876501004', city: 'Delhi', createdAt: daysFromToday(-22), provider: 'phone' },
-      { id: 'mem_5', name: 'Meera Nair', phone: '9876501005', city: 'Kochi', createdAt: daysFromToday(-18), provider: 'google', email: 'meera.nair@gmail.com' },
+      { id: 'mem_5', name: 'Meera Nair', phone: '9876501005', city: 'Kochi', createdAt: daysFromToday(-18), provider: 'phone', email: 'meera.nair@gmail.com' },
       { id: 'mem_6', name: 'Ritika Bansal', phone: '9876501006', city: 'Lucknow', createdAt: daysFromToday(-12), provider: 'phone' },
       { id: 'mem_7', name: 'Farah Khan', phone: '9876501007', city: 'Mumbai', createdAt: daysFromToday(-9), provider: 'phone' },
       { id: 'mem_8', name: 'Sunita Verma', phone: '9876501008', city: 'Bhopal', createdAt: daysFromToday(-4), provider: 'phone' }
@@ -126,7 +134,11 @@
       { id: 'lead_demo1', name: 'Shalini Verma', phone: '9876503001', concern: 'PCOS', time: 'evening', page: 'home', ref: '', utm: { source: 'instagram', medium: 'social', campaign: '' }, status: 'new', createdAt: new Date(Date.now() - 3 * 3600e3).toISOString() },
       { id: 'lead_demo2', name: 'Pooja Rathi', phone: '9876503002', concern: 'Physiotherapy / pain', time: 'morning', page: 'physiotherapy-bulandshahr', ref: 'NH-SUDHA', utm: { source: '', medium: '', campaign: '' }, status: 'contacted', createdAt: new Date(Date.now() - 30 * 3600e3).toISOString() }
     ];
-    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites, leads: leads };
+    var payments = [
+      { id: 'pay_demo1', memberId: 'mem_1', memberName: 'Priya S.', memberPhone: '9876501001', planId: 'sub', planLabel: 'Monthly membership', amount: 799, recurring: true, status: 'paid', txnRef: '4231XXXX9012', createdAt: new Date(Date.now() - 10 * 86400e3).toISOString(), paidAt: new Date(Date.now() - 10 * 86400e3).toISOString() },
+      { id: 'pay_demo2', memberId: 'mem_2', memberName: 'Divya M.', memberPhone: '9876501002', planId: 'single', planLabel: 'Single consultation', amount: 199, recurring: false, status: 'claimed', txnRef: '4231XXXX7788', createdAt: new Date(Date.now() - 2 * 3600e3).toISOString(), claimedAt: new Date(Date.now() - 1.5 * 3600e3).toISOString() }
+    ];
+    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites, leads: leads, payments: payments };
   }
 
   /* ====================================================================
@@ -139,6 +151,7 @@
       var saved = read(DB_KEY);
       if (!saved || saved.version !== 3) { saved = seedDB(); write(DB_KEY, saved); }
       if (!saved.leads) saved.leads = [];
+      if (!saved.payments) saved.payments = [];
       /* Enquiries submitted from the public pages in demo mode land in a side key; fold them in. */
       var pending = read('nari_portal_leads');
       if (pending && pending.length) { pending.forEach(function (l) { if (indexOf(saved.leads, 'leads', l.id) < 0) saved.leads.push(l); }); remove('nari_portal_leads'); write(DB_KEY, saved); }
@@ -213,6 +226,7 @@
     if (liveSets.staff) db.staff = liveSets.staff;
     if (liveSets.invites) db.invites = liveSets.invites;
     if (liveSets.leads) db.leads = liveSets.leads;
+    if (liveSets.payments) db.payments = liveSets.payments;
   }
   var FIRST_LOAD_TIMEOUT = 12000;
   function watch(key, query) {
@@ -230,7 +244,13 @@
   function loadLive(role, user) {
     unsubs.forEach(function (u) { u(); }); unsubs = []; liveSets = {};
     var jobs = [watch('doctors', fs.collection('doctors'))];
-    if (role === 'member') jobs.push(watch('appointments:mine', fs.collection('appointments').where('memberId', '==', user.id)));
+    /* Payments are an add-on: if the published firestore.rules predate the payments collection, the page
+       still opens (with an empty payments list) instead of failing with "insufficient permissions". */
+    function optional(key, query) { return watch(key, query).catch(function (e) { console.warn('payments not loaded:', e && e.message); liveSets[key] = []; rebuild(); fail('Payments could not be loaded. Publish the latest firestore.rules (GO-LIVE.md step 5).'); }); }
+    if (role === 'member') {
+      jobs.push(watch('appointments:mine', fs.collection('appointments').where('memberId', '==', user.id)));
+      jobs.push(optional('payments', fs.collection('payments').where('memberId', '==', user.id)));
+    }
     if (role === 'doctor') {
       jobs.push(watch('appointments:doc', fs.collection('appointments').where('doctorId', '==', user.id)));
       jobs.push(watch('appointments:ref', fs.collection('appointments').where('referredDoctorId', '==', user.id)));
@@ -242,6 +262,7 @@
       jobs.push(watch('staff', fs.collection('staff')));
       jobs.push(watch('invites', fs.collection('invites')));
       jobs.push(watch('leads', fs.collection('leads')));
+      jobs.push(optional('payments', fs.collection('payments')));
     }
     if (!role) jobs.length = 1; /* login pages only need doctors for referral lookups */
     return Promise.all(jobs);
@@ -263,8 +284,7 @@
 
   /* Resolve who the signed-in person is for a given role.
      → { status: 'ok', user }                 signed in and allowed
-     → { status: 'phone', authUser, member }  Google done, mobile number not yet verified (members only)
-     → { status: 'new', authUser }            Google + mobile done, no member profile yet (members only)
+     → { status: 'new', authUser }            mobile verified, no member profile yet (members only)
      → { status: 'none' }                     not signed in
      → { status: 'denied', error }            signed in but not on the panel / team */
   function resolveRole(role) {
@@ -278,9 +298,11 @@
       if (!u) return { status: 'none' };
       var au = authUserOf(u);
       if (role === 'member') {
+        /* Members are phone-only. A leftover Google/password session (staff, or an old account that never
+           finished the SMS step) cannot act as a member, so treat it as signed out. */
+        if (!au.phone) { fb.auth().signOut(); return { status: 'none' }; }
         return fbGet('members', u.uid).then(function (m) {
           if (m) { m.id = u.uid; if (!m.img && au.photo) m.img = au.photo; }
-          if (!au.phone) return { status: 'phone', authUser: au, member: m };
           /* Keep the profile's number equal to the verified one (older profiles held a typed, unverified number). */
           if (m && m.phone !== au.phone) { m.phone = au.phone; fs.collection('members').doc(u.uid).update({ phone: au.phone }).catch(function () {}); }
           if (m) return { status: 'ok', user: m };
@@ -322,16 +344,11 @@
     loginPage: function (role) { return ROOT + (PAGES[role] || PAGES.member).login; },
     homeFor: function (role) { return ROOT + (PAGES[role] || PAGES.member).home; },
 
-    /* ---- Google ---- */
+    /* ---- Google (staff only; members use their mobile number) ---- */
     signInWithGoogle: function (role) {
       return init().then(function () {
-        if (!LIVE) {
-          /* Demo: pretend a Google account came back. Members always go on to the mobile-number step. */
-          var au = { uid: 'g_demo', name: 'Kavita R.', email: 'kavita.r@gmail.com', photo: '', provider: 'google', phone: '' };
-          if (role !== 'member') return { ok: false, error: 'In demo mode, staff sign in with the demo email and password below.' };
-          write(PENDING_KEY, au);
-          return { ok: true, status: 'phone', authUser: au, member: members.findByEmail(au.email) };
-        }
+        if (role === 'member') return { ok: false, error: MEMBERS + ' sign in with their mobile number and a one-time code.' };
+        if (!LIVE) return { ok: false, error: 'In demo mode, staff sign in with the demo email and password below.' };
         var provider = new fb.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         return fb.auth().signInWithPopup(provider).catch(function (e) {
@@ -339,38 +356,50 @@
           throw e;
         }).then(function () { return resolveRole(role); }).then(function (r) {
           if (r.status === 'ok') return { ok: true, status: 'ok', user: r.user };
-          if (r.status === 'phone') return { ok: true, status: 'phone', authUser: r.authUser, member: r.member };
-          if (r.status === 'new') return { ok: true, status: 'new', authUser: r.authUser };
           if (r.status === 'denied') { fb.auth().signOut(); return { ok: false, error: r.error }; }
           return { ok: false, error: 'Sign-in was cancelled.' };
         }).catch(function (e) { return { ok: false, error: friendlyAuthError(e) }; });
       });
     },
 
-    /* ---- Mobile OTP: the second step of member sign-in, after Google ----
-       Live: Firebase sends the SMS and the number is LINKED to the signed-in Google account
-       (user.linkWithPhoneNumber), so the ID token carries phone_number and firestore.rules can match a
-       doctor's invite to it. One SMS per member, once; later Google sign-ins go straight in.
+    /* ---- Mobile OTP: the only member sign-in ----
+       Live: Firebase sends the SMS (signInWithPhoneNumber) and signs her in with a phone-only account, so
+       the ID token carries phone_number and firestore.rules can match a doctor's invite to it. Members who
+       earlier signed in with Google and linked this number land in that same account (same uid).
        `containerId` is an empty element for the invisible reCAPTCHA. */
     sendOtp: function (phone, containerId) {
       phone = normPhone(phone);
-      if (phone.length !== 10) return Promise.resolve({ ok: false, error: 'Enter a valid 10-digit mobile number.' });
+      if (!/^[6-9]\d{9}$/.test(phone)) return Promise.resolve({ ok: false, error: 'Enter a valid 10-digit Indian mobile number.' });
       return init().then(function () {
         if (!LIVE) {
-          if (!read(PENDING_KEY)) return { ok: false, error: 'Sign in with Google first.' };
           var code = String(Math.floor(100000 + Math.random() * 900000));
           write(OTP_KEY, { phone: phone, code: code, exp: Date.now() + 5 * 60 * 1000 });
           return { ok: true, phone: phone, demoCode: code };
         }
-        var u = fb.auth().currentUser;
-        if (!u) return { ok: false, error: 'Sign in with Google first.' };
-        if (u.phoneNumber) return { ok: false, error: 'A mobile number is already verified on this account.' };
-        if (!auth._recaptcha) auth._recaptcha = new fb.auth.RecaptchaVerifier(containerId || 'recaptcha-holder', { size: 'invisible' });
-        return u.linkWithPhoneNumber(CC + phone, auth._recaptcha).then(function (confirmation) {
+        /* First try is an invisible reCAPTCHA. If Google rejects that (it does on some networks and browsers), the
+           next try shows the normal "I'm not a robot" box in the same container so she can tick it herself. */
+        var holder = containerId || 'recaptcha-holder';
+        function verifier() {
+          if (auth._recaptcha) return Promise.resolve(auth._recaptcha);
+          var v = new fb.auth.RecaptchaVerifier(holder, { size: auth._captchaMode || 'invisible' });
+          return v.render().then(function () { auth._recaptcha = v; return v; });
+        }
+        return verifier().then(function (v) {
+          return fb.auth().signInWithPhoneNumber(CC + phone, v);
+        }).then(function (confirmation) {
           auth._confirmation = confirmation;
           return { ok: true, phone: phone };
         }).catch(function (e) {
-          try { auth._recaptcha.clear(); } catch (x) {} auth._recaptcha = null;
+          var code = e && e.code || '';
+          try { if (auth._recaptcha) auth._recaptcha.clear(); } catch (x) {} auth._recaptcha = null;
+          var el = document.getElementById(holder); if (el) el.innerHTML = '';
+          var captchaProblem = /captcha|app-credential|invalid-recaptcha|missing-recaptcha/.test(code);
+          if (captchaProblem && auth._captchaMode !== 'normal') {
+            auth._captchaMode = 'normal';
+            /* Pre-render the visible box now so she sees it immediately. */
+            verifier().catch(function () {});
+            return { ok: false, captcha: true, error: 'The automatic security check did not pass. Tick "I\'m not a robot" below, then press Send code again.' };
+          }
           return { ok: false, error: friendlyAuthError(e) };
         });
       });
@@ -382,14 +411,12 @@
         if (!rec || rec.phone !== phone) return Promise.resolve({ ok: false, error: 'Request a new code first.' });
         if (Date.now() > rec.exp) return Promise.resolve({ ok: false, error: 'That code has expired. Request a new one.' });
         if (code !== rec.code) return Promise.resolve({ ok: false, error: 'That code is not right. Check and try again.' });
-        var au = read(PENDING_KEY);
-        if (!au) return Promise.resolve({ ok: false, error: 'Sign in with Google first.' });
         remove(OTP_KEY);
-        au.phone = phone; write(PENDING_KEY, au);
-        var m = members.findByPhone(phone) || members.findByEmail(au.email);
-        if (!m) return Promise.resolve({ ok: true, status: 'new', authUser: au });
-        var patch = {}; if (m.phone !== phone) patch.phone = phone; if (au.email && !m.email) patch.email = au.email;
-        return members.update(m.id, patch).then(function () { remove(PENDING_KEY); auth.set('member', m.id); return { ok: true, status: 'ok', user: m }; });
+        var m = members.findByPhone(phone);
+        if (m) { auth.set('member', m.id); return Promise.resolve({ ok: true, status: 'ok', user: m }); }
+        var au = { uid: uid('mem'), name: '', email: '', photo: '', provider: 'phone', phone: phone };
+        write(PENDING_KEY, au);
+        return Promise.resolve({ ok: true, status: 'new', authUser: au });
       }
       if (!auth._confirmation) return Promise.resolve({ ok: false, error: 'Request a new code first.' });
       return auth._confirmation.confirm(code).then(function () {
@@ -398,7 +425,6 @@
       }).then(function (r) {
         if (r.status === 'ok') return { ok: true, status: 'ok', user: r.user };
         if (r.status === 'new') return { ok: true, status: 'new', authUser: r.authUser };
-        if (r.status === 'phone') return { ok: false, error: 'The number could not be saved to your account. Request a new code and try again.' };
         return { ok: false, error: 'Could not sign you in. Try again.' };
       }).catch(function (e) { return { ok: false, error: friendlyAuthError(e) }; });
     },
@@ -457,14 +483,20 @@
       'auth/unauthorized-domain': 'This website is not yet authorised in Firebase. Add the domain under Authentication → Settings.',
       'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase yet.',
       'auth/quota-exceeded': 'SMS limit reached for today. Please try again tomorrow or message us on WhatsApp.',
-      'auth/captcha-check-failed': 'Verification failed. Reload the page and try again.',
-      'auth/invalid-app-credential': 'Verification failed. Reload the page and try again.',
-      'auth/missing-app-credential': 'Verification failed. Reload the page and try again.',
+      'auth/captcha-check-failed': 'SMS sign-in is not enabled for ' + window.location.hostname + ' yet. The NARI team must add this address under Firebase → Authentication → Settings → Authorized domains.',
+      'auth/invalid-app-credential': 'The security check expired or was rejected. Please try again.',
+      'auth/missing-app-credential': 'The security check did not load. Reload the page and try again.',
+      'auth/invalid-recaptcha-token': 'The security check expired. Please try again.',
+      'auth/missing-recaptcha-token': 'The security check did not load. Reload the page and try again.',
+      'auth/app-not-authorized': 'This website is not authorised in Firebase. Add the domain under Authentication → Settings.',
+      'auth/api-key-not-valid': 'The Firebase API key in portal-config.js is not valid.',
+      'auth/permission-denied': 'Your access rules are out of date. Publish the latest firestore.rules (GO-LIVE.md step 5).',
       'auth/billing-not-enabled': 'SMS codes are not switched on for this project yet. The NARI team must enable Phone sign-in billing in Firebase.',
-      'auth/account-exists-with-different-credential': 'This mobile number is already linked to a different NARI account. Sign in with the Google account you used before, or use another number.',
-      'auth/credential-already-in-use': 'This mobile number is already linked to a different NARI account. Sign in with the Google account you used before, or use another number.',
+      'auth/account-exists-with-different-credential': 'This mobile number is linked to a different NARI account. Message us on WhatsApp and we will sort it out.',
+      'auth/credential-already-in-use': 'This mobile number is linked to a different NARI account. Message us on WhatsApp and we will sort it out.',
       'auth/provider-already-linked': 'A mobile number is already verified on this account.',
-      'auth/requires-recent-login': 'For your security, sign in with Google again and then verify your number.',
+      'auth/requires-recent-login': 'For your security, sign in again and retry.',
+      'auth/missing-phone-number': 'Enter your mobile number.',
       'auth/invalid-credential': 'Email or password is incorrect.',
       'auth/wrong-password': 'Email or password is incorrect.',
       'auth/user-not-found': 'No account with this email. Ask the NARI admin to add you.',
@@ -473,7 +505,10 @@
       'auth/user-disabled': 'This account has been disabled. Contact the NARI admin.',
       'auth/missing-password': 'Enter your password.'
     };
-    return map[c] || (e && e.message) || 'Something went wrong. Please try again.';
+    var msg = map[c] || (e && e.message) || 'Something went wrong. Please try again.';
+    /* Keep the raw code visible for unmapped errors so a screenshot is enough to diagnose. */
+    if (!map[c] && c) msg += ' (' + c + ')';
+    return msg;
   }
 
   /* ====================================================================
@@ -501,7 +536,7 @@
       var m = {
         id: id, name: String(o.name || au.displayName || au.name || '').trim(), phone: phone,
         email: normEmail(au.email), city: String(o.city || '').trim(), img: au.photoURL || au.photo || '',
-        provider: LIVE ? (au.phoneNumber && !au.email ? 'phone' : 'google') : (au.provider || 'google'), createdAt: todayIso()
+        provider: 'phone', createdAt: todayIso()
       };
       return store.put('members', id, m).then(function () { if (!LIVE) { remove(PENDING_KEY); auth.set('member', id); } return m; });
     },
@@ -673,6 +708,81 @@
   };
 
   /* ====================================================================
+     PAYMENTS — plans and Paytm hand-off (see portal-config.js → payments)
+     The site has no server, so the browser opens Paytm with the amount pre-filled and records the attempt
+     in `payments/{id}`. The member then enters the UPI reference number ("claimed") and the team marks it
+     Paid in the console. Entitlement (membership / pass validity) is derived from paid payments.
+     ==================================================================== */
+  function nowIso() { return new Date().toISOString(); }
+  function isMobile() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''); }
+  var payments = {
+    PLANS: PLANS, STATUSES: PAY_STATUSES,
+    upiId: PAY.upiId || '',
+    plan: function (id) { return byId(PLANS, id); },
+    defaultPlan: function () { for (var i = 0; i < PLANS.length; i++) if (PLANS[i].default) return PLANS[i]; return PLANS[0]; },
+    list: function () { return db.payments.slice().sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : -1; }); },
+    get: function (id) { return byId(db.payments, id); },
+    forMember: function (mid) { return payments.list().filter(function (p) { return p.memberId === mid; }); },
+    countBy: function (status) { return db.payments.filter(function (p) { return p.status === status; }).length; },
+    rupees: function (n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); },
+    /* What the member currently has: { kind: 'plan', plan, until } for a live membership/pass, { kind: 'single', count }
+       for paid single consultations not yet used up, or null. */
+    entitlement: function (mid) {
+      var paid = payments.forMember(mid).filter(function (p) { return p.status === 'paid'; });
+      var best = null;
+      paid.forEach(function (p) {
+        var plan = payments.plan(p.planId); if (!plan || !plan.days) return;
+        var from = new Date(p.paidAt || p.createdAt); var until = new Date(from.getTime() + plan.days * 86400e3);
+        if (until >= new Date() && (!best || until > best.until)) best = { kind: 'plan', plan: plan, until: until, payment: p };
+      });
+      if (best) return best;
+      var singles = paid.filter(function (p) { var pl = payments.plan(p.planId); return pl && !pl.days; }).length;
+      var used = db.appointments.filter(function (a) { return a.memberId === mid && (a.status === 'completed' || a.status === 'confirmed'); }).length;
+      var left = singles - used;
+      return left > 0 ? { kind: 'single', count: left } : null;
+    },
+    /* Builds the links that open Paytm with the amount filled in. */
+    links: function (plan, payment) {
+      var note = 'NARI ' + plan.label + ' ' + payment.id;
+      var q = 'pa=' + encodeURIComponent(payments.upiId) + '&pn=' + encodeURIComponent(PAY.payeeName || 'NARI Health') + '&am=' + Number(plan.price).toFixed(2) + '&cu=INR&tn=' + encodeURIComponent(note) + '&tr=' + encodeURIComponent(payment.id);
+      return {
+        page: plan.link || '',
+        paytm: payments.upiId ? 'paytmmp://pay?' + q : '',
+        upi: payments.upiId ? 'upi://pay?' + q : '',
+        whatsapp: waLink('Hi NARI Health, I want to pay ' + payments.rupees(plan.price) + ' for the ' + plan.label + ' (ref ' + payment.id + '). Please send me the payment link.')
+      };
+    },
+    /* Records the attempt and returns how to pay: { payment, method: 'page'|'app'|'upi'|'whatsapp', url, links }. */
+    start: function (planId, member) {
+      var plan = payments.plan(planId); if (!plan) return Promise.reject(new Error('Unknown plan.'));
+      var p = {
+        id: uid('pay'), memberId: member.id, memberName: member.name || '', memberPhone: member.phone || '',
+        planId: plan.id, planLabel: plan.label, amount: Number(plan.price), recurring: !!plan.recurring,
+        status: 'initiated', txnRef: '', createdAt: nowIso()
+      };
+      return store.put('payments', p.id, p).then(function () {
+        var l = payments.links(plan, p);
+        var method = l.page ? 'page' : l.paytm ? (isMobile() ? 'app' : 'upi') : 'whatsapp';
+        var url = method === 'page' ? l.page : method === 'app' ? l.paytm : method === 'upi' ? l.upi : l.whatsapp;
+        return { payment: p, plan: plan, method: method, url: url, links: l };
+      });
+    },
+    /* Member: "I have paid", with the 12-digit UPI reference / UTR from Paytm. */
+    claim: function (id, txnRef) {
+      txnRef = String(txnRef || '').trim().toUpperCase().slice(0, 40);
+      if (txnRef.length < 6) return Promise.reject(new Error('Enter the reference number shown in Paytm after paying (usually 12 digits).'));
+      return store.patch('payments', id, { status: 'claimed', txnRef: txnRef, claimedAt: nowIso() });
+    },
+    /* Admin: confirm against the Paytm statement. */
+    setStatus: function (id, status) {
+      if (PAY_STATUSES.indexOf(status) < 0) return Promise.reject(new Error('Bad status'));
+      var patch = { status: status }; if (status === 'paid') patch.paidAt = nowIso();
+      return store.patch('payments', id, patch);
+    },
+    remove: function (id) { return store.remove('payments', id); }
+  };
+
+  /* ====================================================================
      REFERRALS (from ?ref= links)
      ==================================================================== */
   var referral = {
@@ -746,8 +856,11 @@
         write('nari_portal_role', role);
         return (LIVE ? loadLive(role, r.user) : Promise.resolve()).catch(function (e) {
           /* Show the problem on the page instead of an endless loader, then stop. */
-          fail(e && e.message || 'Could not load your data.');
-          document.body.classList.remove('loading'); var l = document.getElementById('loader'); if (l) l.remove();
+          var m = e && e.message || 'Could not load your data.';
+          if (/insufficient permissions|permission-denied/i.test(m)) m = 'Your account is fine, but the database rules are out of date: publish the latest firestore.rules in the Firebase console (GO-LIVE.md step 5), then reload.';
+          fail(m);
+          document.body.classList.remove('loading');
+          if (global.NariLoader) global.NariLoader.hide(); else { var l = document.getElementById('loader'); if (l) l.remove(); }
           throw e;
         }).then(function () {
           /* Members never read the members collection, so keep their own profile in the cache for bookings. */
@@ -770,7 +883,7 @@
     isLive: LIVE, CONFIG: CFG, MEMBER: MEMBER, MEMBERS: MEMBERS,
     CATEGORIES: CATEGORIES, MODES: MODES, SOURCES: SOURCES, SLOTS: SLOTS, STATUSES: STATUSES,
     ready: ready, readyPublic: readyPublic, subscribe: subscribe,
-    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
+    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, payments: payments, PLANS: PLANS, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
     fmt: fmt, today: todayIso, daysFromToday: daysFromToday, normPhone: normPhone, waLink: waLink,
     resetDemo: resetDemo, exportJSON: exportJSON, uid: uid,
     _db: function () { return db; }

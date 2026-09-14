@@ -11,15 +11,17 @@ rules_version = '2';
 //   invites/{phone}         a member added by a doctor before she signs up herself
 //   appointments/{id}       bookings; member details are copied on so doctors never read /members
 //   leads/{id}              website call-back enquiries (no sign-in); admins only
+//   payments/{id}           a member's Paytm payment attempt for a plan; she may add the UPI reference,
+//                           only admins can mark it paid/failed
 //
-// Members sign in with Google and then verify their mobile number by SMS code. The number is linked
-// to the same account, so request.auth.token.phone_number is present for every real member. Rules
-// below require it before a member can save a profile or book, and use it to match doctor invites.
+// Members sign in with their mobile number + SMS code only, so request.auth.token.phone_number is
+// present for every real member. Rules below require it before a member can save a profile, book or
+// pay, and use it to match doctor invites.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    // A member who has completed the SMS step (Google-only accounts have no phone_number claim yet).
+    // A member who has completed the SMS step (staff Google/password accounts have no phone_number claim).
     function phoneVerified() { return signedIn() && 'phone_number' in request.auth.token && request.auth.token.phone_number is string; }
     // The 10-digit number saved on a profile must be the one verified on the account.
     function phoneMatchesToken(p) { return p is string && p.matches('^[0-9]{10}$') && request.auth.token.phone_number.matches('^\\+[0-9]*' + p + '$'); }
@@ -110,6 +112,30 @@ service cloud.firestore {
         || (signedIn() && resource.data.memberId == request.auth.uid && onlyChanges(['status']) && request.resource.data.status == 'cancelled')
         || (isDoctor() && resource.data.doctorId == myDoctorId() && onlyChanges(['status']));
 
+      allow delete: if isAdmin();
+    }
+
+    // Payments. A member records her own attempt (status 'initiated', amount and plan copied from the page),
+    // then may only add the UPI reference and move it to 'claimed'. Admins verify against the Paytm
+    // statement and set 'paid' / 'failed' / 'refunded'.
+    match /payments/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.memberId == request.auth.uid);
+      allow create: if isAdmin()
+        || (phoneVerified() && request.resource.data.memberId == request.auth.uid
+            && request.resource.data.keys().hasOnly(['id', 'memberId', 'memberName', 'memberPhone', 'planId', 'planLabel', 'amount', 'recurring', 'status', 'txnRef', 'createdAt'])
+            && request.resource.data.id == id
+            && request.resource.data.status == 'initiated'
+            && request.resource.data.planId is string && request.resource.data.planId.size() <= 20
+            && request.resource.data.planLabel is string && request.resource.data.planLabel.size() <= 60
+            && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 100000
+            && request.resource.data.recurring is bool
+            && request.resource.data.txnRef == ''
+            && request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 40);
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.memberId == request.auth.uid && resource.data.status == 'initiated'
+            && onlyChanges(['status', 'txnRef', 'claimedAt'])
+            && request.resource.data.status == 'claimed'
+            && request.resource.data.txnRef is string && request.resource.data.txnRef.size() >= 6 && request.resource.data.txnRef.size() <= 40);
       allow delete: if isAdmin();
     }
   }
