@@ -219,7 +219,7 @@ the product:
   Women's health queries in India are high volume and under-served in plain
   English and Hindi.
 - **Instagram and WhatsApp forwards** are already your top referral sources in
-  the demo data; the admin overview measures them. Keep the "How did you hear
+  the demo data; the admin overview measures them. Keep the "How did you heard
   about us?" field mandatory-ish.
 - **Corporate wellness (B2B).** A "NARI for teams" page: company pays for a
   block of consultations for employees. One deal covers months of B2C growth.
