@@ -1,9 +1,10 @@
 User-agent: *
 Allow: /
-Disallow: /login.html
-Disallow: /member-login.html
+Disallow: /login
+Disallow: /member-login
 Disallow: /doctor/
 Disallow: /admin/
-Disallow: /member.html
+Disallow: /member
+Disallow: /firebase-messaging-sw.js
 
 Sitemap: https://narihealth.in/sitemap.xml

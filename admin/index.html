@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Team sign in — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -16,7 +17,7 @@
   <main class="auth-page">
     <aside class="auth-panel admin">
       <div class="blob a"></div><div class="blob b"></div>
-      <a href="../index.html" class="auth-brand">
+      <a href="../" class="auth-brand">
         <img src="../assets/logo.png" alt="NARI Health" width="58" height="40" />
       </a>
       <div class="auth-panel-copy">
@@ -80,7 +81,7 @@
           </ul>
         </details>
 
-        <p class="small muted" style="text-align:center;margin-top:1.25rem"><a href="../index.html" style="color:var(--muted)">← Back to narihealth.in</a></p>
+        <p class="small muted" style="text-align:center;margin-top:1.25rem"><a href="../" style="color:var(--muted)">← Back to narihealth.in</a></p>
       </div>
     </section>
   </main>
@@ -91,7 +92,7 @@
   <script>
   (function () {
     var NP = NariPortal, UI = PortalUI, $ = UI.$;
-    var next = UI.nextParam('console.html');
+    var next = UI.nextParam('console');
     var errMsg = UI.param('error'); if (errMsg) UI.showError('err', errMsg);
     $('googleWrap').innerHTML = UI.googleButton('googleBtn', 'Sign in with Google');
     UI.initPasswordToggles();

@@ -52,9 +52,88 @@ campaign sent her.
 | Page | What |
 |---|---|
 | `member-login.html` | Three steps: **mobile number** → **6-digit SMS code** → short profile (name, city; new members only). Light, low-pink theme. Firebase signs her in with a phone-only account (`signInWithPhoneNumber`), so the ID token carries `phone_number`. If the invisible reCAPTCHA is rejected, the second attempt shows the visible "I'm not a robot" box. Accepts `?ref=NH-CODE` referral links. If a doctor had added this member with that number, her account is linked to that doctor automatically. |
-| `member.html` | Book a consultation (concern, expert, mode, date/time, notes, how they heard about NARI + referral code). Upcoming and past consultations, cancel, WhatsApp the care team. Shows **"Your referring doctor"** when a doctor added or referred her, and pre-fills the referral on every booking. |
+| `member.html` | Book a consultation (concern, expert, mode, date/time, notes, how they heard about NARI + referral code). Upcoming and past consultations, cancel, WhatsApp the care team. Shows **"Your referring doctor"** when a doctor added or referred her, and pre-fills the referral on every booking. **Period tracker** for members who have paid for anything (see below). |
 | `doctor/panel.html` | Stats; **My members** (women the doctor added, plus anyone who booked with the doctor's code), with "Not signed up yet" status, WhatsApp invite, and consultation history; **Add a member** form (name, phone, city, optional email and note); own consultations with confirm / complete / cancel; referral code + link + WhatsApp share. |
-| `admin/console.html` | Overview (stat tiles, needs-attention queue, referral source breakdown, per-doctor member counts); all consultations (search, filter, assign expert, change status); members including those added by doctors but not yet signed up; doctors (add with sign-in credentials, pause, reset password, copy referral link); team access (add admins with credentials, reset password, remove); export JSON; import website experts. |
+| `admin/console.html` | Overview (stat tiles, needs-attention queue, **latest activity**, referral source breakdown, per-doctor member counts); all consultations (search, filter, assign expert, change status); members including those added by doctors but not yet signed up; doctors (add with sign-in credentials, pause, reset password, copy referral link); team access (add admins with credentials, reset password, remove); **notifications** (bell with unread count, sound, per-device push); export JSON; import website experts. |
+| `admin/dev.html` | **Developer page** (admins only): website traffic for the last 7/30/90 days (views, visitors, enquiries and sign-ups with conversion, daily chart, top pages, sources, campaigns, devices, busiest hours), health checks (mode, rules up to date, push key, service worker, notification permission), document counts, configuration, this browser's details and error log, and quick links to Firebase, Analytics, GitHub and Paytm. |
+
+Member sign-in asks for the SMS code the moment a valid 10-digit number has been
+typed (no button press), and **Resend code** unlocks after a 60-second countdown.
+
+## "View as": the admin opens any member's or doctor's page
+
+In the console, each row under **Members** has **Open as member** and each row
+under **Doctors** has **Open as doctor**. They open `member?as=<id>` or
+`doctor/panel?as=<id>` in a new tab: the page exactly as that person sees it,
+with their data, and every action works for them (book or cancel a
+consultation, start a payment or add the UPI reference, add or edit a doctor's
+members). A dark bar at the top says who is being viewed and who is really
+signed in; **Exit view** returns to the console.
+
+- The admin stays signed in as herself. No passwords or codes are shared, and
+  nothing about how members or doctors sign in changes.
+- Everything saved this way is stamped `byAdmin` (new records) or
+  `updatedByAdmin` (changes), and the activity feed shows "· by Istuti (admin)".
+- **The period tracker is not shown.** `cycles/{uid}` is readable by the member
+  alone (see the rules), and the page says so instead. Health data stays hers.
+- Anyone who is not an admin and opens an `?as=` link simply gets the page for
+  whoever is signed in (or the sign-in page); the parameter is ignored.
+- Nothing in `firestore.rules` changed for this: admins already have read and
+  write on members, appointments, payments, invites and doctors.
+
+## Notifications for the team
+
+Every admin sees a **bell** in the console header. It counts what has happened
+since she last looked (new enquiries, payments started and claimed, bookings and
+cancellations, member sign-ups, members added by doctors, doctors added to the
+panel and their first sign-in), lists it newest first, and jumps to the right
+tab on tap. New events arriving while the console is open play a short chime and
+show a pop-up toast. The list is **derived from the collections the console
+already loads** (`NariPortal.activity`), so nothing extra is written; the
+"seen up to" marker is `notifSeenAt` on the admin's own `staff` record.
+
+**Enable alerts on this device** (in the bell, or Team & settings →
+Notifications) asks the browser for permission. What happens next depends on
+setup:
+
+| Setup | Result |
+|---|---|
+| Demo mode, or live without a Web Push key | Alerts while the console tab is open (browser notification when the tab is in the background). |
+| Live, `push.vapidKey` set in `portal-config.js`, Cloud Function deployed | Real push via **Firebase Cloud Messaging** to that device even when the console is closed, including Android phones (iPhone: only when the console is added to the Home Screen). The token is stored in `pushTokens/{token}`; `functions/index.js` sends to every admin token on each Firestore write that matters and removes tokens FCM reports as dead. The console lists enabled devices and can remove one. |
+
+Setup steps are in [GO-LIVE.md](GO-LIVE.md#push-notifications-for-the-team).
+`firebase-messaging-sw.js` at the site root is the service worker that shows
+pushes when the console is closed; it reads the same `portal-config.js`.
+
+## Period tracker
+
+Shown on `member.html` to members with **any paid entitlement** (an active
+membership or pass, or an unused paid single consultation); everyone else sees
+a locked preview with a "See plans" button. The member marks the day a period
+started and ended (quick buttons for today, or tap any past day on the
+calendar), and can note flow, symptoms and a short note per day. From two or
+more periods NARI shows the current cycle day and phase, the expected next
+period, an estimated fertile window and ovulation day, average cycle and period
+length, and the last six cycles. A member who knows her usual cycle can set it
+instead of relying on the average. **Copy summary for your expert** produces a
+plain-text summary to paste into WhatsApp or booking notes.
+
+Predictions are plain averages of her own entries and the page says so: not
+medical advice, not contraception. The data lives in `cycles/{uid}`, readable
+and writable **only by that member**; admins cannot read it and only delete it
+when removing her account.
+
+## Developer page
+
+`admin/dev.html` needs an admin sign-in like the console. Traffic comes from
+`traffic.js`, a small script on the public pages that adds one view to
+`traffic/{YYYY-MM-DD}` per page load through Firestore's REST API (no SDK
+download): split by page, source (`utm_source` or the referring site), campaign,
+device and hour, with the first page of a visit counted as a visitor. Google
+Analytics stays the audited, detailed source; this page is the quick own view.
+In demo mode the counts live in `localStorage`, and a sample month is shown
+until something has been counted. Page loads with the browser's "Do Not Track"
+signal are not counted.
 
 ### Doctor-added members, end to end
 
@@ -112,12 +191,18 @@ A referral link looks like `member-login.html?ref=NH-SUDHA`.
 
 | Collection | Key | Fields |
 |---|---|---|
-| `doctors` | `doctorId` | `name, role, exp, refCode, active, img, categories[]` — public, no email |
-| `staff` | email | `role: 'admin' \| 'doctor', doctorId?, name` (+ `password` in demo only) |
+| `doctors` | `doctorId` | `name, role, exp, refCode, active, img, categories[], createdAt` — public, no email |
+| `staff` | email | `role: 'admin' \| 'doctor', doctorId?, name, createdAt?, firstLoginAt?, notifSeenAt?` (+ `password` in demo only) |
 | `members` | Firebase uid (demo: generated id) | `name, phone, email, city, img, provider, createdAt, referredByDoctorId?` |
 | `invites` | 10-digit phone | `phone, phoneE164, name, city, email, note, doctorId, createdAt, claimedBy, claimedAt` |
-| `appointments` | generated id | `memberId, memberName, memberPhone, memberCity, doctorId, category, mode, date, time, notes, status, referredBy, referredDoctorId, createdAt` |
+| `appointments` | generated id | `memberId, memberName, memberPhone, memberCity, doctorId, category, mode, date, time, notes, status, referredBy, referredDoctorId, createdAt, cancelledAt?` |
 | `leads` | generated id | `name, phone, concern, time (morning/afternoon/evening), page, ref, utm{source,medium,campaign}, status (new/contacted/booked/closed), createdAt` — written without sign-in by `lead-form.js` |
+| `cycles` | member uid | `periods[{start, end}], logs{date: {flow, symptoms[], note}}, cycleLength, updatedAt` — the member alone can read or write |
+| `pushTokens` | FCM token | `token, email, role, name, device, createdAt, updatedAt` — one per device that enabled push |
+| `traffic` | `YYYY-MM-DD` | `day, views, visitors, pages{}, sources{}, campaigns{}, devices{}, hours{}` — counters, written without sign-in by `traffic.js` |
+
+`createdAt` on new records is a full ISO timestamp (older records hold a bare
+date; both display fine).
 
 Member details are copied onto each appointment so doctors can see who booked
 without being able to read the `members` collection. `referredBy` is either
@@ -135,10 +220,14 @@ duplicates the doctor id so Firestore can query it.
   invites.
 - A signed-in member can read and claim only the invite that matches her
   verified phone or her account email.
-- Admins read and write everything. Admin is granted by a `staff/{email}`
-  document with `role: 'admin'`.
+- Admins read and write everything except members' `cycles`. Admin is granted
+  by a `staff/{email}` document with `role: 'admin'`.
 - Doctor profiles are publicly readable so the booking form and referral links
   work before sign-in.
+- Any staff member may stamp `firstLoginAt` and `notifSeenAt` on her own staff
+  record, and register or remove her own `pushTokens`.
+- `traffic/{day}` accepts one-view increments from anyone (shape and sizes
+  pinned); only admins read it.
 
 ### Staff credentials
 

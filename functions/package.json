@@ -1,0 +1,17 @@
+{
+  "name": "nari-health-functions",
+  "description": "Push notifications to the NARI Health team when something needs their attention.",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "deploy": "npx firebase-tools deploy --only functions",
+    "logs": "npx firebase-tools functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0"
+  }
+}

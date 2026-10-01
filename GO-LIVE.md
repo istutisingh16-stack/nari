@@ -63,7 +63,11 @@ as soon as it is deployed. Step 1 is done; start at step 2.
    https://console.firebase.google.com/project/nari-health-33e31/firestore →
    Create database → production mode → region `asia-south1` (Mumbai).
 5. **Paste the rules.** Firestore → Rules → replace everything with the
-   contents of `firestore.rules` → Publish.
+   contents of `firestore.rules` → Publish. Repeat this whenever
+   `firestore.rules` changes (the developer page, `/admin/dev.html`, shows
+   "Firestore rules: outdated" when it is due). If you set up the Firebase CLI
+   for push notifications below, `npx firebase-tools deploy --only firestore:rules`
+   does the same from the terminal.
 6. **Add the first admin.** Firestore → Data → Start collection `staff` →
    Document ID = your Google email (e.g. `istuti@gmail.com`) → fields
    `role` = `admin` (string), `name` = `Istuti` (string) → Save. Sign in at
@@ -125,9 +129,9 @@ day of setup and the per-message fee; the data layer already has `sendOtp` /
 
 | Who | URL | Listed on the website? |
 |---|---|---|
-| Members | `/member-login.html` | Yes ("Sign in" and "Book a consultation") |
+| Members | `/member-login` | Yes ("Sign in" and "Book a consultation") |
 | Doctors | `/doctor/` | No. Share it with doctors directly. |
-| Team | `/admin/` | No. |
+| Team | `/admin/` | No. From the console an admin can also open any member's dashboard or doctor's panel as them (PORTAL.md → "View as"). |
 
 Hiding the URLs is convenience, not the security. The security is that the
 `staff` list is writable only by admins, and anyone not on it is refused at
@@ -259,6 +263,65 @@ member referral → 6. WhatsApp API automation → 7. B2B page.
    reference with your Paytm statement and press **Mark paid**. Her plan goes
    live immediately.
 
+## Push notifications for the team
+
+The console bell already works on its own: while the console tab is open, every
+new enquiry, payment, booking, sign-up and doctor change plays a chime and shows
+a pop-up, and the bell counts what each admin has not seen yet. To also get a
+notification on your phone or laptop **when the console is closed**, Firebase
+Cloud Messaging needs a small Cloud Function that sends it. One-time setup,
+about 20 minutes:
+
+1. **Blaze plan.** Cloud Functions need the pay-as-you-go plan, the same one
+   real SMS codes need. The free allowance (2 million function calls a month)
+   covers this many times over; set a budget alert anyway.
+2. **Web Push key.** Firebase console → Project settings (gear) → **Cloud
+   Messaging** → *Web configuration* → *Web Push certificates* → **Generate key
+   pair** → copy the key (starts with `B…`) into `portal-config.js` →
+   `push.vapidKey`. Commit and push so the site picks it up.
+3. **Deploy the function** from a computer with Node.js 22
+   (https://nodejs.org). In the repository folder:
+   ```
+   cd functions && npm install && cd ..
+   npx firebase-tools login
+   npx firebase-tools deploy --only functions,firestore:rules
+   ```
+   The first deploy asks to enable a few Google Cloud APIs (Cloud Functions,
+   Cloud Run, Eventarc, Artifact Registry); answer yes. It also publishes the
+   current `firestore.rules`, which the push feature needs (the `pushTokens`
+   collection). Rerun the deploy command only if `functions/index.js` changes.
+   `functions/.env` holds the site address used in the notification link
+   (`https://narihealth.in`); change it if the console moves.
+4. **Each admin, on each device:** open `/admin/` → bell → **Enable alerts on
+   this device** → allow the browser prompt. Team & settings → Notifications
+   lists every enabled device and can remove one (a lost phone, for example).
+5. **Test:** submit the "Get a free call back" form on the home page from
+   another browser. The bell updates within a second; the push arrives on
+   enabled devices within a few seconds, even with the console closed.
+
+Notes:
+
+- Works on desktop Chrome, Edge and Firefox, and on Android Chrome. On
+  **iPhone** it only works after adding the console to the Home Screen (Share
+  → Add to Home Screen) and opening it from there (iOS 16.4 or newer).
+- Notifications are sent for: new enquiry, payment started, payment claimed
+  (UPI reference entered), booking requested, member signed up, member added by
+  a doctor, doctor added to the panel, doctor's first sign-in. The in-console
+  feed additionally shows cancellations.
+- Logs: `npx firebase-tools functions:log`, or Firebase console → Functions.
+- Without steps 1–3 the bell still works while the console is open; the
+  developer page shows what is missing under **Health**.
+
+## Developer page
+
+`/admin/dev.html` (admin sign-in) shows website traffic for the last 7, 30 or
+90 days, counted by `traffic.js` on the public pages (no Google sign-in
+needed; Google Analytics remains the detailed source), plus health checks
+(rules up to date, push configured, service worker registered), document
+counts, configuration and quick links to every console you might need. The
+traffic collection is created by the rules in step 5; until they are
+published the page says so.
+
 ## If the SMS code does not arrive ("Verification failed" / security check)
 
 Phone sign-in needs a reCAPTCHA token from Google before Firebase sends the SMS.
@@ -280,6 +343,18 @@ is not one it recognises.
    Sign-in then works instantly and costs nothing.
 6. If the invisible check keeps failing on a device, the page automatically
    switches to the visible "I'm not a robot" box on the second attempt.
+
+### Testing phone sign-in locally (localhost / 127.0.0.1)
+
+Google's security check rejects real phone sign-in from a local copy of the site
+(`auth/invalid-app-credential`, then the "I'm not a robot" box loops). So on
+`localhost` and `127.0.0.1` the portal switches the check off and **only Firebase
+test numbers work**; no real SMS is sent. Add one under Authentication → Sign-in
+method → Phone → *Phone numbers for testing* (e.g. `+91 99999 00001`, code
+`123456`), then sign in with it locally. Test real numbers on narihealth.in.
+
+Serve the folder with `npx serve -l 5055 .` (not VS Code Live Server, which cannot
+open clean addresses like `/member-login`).
 
 "Missing or insufficient permissions" after sign-in means the published
 Firestore rules are older than the code. Paste `firestore.rules` into

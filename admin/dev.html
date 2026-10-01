@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer — NARI Health</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="../favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../portal.css" />
+</head>
+<body class="portal loading">
+  <script src="../loader.js"></script>
+  <header class="dash-nav" id="nav"></header>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow">Developer</p>
+        <h1>Traffic and system status</h1>
+        <p id="subline"></p>
+      </div>
+      <div class="row">
+        <select class="select" id="range" style="width:auto;padding:.55rem 2.2rem .55rem .9rem;font-size:.8125rem;background-color:#fff"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+        <a class="btn btn-ghost btn-sm" href="console">← Team console</a>
+      </div>
+    </div>
+
+    <div class="notice hidden" id="sampleNote" style="margin-bottom:1.25rem"></div>
+    <div class="stats" id="stats"></div>
+
+    <div class="grid-2 section-gap">
+      <section class="stack">
+        <div class="card">
+          <div class="card-head" style="margin-bottom:.75rem"><div><h2 class="card-title">Page views per day</h2><p class="card-sub" id="chartSub"></p></div><a class="btn btn-ghost btn-xs" id="gaLink" target="_blank" rel="noreferrer" href="https://analytics.google.com/">Open Google Analytics</a></div>
+          <div class="dev-chart" id="chart"></div>
+          <div class="dev-axis" id="axis"></div>
+        </div>
+        <div class="grid-2 even">
+          <div class="card"><h2 class="card-title" style="font-size:1rem">Top pages</h2><div class="bars" id="pages" style="margin-top:1rem"></div></div>
+          <div class="card"><h2 class="card-title" style="font-size:1rem">Where visitors come from</h2><div class="bars" id="sources" style="margin-top:1rem"></div></div>
+          <div class="card"><h2 class="card-title" style="font-size:1rem">Campaigns (utm_campaign)</h2><div class="bars" id="campaigns" style="margin-top:1rem"></div></div>
+          <div class="card"><h2 class="card-title" style="font-size:1rem">Devices and busiest hours</h2><div class="bars" id="devices" style="margin-top:1rem"></div><div class="dev-chart" id="hours" style="height:4.5rem;margin-top:1rem"></div><div class="dev-axis"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head" style="margin-bottom:.75rem"><div><h2 class="card-title">Errors on this device</h2><p class="card-sub">Anything the portal pages caught in this browser, newest first. Ask a colleague to open this page on their device to see theirs.</p></div><button type="button" class="btn btn-ghost btn-xs" id="clearErrs">Clear</button></div>
+          <div class="dev-log" id="errors"></div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <div class="card">
+          <h2 class="card-title">Health</h2>
+          <dl class="kv" id="health" style="margin-top:.75rem"></dl>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Database</h2>
+          <p class="card-sub">Documents in each collection right now. The console reads all of these once per open, then listens for changes.</p>
+          <dl class="kv" id="counts" style="margin-top:.75rem"></dl>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Configuration</h2>
+          <dl class="kv" id="config" style="margin-top:.75rem"></dl>
+        </div>
+        <div class="card">
+          <h2 class="card-title">This browser</h2>
+          <dl class="kv" id="env" style="margin-top:.75rem"></dl>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Quick links</h2>
+          <div class="links-grid" id="links" style="margin-top:1rem"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="dash-foot">© <span id="yr"></span> NARI Health · Developer page</footer>
+
+  <script src="../portal-config.js"></script>
+  <script src="../portal-data.js"></script>
+  <script src="../portal.js"></script>
+  <script>
+  NariPortal.ready('admin', { next: 'dev' }).then(function (me) {
+    if (!me) return;
+    var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc, CFG = NP.CONFIG, FB = CFG.firebase || {};
+    var PROJECT = FB.projectId || '', GA_ID = 'G-9V6RCQWJEM', REPO = 'https://github.com/istutisingh16-stack/nari';
+    $('yr').textContent = new Date().getFullYear();
+    UI.renderNav($('nav'), me, 'Developer', me.email, 'admin');
+    $('subline').textContent = (NP.isLive ? 'Live · Firebase project ' + PROJECT : 'Demo mode · this browser only') + ' · ' + window.location.host;
+
+    function tile(label, value, delta) { return '<div class="stat"><span class="label"><span class="dot"></span>' + esc(label) + '</span><span class="value">' + value + '</span><span class="delta">' + esc(delta) + '</span></div>'; }
+    function n(v) { return Number(v || 0).toLocaleString('en-IN'); }
+    function pct(a, b) { return b ? Math.round(a / b * 100) + '%' : '—'; }
+    function bars(el, map, total, labeler) {
+      var keys = Object.keys(map || {}).sort(function (a, b) { return map[b] - map[a]; }).slice(0, 8);
+      var top = keys.length ? map[keys[0]] : 0;
+      el.innerHTML = keys.map(function (k) { return '<div class="bar-row"><span class="bl"><span>' + esc(labeler ? labeler(k) : k) + '</span></span><span class="bv">' + n(map[k]) + ' · ' + pct(map[k], total) + '</span><div class="track"><div class="fill" style="width:' + (top ? Math.round(map[k] / top * 100) : 0) + '%"></div></div></div>'; }).join('') || '<p class="small muted">Nothing counted yet.</p>';
+    }
+    function sum(rows, key) { var out = {}; rows.forEach(function (r) { Object.keys(r[key] || {}).forEach(function (k) { out[k] = (out[k] || 0) + Number(r[key][k] || 0); }); }); return out; }
+    function pageLabel(k) { return k === 'home' ? 'Home page' : k.replace(/_/g, ' '); }
+    function sourceLabel(k) { return { direct: 'Direct / typed in', instagram_com: 'Instagram', l_instagram_com: 'Instagram (link)', google_com: 'Google', whatsapp: 'WhatsApp', com_google_android_gm: 'Gmail app', facebook_com: 'Facebook', m_facebook_com: 'Facebook (mobile)', lm_facebook_com: 'Facebook (link)', youtube_com: 'YouTube', t_co: 'X / Twitter' }[k] || k.replace(/_/g, '.'); }
+
+    /* ---------- Traffic ---------- */
+    function renderTraffic() {
+      var days = +$('range').value;
+      NP.dev.traffic(days).then(function (rows) {
+        var byDay = {}; rows.forEach(function (r) { byDay[r.day] = r; });
+        var sample = rows.some(function (r) { return r.sample; });
+        $('sampleNote').classList.toggle('hidden', !sample);
+        if (sample) $('sampleNote').innerHTML = UI.icon('info', '') + '<span>Demo mode with nothing counted yet, so this is <strong>sample traffic</strong>. Open the home page in this browser a few times and it will be replaced by real counts.</span>';
+        var views = 0, visitors = 0, series = [];
+        for (var i = days - 1; i >= 0; i--) { var d = NP.daysFromToday(-i), r = byDay[d] || { views: 0, visitors: 0 }; views += Number(r.views || 0); visitors += Number(r.visitors || 0); series.push({ day: d, views: Number(r.views || 0), visitors: Number(r.visitors || 0) }); }
+        var since = NP.daysFromToday(-(days - 1));
+        var leads = NP.leads.list().filter(function (l) { return String(l.createdAt).slice(0, 10) >= since; }).length;
+        var members = NP.members.list().filter(function (m) { return String(m.createdAt).slice(0, 10) >= since; }).length;
+        var today = byDay[NP.today()] || { views: 0, visitors: 0 };
+        $('stats').innerHTML =
+          tile('Page views', n(views), n(today.views) + ' today · ' + n(Math.round(views / days)) + ' a day') +
+          tile('Visitors', n(visitors), n(today.visitors) + ' today · first page of each visit') +
+          tile('Enquiries', n(leads), pct(leads, visitors) + ' of visitors asked for a call back') +
+          tile('Sign-ups', n(members), pct(members, visitors) + ' of visitors became members');
+        var top = Math.max.apply(null, series.map(function (s) { return s.views; }).concat([1]));
+        $('chart').innerHTML = series.map(function (s) { return '<div class="bar' + (s.day === NP.today() ? ' today' : '') + '" data-tip="' + esc(NP.fmt.date(s.day)) + ': ' + n(s.views) + ' views, ' + n(s.visitors) + ' visitors"><i style="height:' + Math.max(2, Math.round(s.views / top * 100)) + '%"></i></div>'; }).join('');
+        $('axis').innerHTML = '<span>' + esc(NP.fmt.date(series[0].day)) + '</span><span>' + esc(NP.fmt.date(series[series.length - 1].day)) + '</span>';
+        $('chartSub').textContent = 'Peak ' + n(top) + ' views in a day. Counted by traffic.js on the public pages; Google Analytics has the detailed picture.';
+        bars($('pages'), sum(rows, 'pages'), views, pageLabel);
+        bars($('sources'), sum(rows, 'sources'), visitors, sourceLabel);
+        bars($('campaigns'), sum(rows, 'campaigns'), visitors, function (k) { return k.replace(/_/g, ' '); });
+        bars($('devices'), sum(rows, 'devices'), views, function (k) { return k.charAt(0).toUpperCase() + k.slice(1); });
+        var hours = sum(rows, 'hours'), ht = 1; for (var h = 0; h < 24; h++) ht = Math.max(ht, hours['h' + h] || 0);
+        var hh = ''; for (var k = 0; k < 24; k++) { var v = hours['h' + k] || 0; hh += '<div class="bar" data-tip="' + (k % 12 || 12) + (k < 12 ? ' am' : ' pm') + ': ' + n(v) + '"><i style="height:' + Math.max(2, Math.round(v / ht * 100)) + '%"></i></div>'; }
+        $('hours').innerHTML = hh;
+      }, function (e) {
+        $('stats').innerHTML = tile('Page views', '—', 'Could not load traffic') + tile('Visitors', '—', '') + tile('Enquiries', n(NP.leads.list().length), 'all time') + tile('Sign-ups', n(NP.members.list().length), 'all time');
+        $('chart').innerHTML = '<p class="small muted" style="align-self:center">' + esc(e && e.message || 'Could not read traffic.') + (/permission/i.test(e && e.message) ? ' Publish the latest firestore.rules (it adds the traffic collection).' : '') + '</p>';
+      });
+    }
+    $('range').addEventListener('change', renderTraffic);
+    $('gaLink').href = 'https://analytics.google.com/analytics/web/';
+
+    /* ---------- Health ---------- */
+    function kv(rows) { return rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>'; }).join(''); }
+    function ok(t) { return '<span class="dev-ok">' + esc(t) + '</span>'; }
+    function warn(t) { return '<span class="dev-warn">' + esc(t) + '</span>'; }
+    function bad(t) { return '<span class="dev-bad">' + esc(t) + '</span>'; }
+    function renderHealth() {
+      var rows = [['Mode', NP.isLive ? ok('Live (Firebase)') : warn('Demo (this browser only)')], ['Site root', esc(NP.ROOT)], ['Served over', window.location.protocol === 'https:' ? ok('HTTPS') : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? warn('HTTP (local)') : bad('HTTP'))], ['Online', navigator.onLine ? ok('Yes') : bad('No')]];
+      $('health').innerHTML = kv(rows.concat([['Checking rules…', '<span class="spinner"></span>']]));
+      Promise.all([NP.dev.probe(), NP.dev.serviceWorker()]).then(function (r) {
+        var p = r[0], sw = r[1];
+        if (p.mode === 'live') {
+          var rulesOk = p.leads === 'ok' && p.payments === 'ok' && p.pushTokens === 'ok' && p.traffic === 'ok';
+          rows.push(['Firestore rules', rulesOk ? ok('Up to date') : bad('Outdated: publish firestore.rules') + '<div class="small muted">' + ['leads', 'payments', 'pushTokens', 'traffic'].map(function (c) { return c + ' ' + p[c]; }).join(' · ') + '</div>']);
+        }
+        rows.push(['Web Push key', NP.push.configured() ? ok('Set') : (NP.isLive ? warn('Not set (portal-config.js → push.vapidKey)') : '—')]);
+        rows.push(['Push devices enabled', NP.isLive ? String(NP.push.devices().length) : '—']);
+        rows.push(['Service worker', sw ? ok(sw.active ? 'Registered' : 'Installing') + '<div class="small muted">' + esc((sw.script || '').split('/').pop()) + '</div>' : (NP.push.configured() ? warn('Not registered on this device') : '<span class="muted">Not needed yet</span>')]);
+        rows.push(['Notifications here', NP.push.permission() === 'granted' ? ok('Allowed') : NP.push.permission() === 'denied' ? bad('Blocked') : NP.push.permission() === 'unsupported' ? '<span class="muted">Unsupported</span>' : warn('Not asked yet')]);
+        rows.push(['Cloud Function', NP.isLive ? '<span class="muted">Cannot be checked from here: send a test enquiry from the home page and watch for a push.</span>' : '—']);
+        rows.push(['Google Analytics', esc(GA_ID)]);
+        $('health').innerHTML = kv(rows);
+      });
+    }
+
+    /* ---------- Counts, config, environment ---------- */
+    function renderCounts() {
+      var apts = NP.appointments.list(), pays = NP.payments.list();
+      var byStatus = function (list, key) { var m = {}; list.forEach(function (x) { m[x[key]] = (m[x[key]] || 0) + 1; }); return Object.keys(m).map(function (k) { return k + ' ' + m[k]; }).join(' · '); };
+      var total = NP.members.list().length + NP.doctors.list().length + NP.staff.list().length + apts.length + NP.leads.list().length + pays.length + NP.invites.list().length + NP.push.devices().length;
+      $('counts').innerHTML = kv([
+        [NP.MEMBERS, n(NP.members.list().length)], ['Doctors', n(NP.doctors.list().length) + ' <span class="small muted">· ' + NP.doctors.list(true).length + ' active</span>'], ['Staff records', n(NP.staff.list().length)],
+        ['Consultations', n(apts.length) + '<div class="small muted">' + esc(byStatus(apts, 'status')) + '</div>'], ['Enquiries', n(NP.leads.list().length) + '<div class="small muted">' + esc(byStatus(NP.leads.list(), 'status')) + '</div>'],
+        ['Payments', n(pays.length) + '<div class="small muted">' + esc(byStatus(pays, 'status')) + '</div>'], ['Doctor invites', n(NP.invites.list().length)], ['Push tokens', n(NP.push.devices().length)],
+        ['Reads per console open', '≈ ' + n(total) + ' <span class="small muted">of 50,000 free a day</span>']
+      ]);
+    }
+    function renderConfig() {
+      $('config').innerHTML = kv([
+        ['Firebase project', esc(PROJECT || '—')], ['Auth domain', esc(FB.authDomain || '—')], ['Firebase SDK', esc(CFG.firebaseVersion || '')], ['Functions region', 'asia-south1'],
+        ['WhatsApp line', '+' + esc(CFG.whatsapp || '')], ['Support email', esc(CFG.supportEmail || '')], ['Paytm UPI', esc((CFG.payments || {}).upiId || '—')],
+        ['Plans', (NP.PLANS || []).map(function (p) { return esc(p.label + ' ' + NP.payments.rupees(p.price)); }).join('<br>')], ['Concerns listed', n(NP.CATEGORIES.length)], ['Booking slots', n(NP.SLOTS.length) + ' a day'], ['Website experts', n((CFG.seedDoctors || []).length)]
+      ]);
+    }
+    function renderEnv() {
+      var store = true; try { localStorage.setItem('nari_t', '1'); localStorage.removeItem('nari_t'); } catch (e) { store = false; }
+      $('env').innerHTML = kv([
+        ['Browser', esc(navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 90))], ['Screen', window.innerWidth + ' × ' + window.innerHeight + ' @' + (window.devicePixelRatio || 1) + 'x'],
+        ['Language · time zone', esc(navigator.language + ' · ' + (Intl.DateTimeFormat().resolvedOptions().timeZone || ''))], ['Local storage', store ? ok('Available') : bad('Blocked')],
+        ['Service workers', 'serviceWorker' in navigator ? ok('Supported') : bad('Unsupported')], ['Signed in as', esc(me.email)], ['Page loaded', esc(new Date().toLocaleTimeString())]
+      ]);
+    }
+    function renderErrors() {
+      var list = UI.errorLog();
+      $('errors').innerHTML = list.length ? list.map(function (e) { return '<div><code>' + esc(e.message) + '</code><span class="muted">' + esc(e.kind) + ' · ' + esc(e.where || '') + ' · ' + esc(NP.fmt.dateTime(e.at)) + '</span></div>'; }).join('') : '<p class="small muted">No errors recorded on this device.</p>';
+    }
+    $('clearErrs').addEventListener('click', function () { UI.clearErrorLog(); renderErrors(); });
+
+    var fb = 'https://console.firebase.google.com/project/' + PROJECT;
+    $('links').innerHTML = [
+      ['Firebase overview', fb + '/overview', 'globe'], ['Firestore data', fb + '/firestore/data', 'globe'], ['Firestore rules', fb + '/firestore/rules', 'shield'], ['Auth users', fb + '/authentication/users', 'users'],
+      ['Usage and billing', fb + '/usage', 'activity'], ['Functions logs', fb + '/functions/logs', 'code'], ['Cloud Messaging keys', fb + '/settings/cloudmessaging', 'bell'],
+      ['Google Analytics', 'https://analytics.google.com/analytics/web/', 'activity'], ['GitHub repository', REPO, 'code'], ['Deployments (Actions)', REPO + '/actions', 'refresh'], ['Paytm for Business', 'https://business.paytm.com/', 'shieldCheck'], ['Live site', NP.ROOT, 'home']
+    ].map(function (l) { return '<a href="' + esc(l[1]) + '" target="_blank" rel="noreferrer">' + UI.icon(l[2], '') + esc(l[0]) + '</a>'; }).join('');
+
+    function renderAll() { renderCounts(); renderConfig(); renderEnv(); renderErrors(); }
+    NP.subscribe(renderAll);
+    renderAll(); renderHealth(); renderTraffic();
+    UI.pageReady();
+  });
+  </script>
+</body>
+</html>

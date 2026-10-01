@@ -77,7 +77,7 @@
         '<input type="text" name="website" tabindex="-1" autocomplete="off" class="lead-hp" aria-hidden="true">' +
         '<p class="lead-error" role="alert"></p>' +
         '<button type="submit" class="btn-pill full lead-btn">Get my free call back <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>' +
-        '<p class="lead-fine">Or <a href="' + waLink('Hi NARI Health, I have a health question') + '" target="_blank" rel="noreferrer">WhatsApp us</a> · Prefer to book yourself? <a href="member-login.html">Sign in and book</a>. By submitting you agree to our <a href="privacy.html">Privacy Policy</a>.</p>' +
+        '<p class="lead-fine">Or <a href="' + waLink('Hi NARI Health, I have a health question') + '" target="_blank" rel="noreferrer">WhatsApp us</a> · Prefer to book yourself? <a href="member-login">Sign in and book</a>. By submitting you agree to our <a href="privacy">Privacy Policy</a>.</p>' +
       '</form>';
 
     var form = root.querySelector('form'), err = root.querySelector('.lead-error'), btn = root.querySelector('.lead-btn');
@@ -119,7 +119,7 @@
           ? '<p class="lead-sub">We opened WhatsApp with your details so the NARI team gets them right away. If it did not open, tap the button below.</p>'
           : '<p class="lead-sub">A NARI care coordinator will call <strong>' + esc(CC + ' ' + lead.phone.slice(0, 5) + ' ' + lead.phone.slice(5)) + '</strong> ' + (t ? 'in the <strong>' + t[1].toLowerCase() + '</strong> (' + t[2] + ')' : 'shortly') + ' about <strong>' + esc(lead.concern) + '</strong>. Save our number so you know it\'s us.</p>') +
         '<a class="btn-pill full lead-btn" target="_blank" rel="noreferrer" href="' + waLink(viaWa ? waText(lead) : 'Hi NARI Health, this is ' + lead.name + '. I just requested a call back about ' + lead.concern + '.') + '"><svg class="wa-icon sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.48-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35zM12.02 2C6.5 2 2.02 6.48 2.02 12c0 1.77.46 3.42 1.28 4.86L2 22l5.28-1.38A9.94 9.94 0 0 0 12.02 22c5.52 0 10-4.48 10-10s-4.48-10-10-10z"/></svg>' + (viaWa ? 'Send on WhatsApp' : 'Chat with us now on WhatsApp') + '</a>' +
-        '<p class="lead-fine">In a hurry? <a href="member-login.html">Sign in and book a slot yourself</a>.</p>' +
+        '<p class="lead-fine">In a hurry? <a href="member-login">Sign in and book a slot yourself</a>.</p>' +
       '</div>';
     root.classList.add('is-done');
   }

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Member sign in — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -19,7 +20,7 @@
     <!-- Brand panel -->
     <aside class="auth-panel member">
       <div class="blob a"></div><div class="blob b"></div>
-      <a href="index.html" class="auth-brand">
+      <a href="./" class="auth-brand">
         <img src="assets/logo.png" alt="NARI Health" width="64" height="44" />
       </a>
       <div class="auth-panel-copy">
@@ -49,7 +50,7 @@
         <div class="auth-card-head">
           <span class="auth-role-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-member-word>Member</span></span>
           <h1 id="cardTitle">Welcome to NARI</h1>
-          <p class="lead" id="cardLead">Enter your mobile number. We'll text you a 6-digit code. That's it.</p>
+          <p class="lead" id="cardLead">Enter your mobile number. We text you a 6-digit code the moment you finish typing it.</p>
         </div>
 
         <div id="refBanner" class="ref-banner hidden" style="margin-bottom:1.25rem"></div>
@@ -67,10 +68,15 @@
               <span class="hint">If a NARI doctor added you, use the number you gave them and your account links to them automatically.</span>
             </div>
             <p class="form-error" id="err1" role="alert"></p>
+            <div class="otp-sending hidden" id="sending" role="status" aria-live="polite">
+              <div class="otp-sending-row"><span class="spinner" aria-hidden="true"></span><span>Sending a 6-digit code to <strong id="sendingTo"></strong>…</span></div>
+              <div class="otp-progress" aria-hidden="true"><i id="sendingBar"></i></div>
+              <button type="button" class="btn-link" id="editNum">Wrong number? Edit it</button>
+            </div>
             <button type="button" class="btn btn-primary btn-block" id="sendBtn">Send code
               <svg class="ic sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
-            <label class="check"><input type="checkbox" id="agree" checked /> <span>I agree to the <a href="terms.html" target="_blank" style="color:var(--primary);font-weight:600">Terms</a> and <a href="privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Privacy Policy</a>.</span></label>
+            <label class="check"><input type="checkbox" id="agree" checked /> <span>I agree to the <a href="terms" target="_blank" style="color:var(--primary);font-weight:600">Terms</a> and <a href="privacy" target="_blank" style="color:var(--primary);font-weight:600">Privacy Policy</a>.</span></label>
             <p class="recaptcha-note">Protected by reCAPTCHA. Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a> apply.</p>
           </div>
 
@@ -82,7 +88,7 @@
             <div class="field">
               <label for="otp">Enter the 6-digit code sent to <span id="sentTo" style="color:var(--primary)"></span></label>
               <input class="input otp-input" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" maxlength="6" />
-              <span class="hint"><button type="button" class="btn-link" id="changeNum">Change number</button> · <button type="button" class="btn-link" id="resend">Resend code</button></span>
+              <span class="hint"><button type="button" class="btn-link" id="changeNum">Change number</button> · <span class="otp-timer"><button type="button" class="btn-link" id="resend">Resend code</button></span></span>
             </div>
             <p class="form-error" id="err2" role="alert"></p>
             <button type="submit" class="btn btn-primary btn-block" id="verifyBtn">Verify and continue
@@ -118,7 +124,7 @@
         <div class="auth-foot">
           <span>Have a question before you book? <a id="waLink" href="#" target="_blank" rel="noreferrer">Chat with the NARI team on WhatsApp</a>.</span>
         </div>
-        <p class="small muted" style="text-align:center;margin-top:1.25rem"><a href="index.html" style="color:var(--muted)">← Back to narihealth.in</a></p>
+        <p class="small muted" style="text-align:center;margin-top:1.25rem"><a href="./" style="color:var(--muted)">← Back to narihealth.in</a></p>
       </div>
     </section>
   </main>
@@ -129,7 +135,7 @@
   <script>
   (function () {
     var NP = NariPortal, UI = PortalUI, $ = UI.$, esc = UI.esc;
-    var next = UI.nextParam('member.html');
+    var next = UI.nextParam('member');
     $('cc').textContent = NP.CONFIG.phoneCountryCode || '+91';
     $('waLink').href = NP.waLink('Hi NARI Health, I have a question before booking.');
     var errMsg = UI.param('error'); if (errMsg) UI.showError('errTop', errMsg);
@@ -137,16 +143,37 @@
     var phoneEl = $('phone'), otpEl = $('otp');
     var currentPhone = '';
 
-    function fmtPhoneInput(input) { var v = input.value.replace(/\D/g, '').slice(0, 10); input.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; }
-    phoneEl.addEventListener('input', function () { fmtPhoneInput(phoneEl); });
+    /* The code is requested the moment a valid 10-digit number has been typed (once per number), so there is
+       nothing to press. "Send code" stays as the fallback, e.g. after a visible reCAPTCHA. */
+    var autoSent = '', autoTimer = null;
+    function fmtPhoneInput(input) { var v = input.value.replace(/\D/g, '').slice(0, 10); input.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; return v; }
+    phoneEl.addEventListener('input', function () {
+      var digits = fmtPhoneInput(phoneEl);
+      clearTimeout(autoTimer);
+      if (waiting && digits !== waiting) cancelSending();
+      if (digits.length === 10 && /^[6-9]/.test(digits) && digits !== autoSent && $('agree').checked) { autoSent = digits; autoTimer = setTimeout(sendCode, 350); }
+    });
     otpEl.addEventListener('input', function () { otpEl.value = otpEl.value.replace(/\D/g, '').slice(0, 6); if (otpEl.value.length === 6) verify(); });
+
+    /* Resend is locked for 60 seconds each time the code box opens, with the countdown shown on the link. */
+    var RESEND_WAIT = 60, resendTimer = null;
+    function startResendTimer() {
+      clearInterval(resendTimer);
+      var left = RESEND_WAIT, btn = $('resend');
+      function tick() {
+        if (left <= 0) { clearInterval(resendTimer); btn.disabled = false; btn.textContent = 'Resend code'; return; }
+        btn.disabled = true; btn.textContent = 'Resend in ' + Math.floor(left / 60) + ':' + (left % 60 < 10 ? '0' : '') + (left % 60); left--;
+      }
+      tick(); resendTimer = setInterval(tick, 1000);
+    }
+    function stopResendTimer() { clearInterval(resendTimer); var btn = $('resend'); btn.disabled = false; btn.textContent = 'Resend code'; }
 
     /* Steps: 1 mobile number → 2 one-time code → 3 profile (new members only) */
     function goStep(n) {
       [1, 2, 3].forEach(function (i) { $('step' + i).classList.toggle('active', n === i); });
       var t = $('cardTitle'), l = $('cardLead');
-      if (n === 1) { t.textContent = 'Welcome to NARI'; l.textContent = 'Enter your mobile number. We\'ll text you a 6-digit code. That\'s it.'; setTimeout(function () { phoneEl.focus(); }, 60); }
-      if (n === 2) { t.textContent = 'Check your phone'; l.textContent = 'Enter the code to finish signing in.'; setTimeout(function () { otpEl.focus(); }, 60); }
+      if (n === 1) { t.textContent = 'Welcome to NARI'; l.textContent = 'Enter your mobile number. We text you a 6-digit code the moment you finish typing it.'; stopResendTimer(); setTimeout(function () { phoneEl.focus(); }, 60); }
+      if (n === 2) { t.textContent = 'Check your phone'; l.textContent = 'Enter the code to finish signing in. It usually arrives within a few seconds.'; setTimeout(function () { otpEl.focus(); }, 60); }
       if (n === 3) { t.textContent = 'Almost there'; l.textContent = 'One last step and you can book your first consultation.'; setTimeout(function () { $('name').focus(); }, 60); }
     }
 
@@ -179,27 +206,70 @@
       if (r.status === 'new') startProfile(r.authUser);
     });
 
-    /* ---- Step 1: mobile number → send code ---- */
+    /* ---- Step 1: mobile number → send code ----
+       The SMS is requested straight away; the code box opens OTP_WAIT ms later (or once the request finishes,
+       if that takes longer), so she sees "Sending…" with a progress bar instead of an empty box. Each send
+       gets a number (sendSeq), so a reply for a number she has since edited is ignored. */
+    var OTP_WAIT = 5000;
+    var sending = false, waiting = '', sendSeq = 0;
+    function showSending(digits) {
+      waiting = digits;
+      $('sendingTo').textContent = NP.fmt.phone(digits);
+      $('sendBtn').classList.add('hidden'); $('sending').classList.remove('hidden');
+      var bar = $('sendingBar'); bar.style.setProperty('--otp-wait', OTP_WAIT / 1000 + 's');
+      bar.classList.remove('run'); void bar.offsetWidth; bar.classList.add('run');
+    }
+    function hideSending() {
+      waiting = '';
+      $('sending').classList.add('hidden'); $('sendBtn').classList.remove('hidden');
+      $('sendingBar').classList.remove('run');
+    }
+    function cancelSending() { sendSeq++; hideSending(); autoSent = ''; setTimeout(function () { phoneEl.focus(); }, 30); }
+    $('editNum').addEventListener('click', cancelSending);
+
     function sendCode() {
+      if (sending || waiting) return;
+      clearTimeout(autoTimer);
       UI.showError('err1', ''); UI.showError('err2', ''); UI.showError('errTop', '');
       if (!$('agree').checked) { UI.showError('err1', 'Please accept the Terms and Privacy Policy to continue.'); return; }
-      var btn = $('sendBtn'); UI.busy(btn, true, 'Sending…');
-      NP.auth.sendOtp(phoneEl.value, 'recaptcha-holder').then(function (r) {
-        UI.busy(btn, false);
-        if (!r.ok) { goStep(1); UI.showError('err1', r.error); phoneEl.classList.add('error'); return; }
+      var digits = phoneEl.value.replace(/\D/g, '');
+      if (!/^[6-9]\d{9}$/.test(digits)) { UI.showError('err1', 'Enter a valid 10-digit Indian mobile number.'); phoneEl.focus(); return; }
+      var resending = $('step2').classList.contains('active');
+      var seq = ++sendSeq;
+      autoSent = digits; sending = true;
+      var rb = $('resend'); rb.disabled = true;
+      if (resending) rb.textContent = 'Sending…'; else showSending(digits);
+      var shown = Date.now();
+      NP.auth.sendOtp(digits, 'recaptcha-holder').then(function (r) {
+        sending = false;
+        if (seq !== sendSeq) {
+          /* She edited the number while this was in flight; send to the new one if it is complete. */
+          var now = phoneEl.value.replace(/\D/g, '');
+          if (now !== digits && /^[6-9]\d{9}$/.test(now) && $('agree').checked) sendCode();
+          return;
+        }
+        if (!r.ok) {
+          hideSending(); goStep(1); UI.showError('err1', r.error); phoneEl.classList.add('error');
+          if (!r.captcha) autoSent = '';
+          return;
+        }
         phoneEl.classList.remove('error');
         currentPhone = r.phone;
         $('sentTo').textContent = NP.fmt.phone(r.phone);
         if (r.demoCode) { $('otpCode').textContent = r.demoCode; $('otpDemo').classList.remove('hidden'); }
-        otpEl.value = '';
-        goStep(2);
-        UI.toast('Code sent to ' + NP.fmt.phone(r.phone) + (r.demoCode ? '. <strong>Demo code: ' + r.demoCode + '</strong>' : '.'), 'success');
+        function open() {
+          if (seq !== sendSeq) return;
+          hideSending(); otpEl.value = ''; otpEl.classList.remove('error');
+          goStep(2); startResendTimer();
+          UI.toast('Code sent to ' + NP.fmt.phone(r.phone) + (r.demoCode ? '. <strong>Demo code: ' + r.demoCode + '</strong>' : '.'), 'success');
+        }
+        if (resending) open(); else setTimeout(open, Math.max(0, OTP_WAIT - (Date.now() - shown)));
       });
     }
     $('sendBtn').addEventListener('click', sendCode);
     phoneEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendCode(); } });
-    $('resend').addEventListener('click', sendCode);
-    $('changeNum').addEventListener('click', function () { goStep(1); });
+    $('resend').addEventListener('click', function () { if (!$('resend').disabled) sendCode(); });
+    $('changeNum').addEventListener('click', function () { autoSent = ''; sendSeq++; goStep(1); });
 
     /* ---- Step 2: verify code ---- */
     var verifying = false;

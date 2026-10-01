@@ -26,6 +26,18 @@ window.NARI_CONFIG = {
   /* Firebase JS SDK version to load from Google's CDN (compat build, no bundler needed). */
   firebaseVersion: '12.18.0',
 
+  /* ===== Team push notifications (Firebase Cloud Messaging) =====
+     Admins press "Enable alerts" in the console bell and get a notification on that device for every new
+     enquiry, payment, booking, sign-up and doctor change, even when the console is closed. Two things must
+     be in place (GO-LIVE.md → "Push notifications for the team"):
+       vapidKey — Firebase console → Project settings → Cloud Messaging → Web configuration →
+                  Web Push certificates → Generate key pair → paste the public key here.
+       The Cloud Function in functions/ deployed once with `npx firebase-tools deploy --only functions`.
+     Leave vapidKey '' and the bell still works while the console tab is open (sound + pop-up). */
+  push: {
+    vapidKey: ''
+  },
+
   /* What we call the women who use NARI. Used everywhere in the portal copy. */
   memberWord: 'Member',
   memberWordPlural: 'Members',

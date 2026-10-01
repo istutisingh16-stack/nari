@@ -19,6 +19,7 @@
 
   var CFG = global.NARI_CONFIG || {};
   /* Live only when the console-issued keys are actually filled in; empty or placeholder values keep demo mode. */
+  var LOCALHOST = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(global.location.hostname);
   var LIVE = !!(CFG.firebase && CFG.firebase.apiKey && CFG.firebase.appId && /^AIza/.test(CFG.firebase.apiKey) && /^1:/.test(CFG.firebase.appId));
 
   var DB_KEY = 'nari_portal_db_v3';
@@ -28,6 +29,9 @@
   var REF_KEY = 'nari_portal_ref';
 
   var MEMBER = CFG.memberWord || 'Member';
+  /* "View as": an admin opening a member's dashboard or a doctor's panel (member?as=<id>, doctor/panel?as=<id>).
+     Set by ready(); null in a normal session. Everything written while it is set is stamped with the admin's name. */
+  var viewAs = null;
   var MEMBERS = CFG.memberWordPlural || 'Members';
   var CATEGORIES = CFG.categories || ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Stomach & Digestion', 'Mental Health', 'Nutrition', 'Sleep', 'Menopause', 'General Health', 'Pelvic Health'];
   var MODES = CFG.modes || [
@@ -56,9 +60,9 @@
     return src.replace(/portal-data\.js.*$/, '');
   })();
   var PAGES = {
-    member: { login: 'member-login.html', home: 'member.html' },
-    doctor: { login: 'doctor/', home: 'doctor/panel.html' },
-    admin: { login: 'admin/', home: 'admin/console.html' }
+    member: { login: 'member-login', home: 'member' },
+    doctor: { login: 'doctor/', home: 'doctor/panel' },
+    admin: { login: 'admin/', home: 'admin/console' }
   };
 
   /* ---------- helpers ---------- */
@@ -67,6 +71,12 @@
   function isoDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function daysFromToday(n) { var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return isoDate(d); }
   function todayIso() { return daysFromToday(0); }
+  function nowIso() { return new Date().toISOString(); }
+  /* Calendar-date arithmetic on 'YYYY-MM-DD' strings (UTC-based so daylight-saving never shifts a day). */
+  function addDays(iso, n) { var p = iso.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)).toISOString().slice(0, 10); }
+  function diffDays(a, b) { var pa = a.split('-'), pb = b.split('-'); return Math.round((Date.UTC(+pa[0], +pa[1] - 1, +pa[2]) - Date.UTC(+pb[0], +pb[1] - 1, +pb[2])) / 86400e3); }
+  /* Milliseconds for a stored timestamp: a full ISO string, or a bare date (read as local midnight). */
+  function tsOf(s) { if (!s) return 0; var t = new Date(String(s).length === 10 ? s + 'T00:00:00' : s).getTime(); return isNaN(t) ? 0 : t; }
   function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
   function write(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* storage unavailable */ } }
   function remove(key) { try { localStorage.removeItem(key); } catch (e) {} }
@@ -78,9 +88,13 @@
   function fail(msg) { emit('nari:error', { message: msg }); }
 
   /* ---------- in-memory cache (both backends) ---------- */
-  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [], payments: [] };
+  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [], payments: [], cycles: [], pushTokens: [] };
   var listeners = [];
   function notify() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
+  /* When this page last wrote anything. The console uses it to tell its own changes (echoed straight back by
+     the Firestore listener) from things other people did, so it only chimes for the latter. */
+  var lastWrite = 0;
+  function touched() { lastWrite = Date.now(); }
 
   /* ====================================================================
      DEMO seed
@@ -138,7 +152,20 @@
       { id: 'pay_demo1', memberId: 'mem_1', memberName: 'Priya S.', memberPhone: '9876501001', planId: 'sub', planLabel: 'Monthly membership', amount: 799, recurring: true, status: 'paid', txnRef: '4231XXXX9012', createdAt: new Date(Date.now() - 10 * 86400e3).toISOString(), paidAt: new Date(Date.now() - 10 * 86400e3).toISOString() },
       { id: 'pay_demo2', memberId: 'mem_2', memberName: 'Divya M.', memberPhone: '9876501002', planId: 'single', planLabel: 'Single consultation', amount: 199, recurring: false, status: 'claimed', txnRef: '4231XXXX7788', createdAt: new Date(Date.now() - 2 * 3600e3).toISOString(), claimedAt: new Date(Date.now() - 1.5 * 3600e3).toISOString() }
     ];
-    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites, leads: leads, payments: payments };
+    return { version: 3, seededAt: new Date().toISOString(), doctors: doctors, staff: staff, members: members, appointments: appointments, invites: invites, leads: leads, payments: payments, cycles: seedCycles() };
+  }
+  /* Priya (mem_1, on a paid membership) has four periods logged, so the tracker has something to predict from. */
+  function seedCycles() {
+    var logs = {};
+    logs[daysFromToday(-9)] = { flow: 'medium', symptoms: ['Cramps', 'Tired'], note: 'Cramps in the evening.' };
+    logs[daysFromToday(-8)] = { flow: 'heavy', symptoms: ['Cramps', 'Headache'], note: '' };
+    logs[daysFromToday(-6)] = { flow: 'light', symptoms: [], note: '' };
+    return [{ id: 'mem_1', memberId: 'mem_1', cycleLength: null, updatedAt: nowIso(), logs: logs, periods: [
+      { start: daysFromToday(-95), end: daysFromToday(-91) },
+      { start: daysFromToday(-66), end: daysFromToday(-62) },
+      { start: daysFromToday(-38), end: daysFromToday(-33) },
+      { start: daysFromToday(-9), end: daysFromToday(-5) }
+    ] }];
   }
 
   /* ====================================================================
@@ -152,6 +179,8 @@
       if (!saved || saved.version !== 3) { saved = seedDB(); write(DB_KEY, saved); }
       if (!saved.leads) saved.leads = [];
       if (!saved.payments) saved.payments = [];
+      if (!saved.cycles) { saved.cycles = seedCycles(); write(DB_KEY, saved); }
+      if (!saved.pushTokens) saved.pushTokens = [];
       /* Enquiries submitted from the public pages in demo mode land in a side key; fold them in. */
       var pending = read('nari_portal_leads');
       if (pending && pending.length) { pending.forEach(function (l) { if (indexOf(saved.leads, 'leads', l.id) < 0) saved.leads.push(l); }); remove('nari_portal_leads'); write(DB_KEY, saved); }
@@ -159,11 +188,14 @@
       return Promise.resolve();
     },
     save: function () { write(DB_KEY, db); },
-    put: function (coll, id, obj) { var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) list[i] = obj; else list.push(obj); demoStore.save(); return Promise.resolve(); },
-    patch: function (coll, id, patchObj) { var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) { for (var k in patchObj) list[i][k] = patchObj[k]; } demoStore.save(); return Promise.resolve(); },
-    remove: function (coll, id) { db[coll] = db[coll].filter(function (x) { return keyOf(coll, x) !== id; }); demoStore.save(); return Promise.resolve(); }
+    put: function (coll, id, obj) { touched(); stamp(obj); var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) list[i] = obj; else list.push(obj); demoStore.save(); return Promise.resolve(); },
+    patch: function (coll, id, patchObj) { touched(); stamp(patchObj, true); var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) { for (var k in patchObj) list[i][k] = patchObj[k]; } demoStore.save(); return Promise.resolve(); },
+    remove: function (coll, id) { touched(); db[coll] = db[coll].filter(function (x) { return keyOf(coll, x) !== id; }); demoStore.save(); return Promise.resolve(); }
   };
   function keyOf(coll, x) { return coll === 'staff' ? x.email : x.id; }
+  /* Anything an admin saves while viewing as someone else carries who really did it, for the activity feed:
+     byAdmin on a new record, updatedByAdmin on a change (a member's own later change leaves byAdmin in place). */
+  function stamp(obj, isPatch) { if (viewAs) obj[isPatch ? 'updatedByAdmin' : 'byAdmin'] = viewAs.admin.name || viewAs.admin.email; return obj; }
   function indexOf(list, coll, id) { for (var i = 0; i < list.length; i++) if (keyOf(coll, list[i]) === id) return i; return -1; }
 
   var liveStore = {
@@ -175,15 +207,15 @@
       });
     },
     put: function (coll, id, obj) {
-      var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) list[i] = obj; else list.push(obj);
+      touched(); stamp(obj); var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) list[i] = obj; else list.push(obj);
       return fs.collection(coll).doc(id).set(clone(obj)).catch(function (e) { fail('Could not save: ' + e.message); throw e; });
     },
     patch: function (coll, id, patchObj) {
-      var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) for (var k in patchObj) list[i][k] = patchObj[k];
+      touched(); stamp(patchObj, true); var list = db[coll]; var i = indexOf(list, coll, id); if (i >= 0) for (var k in patchObj) list[i][k] = patchObj[k];
       return fs.collection(coll).doc(id).update(clone(patchObj)).catch(function (e) { fail('Could not save: ' + e.message); throw e; });
     },
     remove: function (coll, id) {
-      db[coll] = db[coll].filter(function (x) { return keyOf(coll, x) !== id; });
+      touched(); db[coll] = db[coll].filter(function (x) { return keyOf(coll, x) !== id; });
       return fs.collection(coll).doc(id).delete().catch(function (e) { fail('Could not delete: ' + e.message); throw e; });
     }
   };
@@ -213,7 +245,13 @@
      LIVE data loading — per-role Firestore listeners feeding the cache
      ==================================================================== */
   var liveSets = {}; var unsubs = [];
-  function docsOf(snap) { var out = []; snap.forEach(function (d) { var o = d.data(); if (!o.id) o.id = d.id; if (!o.email && d.ref.parent.id === 'staff') o.email = d.id; out.push(o); }); return out; }
+  function docsOf(snap) {
+    var out = [];
+    function add(d) { var o = d.data(); if (!o.id) o.id = d.id; if (!o.email && d.ref.parent.id === 'staff') o.email = d.id; out.push(o); }
+    /* A single document (cycles/{uid}) or a query result. */
+    if (typeof snap.forEach === 'function') snap.forEach(add); else if (snap.exists) add(snap);
+    return out;
+  }
   function rebuild() {
     var seen = {}, apts = [];
     Object.keys(liveSets).forEach(function (k) {
@@ -227,6 +265,8 @@
     if (liveSets.invites) db.invites = liveSets.invites;
     if (liveSets.leads) db.leads = liveSets.leads;
     if (liveSets.payments) db.payments = liveSets.payments;
+    if (liveSets.cycles) db.cycles = liveSets.cycles;
+    if (liveSets.pushTokens) db.pushTokens = liveSets.pushTokens;
   }
   var FIRST_LOAD_TIMEOUT = 12000;
   function watch(key, query) {
@@ -241,15 +281,18 @@
       unsubs.push(un);
     });
   }
-  function loadLive(role, user) {
+  function loadLive(role, user, asAdmin) {
     unsubs.forEach(function (u) { u(); }); unsubs = []; liveSets = {};
     var jobs = [watch('doctors', fs.collection('doctors'))];
-    /* Payments are an add-on: if the published firestore.rules predate the payments collection, the page
-       still opens (with an empty payments list) instead of failing with "insufficient permissions". */
-    function optional(key, query) { return watch(key, query).catch(function (e) { console.warn('payments not loaded:', e && e.message); liveSets[key] = []; rebuild(); fail('Payments could not be loaded. Publish the latest firestore.rules (GO-LIVE.md step 5).'); }); }
+    /* Payments and the period tracker are add-ons: if the published firestore.rules predate their collections,
+       the page still opens (with that list empty) instead of failing with "insufficient permissions". */
+    function optional(key, query, label) { return watch(key, query).catch(function (e) { console.warn(label + ' not loaded:', e && e.message); liveSets[key] = []; rebuild(); fail(label + ' could not be loaded. Publish the latest firestore.rules (GO-LIVE.md step 5).'); }); }
     if (role === 'member') {
       jobs.push(watch('appointments:mine', fs.collection('appointments').where('memberId', '==', user.id)));
-      jobs.push(optional('payments', fs.collection('payments').where('memberId', '==', user.id)));
+      jobs.push(optional('payments', fs.collection('payments').where('memberId', '==', user.id), 'Payments'));
+      /* Her tracker is read by its id, cycles/{uid}: the rules allow only that, not a query over the collection.
+         An admin viewing as her does not read it at all; it is private to the member. */
+      if (!asAdmin) jobs.push(optional('cycles', fs.collection('cycles').doc(user.id), 'The period tracker'));
     }
     if (role === 'doctor') {
       jobs.push(watch('appointments:doc', fs.collection('appointments').where('doctorId', '==', user.id)));
@@ -262,7 +305,8 @@
       jobs.push(watch('staff', fs.collection('staff')));
       jobs.push(watch('invites', fs.collection('invites')));
       jobs.push(watch('leads', fs.collection('leads')));
-      jobs.push(optional('payments', fs.collection('payments')));
+      jobs.push(optional('payments', fs.collection('payments'), 'Payments'));
+      jobs.push(watch('pushTokens', fs.collection('pushTokens')).catch(function () { liveSets.pushTokens = []; rebuild(); }));
     }
     if (!role) jobs.length = 1; /* login pages only need doctors for referral lookups */
     return Promise.all(jobs);
@@ -316,6 +360,8 @@
         return fbGet('doctors', st.doctorId).then(function (d) {
           if (!d) return { status: 'denied', error: 'Your doctor profile is missing. Ask the NARI team to check the panel.' };
           if (!d.active) return { status: 'denied', error: 'This account has been paused. Contact the NARI admin.' };
+          /* First sign-in is stamped on the staff record so the team gets a "Dr X is in" notification. */
+          if (!st.firstLoginAt) fs.collection('staff').doc(au.email).update({ firstLoginAt: nowIso() }).catch(function () {});
           d.email = au.email; return { status: 'ok', user: d };
         });
       });
@@ -379,6 +425,9 @@
         /* First try is an invisible reCAPTCHA. If Google rejects that (it does on some networks and browsers), the
            next try shows the normal "I'm not a robot" box in the same container so she can tick it herself. */
         var holder = containerId || 'recaptcha-holder';
+        /* Google's security check rejects real phone sign-in from localhost (auth/invalid-app-credential), so on a
+           local copy it is skipped and only Firebase test numbers work (GO-LIVE.md → "Testing phone sign-in locally"). */
+        if (LOCALHOST) fb.auth().settings.appVerificationDisabledForTesting = true;
         function verifier() {
           if (auth._recaptcha) return Promise.resolve(auth._recaptcha);
           var v = new fb.auth.RecaptchaVerifier(holder, { size: auth._captchaMode || 'invisible' });
@@ -394,11 +443,13 @@
           try { if (auth._recaptcha) auth._recaptcha.clear(); } catch (x) {} auth._recaptcha = null;
           var el = document.getElementById(holder); if (el) el.innerHTML = '';
           var captchaProblem = /captcha|app-credential|invalid-recaptcha|missing-recaptcha/.test(code);
+          if (LOCALHOST && captchaProblem) return { ok: false, error: 'On localhost only Firebase test numbers can sign in (no real SMS is sent). Add one under Firebase console → Authentication → Sign-in method → Phone → Phone numbers for testing, or try a real number on narihealth.in.' };
           if (captchaProblem && auth._captchaMode !== 'normal') {
             auth._captchaMode = 'normal';
             /* Pre-render the visible box now so she sees it immediately. */
             verifier().catch(function () {});
-            return { ok: false, captcha: true, error: 'The automatic security check did not pass. Tick "I\'m not a robot" below, then press Send code again.' };
+            console.warn('Phone sign-in security check failed:', code, e && e.message);
+            return { ok: false, captcha: true, error: 'The automatic security check did not pass. Tick "I\'m not a robot" below, then press Send code again. (' + code + ' on ' + window.location.hostname + ')' };
           }
           return { ok: false, error: friendlyAuthError(e) };
         });
@@ -436,7 +487,7 @@
         if (!LIVE) {
           var st = staffByEmail(email);
           if (!st || st.password !== password || st.role !== role) return { ok: false, error: 'Email or password is incorrect.' };
-          if (role === 'doctor') { var d = byId(db.doctors, st.doctorId); if (!d) return { ok: false, error: 'Doctor profile missing.' }; if (!d.active) return { ok: false, error: 'This account has been paused. Contact the NARI admin.' }; auth.set('doctor', d.id); return { ok: true, user: d }; }
+          if (role === 'doctor') { var d = byId(db.doctors, st.doctorId); if (!d) return { ok: false, error: 'Doctor profile missing.' }; if (!d.active) return { ok: false, error: 'This account has been paused. Contact the NARI admin.' }; if (!st.firstLoginAt) store.patch('staff', st.email, { firstLoginAt: nowIso() }); auth.set('doctor', d.id); return { ok: true, user: d }; }
           auth.set('admin', st.email); return { ok: true, user: { id: st.email, name: st.name, email: st.email } };
         }
         return fb.auth().signInWithEmailAndPassword(email, password).then(function () { return resolveRole(role); }).then(function (r) {
@@ -536,7 +587,7 @@
       var m = {
         id: id, name: String(o.name || au.displayName || au.name || '').trim(), phone: phone,
         email: normEmail(au.email), city: String(o.city || '').trim(), img: au.photoURL || au.photo || '',
-        provider: 'phone', createdAt: todayIso()
+        provider: 'phone', createdAt: nowIso()
       };
       return store.put('members', id, m).then(function () { if (!LIVE) { remove(PENDING_KEY); auth.set('member', id); } return m; });
     },
@@ -546,6 +597,7 @@
     remove: function (id) {
       var jobs = [store.remove('members', id)];
       db.appointments.filter(function (a) { return a.memberId === id; }).forEach(function (a) { jobs.push(store.remove('appointments', a.id)); });
+      if (byId(db.cycles, id) || LIVE) jobs.push(store.remove('cycles', id).catch(function () {}));
       return Promise.all(jobs);
     }
   };
@@ -562,7 +614,7 @@
     create: function (o) {
       var base = 'NH-' + String(o.name || 'DOC').replace(/^dr\.?\s*/i, '').split(/\s+/)[0].replace(/[^a-z]/gi, '').toUpperCase().slice(0, 8);
       var code = base, n = 2; while (doctors.byRefCode(code)) code = base + n++;
-      var d = { id: o.id || uid('doc'), name: String(o.name || '').trim(), role: String(o.role || '').trim(), exp: String(o.exp || '').trim(), refCode: o.refCode || code, active: true, img: o.img || '', categories: o.categories || [] };
+      var d = { id: o.id || uid('doc'), name: String(o.name || '').trim(), role: String(o.role || '').trim(), exp: String(o.exp || '').trim(), refCode: o.refCode || code, active: true, img: o.img || '', categories: o.categories || [], createdAt: nowIso() };
       var st = { email: normEmail(o.email), role: 'doctor', doctorId: d.id, name: d.name };
       if (!LIVE) st.password = o.password || 'doctor123';
       var account = o.password ? createAuthUser(st.email, o.password) : Promise.resolve({ created: false });
@@ -586,7 +638,7 @@
     list: function () { return db.staff.slice(); },
     admins: function () { return db.staff.filter(function (s) { return s.role === 'admin'; }); },
     addAdmin: function (email, name, password) {
-      var st = { email: normEmail(email), role: 'admin', name: String(name || '').trim() }; if (!LIVE) st.password = password || 'admin123';
+      var st = { email: normEmail(email), role: 'admin', name: String(name || '').trim(), createdAt: nowIso() }; if (!LIVE) st.password = password || 'admin123';
       var account = password ? createAuthUser(st.email, password) : Promise.resolve({ created: false });
       return account.then(function (acc) { return store.put('staff', st.email, st).then(function () { st._account = acc; return st; }); });
     },
@@ -607,7 +659,7 @@
       var phone = normPhone(o.phone);
       if (phone.length !== 10) return Promise.reject(new Error('Enter a valid 10-digit mobile number.'));
       if (invites.get(phone)) return Promise.reject(new Error('This number has already been added.'));
-      var inv = { id: phone, phone: phone, phoneE164: CC + phone, name: String(o.name || '').trim(), city: String(o.city || '').trim(), email: normEmail(o.email), note: String(o.note || '').trim(), doctorId: doctorId, createdAt: todayIso(), claimedBy: null, claimedAt: null };
+      var inv = { id: phone, phone: phone, phoneE164: CC + phone, name: String(o.name || '').trim(), city: String(o.city || '').trim(), email: normEmail(o.email), note: String(o.note || '').trim(), doctorId: doctorId, createdAt: nowIso(), claimedBy: null, claimedAt: null };
       return store.put('invites', inv.id, inv).then(function () { return inv; });
     },
     remove: function (phone) { return store.remove('invites', normPhone(phone)); },
@@ -675,11 +727,15 @@
         id: uid('apt'), memberId: o.memberId, memberName: m.name || '', memberPhone: m.phone || '', memberCity: m.city || '',
         doctorId: o.doctorId || null, category: o.category, mode: o.mode || MODES[0].id,
         date: o.date, time: o.time, notes: String(o.notes || '').trim(), status: 'pending',
-        referredBy: r, referredDoctorId: r && r.type === 'doctor' ? r.doctorId : null, createdAt: todayIso()
+        referredBy: r, referredDoctorId: r && r.type === 'doctor' ? r.doctorId : null, createdAt: nowIso()
       };
       return store.put('appointments', a.id, a).then(function () { return a; });
     },
-    setStatus: function (id, status) { if (STATUSES.indexOf(status) < 0) return Promise.reject(new Error('Bad status')); return store.patch('appointments', id, { status: status }); },
+    setStatus: function (id, status) {
+      if (STATUSES.indexOf(status) < 0) return Promise.reject(new Error('Bad status'));
+      var patch = { status: status }; if (status === 'cancelled') patch.cancelledAt = nowIso();
+      return store.patch('appointments', id, patch);
+    },
     assignDoctor: function (id, doctorId) { return store.patch('appointments', id, { doctorId: doctorId || null }); },
     isPast: function (a) { return a.date < todayIso(); },
     isUpcoming: function (a) { return a.date >= todayIso() && (a.status === 'pending' || a.status === 'confirmed'); }
@@ -713,7 +769,6 @@
      in `payments/{id}`. The member then enters the UPI reference number ("claimed") and the team marks it
      Paid in the console. Entitlement (membership / pass validity) is derived from paid payments.
      ==================================================================== */
-  function nowIso() { return new Date().toISOString(); }
   function isMobile() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''); }
   var payments = {
     PLANS: PLANS, STATUSES: PAY_STATUSES,
@@ -798,7 +853,7 @@
       if (r.type === 'doctor') { var d = doctors.get(r.doctorId); return d ? d.name : 'A NARI doctor'; }
       return r.label || 'Other';
     },
-    linkFor: function (code) { return ROOT + 'member-login.html?ref=' + encodeURIComponent(code); }
+    linkFor: function (code) { return ROOT + 'member-login?ref=' + encodeURIComponent(code); }
   };
 
   /* ====================================================================
@@ -815,7 +870,12 @@
 
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var fmt = {
-    date: function (iso) { if (!iso) return '—'; var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MONTHS[parseInt(p[1], 10) - 1] + ' ' + p[0]; },
+    /* 'YYYY-MM-DD' or a full ISO timestamp (shown as the local calendar day) → '1 Oct 2026'. */
+    date: function (iso) {
+      if (!iso) return '—';
+      if (iso.length > 10) { var d = new Date(iso); if (!isNaN(d)) return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+      var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MONTHS[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    },
     dayMonth: function (iso) { var p = iso.split('-'); return { d: parseInt(p[2], 10), m: MONTHS[parseInt(p[1], 10) - 1] }; },
     time: function (t) { if (!t) return ''; var h = parseInt(t.split(':')[0], 10); var m = t.split(':')[1]; var ap = h >= 12 ? 'PM' : 'AM'; h = h % 12; if (h === 0) h = 12; return h + ':' + m + ' ' + ap; },
     relative: function (iso) {
@@ -835,12 +895,329 @@
   };
 
   /* ====================================================================
+     ACTIVITY — what happened, newest first, for the team console's bell
+     Derived from the collections already in the cache (nothing extra is written), so it works the same
+     in demo and live mode. Each admin's "seen up to" marker is notifSeenAt on her staff record.
+     ==================================================================== */
+  var activity = {
+    list: function (limit) {
+      var ev = [];
+      function add(e) { if (e.ts) ev.push(e); }
+      /* Saved by an admin while viewing as the member or doctor ("View as" in the console). */
+      function by(o) { return o && o.byAdmin ? ' · by ' + o.byAdmin + ' (admin)' : ''; }
+      function changedBy(o) { return o && o.updatedByAdmin ? ' · by ' + o.updatedByAdmin + ' (admin)' : ''; }
+      db.leads.forEach(function (l) {
+        add({ id: 'lead:' + l.id, type: 'lead', ts: tsOf(l.createdAt), icon: 'phone', tab: 'leads', title: 'New enquiry from ' + (l.name || 'someone'), body: (l.concern || 'General') + ' · ' + (leads.TIMES[l.time] || l.time || '') + ' · ' + leads.sourceOf(l), urgent: l.status === 'new' });
+      });
+      db.payments.forEach(function (p) {
+        var who = p.memberName || MEMBER, amt = payments.rupees(p.amount);
+        add({ id: 'pay:' + p.id, type: 'payment', ts: tsOf(p.createdAt), icon: 'shieldCheck', tab: 'payments', title: who + ' started a payment of ' + amt, body: p.planLabel + (p.status === 'initiated' ? ' · not completed yet' : '') + by(p) });
+        if (p.claimedAt || p.status === 'claimed') add({ id: 'pay:' + p.id + ':claimed', type: 'payment', ts: tsOf(p.claimedAt || p.createdAt), icon: 'shieldCheck', tab: 'payments', title: who + ' paid ' + amt + ' — verify it', body: p.planLabel + ' · UPI ref ' + (p.txnRef || '—') + (p.status === 'claimed' ? ' · check Paytm and mark Paid' + changedBy(p) : ' · ' + p.status), urgent: p.status === 'claimed' });
+      });
+      db.appointments.forEach(function (a) {
+        var d = a.doctorId ? byId(db.doctors, a.doctorId) : null;
+        add({ id: 'apt:' + a.id, type: 'booking', ts: tsOf(a.createdAt), icon: 'calendar', tab: 'appointments', title: (a.memberName || MEMBER) + ' requested a consultation', body: a.category + ' · ' + fmt.date(a.date) + ', ' + fmt.time(a.time) + (d ? ' with ' + d.name : ' · expert to be matched') + by(a), urgent: a.status === 'pending' });
+        if (a.status === 'cancelled' && a.cancelledAt) add({ id: 'apt:' + a.id + ':cancelled', type: 'booking', ts: tsOf(a.cancelledAt), icon: 'x', tab: 'appointments', title: 'Consultation cancelled — ' + (a.memberName || MEMBER), body: a.category + ' · ' + fmt.date(a.date) + ', ' + fmt.time(a.time) + changedBy(a) });
+      });
+      db.members.forEach(function (m) {
+        var ref = m.referredByDoctorId ? byId(db.doctors, m.referredByDoctorId) : null;
+        add({ id: 'mem:' + m.id, type: 'member', ts: tsOf(m.createdAt), icon: 'user', tab: 'members', title: (m.name || 'A new ' + MEMBER.toLowerCase()) + ' signed up', body: fmt.phone(m.phone) + (m.city ? ' · ' + m.city : '') + (ref ? ' · referred by ' + ref.name : '') });
+      });
+      db.invites.forEach(function (i) {
+        var d = byId(db.doctors, i.doctorId);
+        add({ id: 'inv:' + i.id, type: 'member', ts: tsOf(i.createdAt), icon: 'users', tab: 'members', title: (d ? d.name : 'A doctor') + ' added ' + (i.name || 'a ' + MEMBER.toLowerCase()), body: fmt.phone(i.phone) + (i.city ? ' · ' + i.city : '') + (i.note ? ' · “' + i.note + '”' : '') + by(i) });
+      });
+      db.doctors.forEach(function (d) {
+        add({ id: 'doc:' + d.id, type: 'doctor', ts: tsOf(d.createdAt), icon: 'stethoscope', tab: 'doctors', title: d.name + ' added to the panel', body: d.role + ' · referral code ' + d.refCode });
+      });
+      db.staff.forEach(function (s) {
+        if (s.role !== 'doctor' || !s.firstLoginAt) return;
+        var d = byId(db.doctors, s.doctorId);
+        add({ id: 'docin:' + s.email, type: 'doctor', ts: tsOf(s.firstLoginAt), icon: 'stethoscope', tab: 'doctors', title: (d ? d.name : s.name || s.email) + ' signed in for the first time', body: 'Doctor panel · ' + s.email });
+      });
+      ev.sort(function (a, b) { return b.ts - a.ts; });
+      return limit ? ev.slice(0, limit) : ev;
+    },
+    seenAt: function (email) { var s = staffByEmail(email); return s && s.notifSeenAt ? tsOf(s.notifSeenAt) : 0; },
+    /* Written directly rather than through the store: it is bookkeeping, not a change others should be alerted to,
+       and a permission error here (rules not yet published) gets one specific hint instead of a generic toast. */
+    markSeen: function (email) {
+      var s = staffByEmail(email); if (!s) return Promise.resolve();
+      s.notifSeenAt = nowIso();
+      if (!LIVE) { demoStore.save(); return Promise.resolve(); }
+      return fs.collection('staff').doc(normEmail(email)).update({ notifSeenAt: s.notifSeenAt }).catch(function () {
+        if (!activity._warned) { activity._warned = true; fail('Notifications cannot be marked as read yet: publish the latest firestore.rules (GO-LIVE.md step 5).'); }
+      });
+    },
+    unread: function (email, list) { var seen = activity.seenAt(email); return (list || activity.list()).filter(function (e) { return e.ts > seen; }).length; }
+  };
+
+  /* ====================================================================
+     PUSH — device notifications for the team (Firebase Cloud Messaging)
+     The browser saves its FCM token under pushTokens/{token}; the Cloud Function in functions/index.js
+     sends to every admin token when a lead, payment, booking, member or doctor is written. Needs
+     push.vapidKey in portal-config.js and the function deployed (GO-LIVE.md → Push notifications).
+     Without those, "Enable alerts" falls back to plain browser notifications while the console is open.
+     ==================================================================== */
+  var PUSH_KEY = 'nari_portal_push';
+  var push = {
+    configured: function () { return LIVE && !!(CFG.push && CFG.push.vapidKey); },
+    supported: function () { return 'Notification' in window && 'serviceWorker' in navigator; },
+    permission: function () { return push.supported() ? Notification.permission : 'unsupported'; },
+    /* The FCM token saved on this device (background push), or null when only tab alerts are on. */
+    device: function () { return read(PUSH_KEY); },
+    enable: function (user, role) {
+      if (!push.supported()) return Promise.resolve({ ok: false, error: 'This browser cannot show notifications.' + (/iPhone|iPad/.test(navigator.userAgent) ? ' On iPhone, add the console to your Home Screen first (Share → Add to Home Screen) and open it from there.' : '') });
+      return Promise.resolve(Notification.requestPermission()).then(function (perm) {
+        if (perm !== 'granted') return { ok: false, error: perm === 'denied' ? 'Notifications are blocked for this site. Allow them in the browser\'s site settings, then try again.' : 'Notifications were not allowed.' };
+        if (!push.configured()) return { ok: true, mode: 'tab' };
+        var base = 'https://www.gstatic.com/firebasejs/' + (CFG.firebaseVersion || '10.14.1') + '/';
+        return loadScript(base + 'firebase-messaging-compat.js')
+          .then(function () { return navigator.serviceWorker.register(ROOT + 'firebase-messaging-sw.js'); })
+          .then(function (reg) { return fb.messaging().getToken({ vapidKey: CFG.push.vapidKey, serviceWorkerRegistration: reg }); })
+          .then(function (token) {
+            if (!token) throw new Error('No device token was issued.');
+            var doc = { id: token, token: token, email: normEmail(user.email), role: role || 'admin', name: user.name || '', device: deviceLabel(), createdAt: nowIso(), updatedAt: nowIso() };
+            return fs.collection('pushTokens').doc(token).set(doc).then(function () { write(PUSH_KEY, { token: token, at: nowIso() }); return { ok: true, mode: 'push' }; });
+          })
+          .catch(function (e) { return { ok: false, error: friendlyPushError(e) }; });
+      });
+    },
+    disable: function () {
+      var rec = read(PUSH_KEY); remove(PUSH_KEY);
+      if (!rec || !LIVE) return Promise.resolve({ ok: true });
+      return fs.collection('pushTokens').doc(rec.token).delete().catch(function () {})
+        .then(function () { try { return fb.messaging().deleteToken(); } catch (e) { return null; } })
+        .then(function () { return { ok: true }; }, function () { return { ok: true }; });
+    },
+    /* Tokens rotate now and then; refresh the saved one at most once a day. */
+    refresh: function (user, role) {
+      var rec = read(PUSH_KEY);
+      if (!rec || !push.configured() || push.permission() !== 'granted') return Promise.resolve();
+      if (rec.at && Date.now() - tsOf(rec.at) < 86400e3) return Promise.resolve();
+      return push.enable(user, role).then(function (r) {
+        var now = read(PUSH_KEY);
+        if (r.ok && r.mode === 'push' && now && now.token !== rec.token) fs.collection('pushTokens').doc(rec.token).delete().catch(function () {});
+      });
+    },
+    /* Admin view: every device that has enabled push, and removing one (e.g. a lost phone). */
+    devices: function () { return (db.pushTokens || []).slice().sort(function (a, b) { return (a.updatedAt || '') < (b.updatedAt || '') ? 1 : -1; }); },
+    forget: function (token) { return store.remove('pushTokens', token).then(function () { var rec = read(PUSH_KEY); if (rec && rec.token === token) remove(PUSH_KEY); }); }
+  };
+  function deviceLabel() {
+    var ua = navigator.userAgent;
+    var os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iPhone' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'device';
+    var br = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'Browser';
+    return br + ' on ' + os;
+  }
+  function friendlyPushError(e) {
+    var code = e && e.code || '', m = e && e.message || 'Could not enable notifications.';
+    if (/unsupported-browser/.test(code)) return 'This browser does not support push notifications.';
+    if (/vapid|applicationServerKey/i.test(m)) return 'The Web Push key in portal-config.js (push.vapidKey) does not look right.';
+    if (/service ?worker/i.test(m) && /404|script|mime/i.test(m)) return 'firebase-messaging-sw.js was not found at the site root.';
+    if (/permission-blocked|notifications-blocked/.test(code)) return 'Notifications are blocked for this site in the browser settings.';
+    if (/permission-denied|insufficient permissions/i.test(code + ' ' + m)) return 'Publish the latest firestore.rules first (GO-LIVE.md step 5), then try again.';
+    return m + (code ? ' (' + code + ')' : '');
+  }
+
+  /* ====================================================================
+     CYCLES — period tracker for members on a paid plan
+     One document per member, cycles/{uid}: { periods: [{start, end}], logs: {date: {flow, symptoms, note}},
+     cycleLength, updatedAt }. Only the member can read or write it (firestore.rules); admins can only
+     delete it along with her account. Predictions are plain averages: not medical advice, not contraception.
+     ==================================================================== */
+  var SYMPTOMS = ['Cramps', 'Headache', 'Bloating', 'Low mood', 'Tired', 'Acne', 'Tender breasts', 'Back pain', 'Nausea', 'Cravings'];
+  var FLOWS = [{ id: 'spotting', label: 'Spotting' }, { id: 'light', label: 'Light' }, { id: 'medium', label: 'Medium' }, { id: 'heavy', label: 'Heavy' }];
+  var MAX_PERIODS = 120, MAX_LOGS = 400;
+  function mean(list) { return list.length ? list.reduce(function (s, n) { return s + n; }, 0) / list.length : 0; }
+  var cycles = {
+    SYMPTOMS: SYMPTOMS, FLOWS: FLOWS,
+    get: function (mid) { return byId(db.cycles, mid) || { id: mid, memberId: mid, periods: [], logs: {}, cycleLength: null }; },
+    save: function (mid, doc) {
+      doc.id = mid; doc.memberId = mid; doc.updatedAt = nowIso();
+      doc.periods = (doc.periods || []).filter(function (p) { return p && /^\d{4}-\d{2}-\d{2}$/.test(p.start); })
+        .sort(function (a, b) { return a.start < b.start ? -1 : 1; }).slice(-MAX_PERIODS);
+      doc.logs = doc.logs || {};
+      var keys = Object.keys(doc.logs).sort(); while (keys.length > MAX_LOGS) delete doc.logs[keys.shift()];
+      return store.put('cycles', mid, doc).then(function () { return doc; });
+    },
+    /* The logged period covering a date. With `open`, an unfinished period counts up to its expected end. */
+    periodOn: function (doc, date, open, avgPeriod) {
+      for (var i = doc.periods.length - 1; i >= 0; i--) {
+        var p = doc.periods[i]; if (date < p.start) continue;
+        var end = p.end || (open ? addDays(p.start, (avgPeriod || 5) - 1) : p.start);
+        if (date <= end) return p;
+      }
+      return null;
+    },
+    /* "My period started on <date>". Ignored if that day is already inside a logged period. */
+    startPeriod: function (mid, date) {
+      var doc = clone(cycles.get(mid)); date = date || todayIso();
+      if (date > todayIso()) return Promise.reject(new Error('That day has not come yet.'));
+      if (cycles.periodOn(doc, date, true)) return Promise.resolve(doc);
+      var last = doc.periods[doc.periods.length - 1];
+      if (last && !last.end && diffDays(date, last.start) > 0 && diffDays(date, last.start) <= 10) return Promise.resolve(doc);
+      doc.periods.push({ start: date, end: null });
+      return cycles.save(mid, doc);
+    },
+    /* "My period ended on <date>": closes the most recent period that started on or before that day. */
+    endPeriod: function (mid, date) {
+      var doc = clone(cycles.get(mid)); date = date || todayIso();
+      var p = null; doc.periods.forEach(function (x) { if (x.start <= date && (!p || x.start > p.start)) p = x; });
+      if (!p) return Promise.reject(new Error('Mark the day your period started first.'));
+      if (diffDays(date, p.start) > 14) return Promise.reject(new Error('That is more than two weeks after it started. Mark a new period start instead.'));
+      p.end = date;
+      return cycles.save(mid, doc);
+    },
+    removePeriod: function (mid, start) { var doc = clone(cycles.get(mid)); doc.periods = doc.periods.filter(function (p) { return p.start !== start; }); return cycles.save(mid, doc); },
+    /* Daily note: { flow, symptoms[], note }. An empty entry removes the day. */
+    log: function (mid, date, entry) {
+      var doc = clone(cycles.get(mid));
+      var e = { flow: FLOWS.some(function (f) { return f.id === entry.flow; }) ? entry.flow : '', symptoms: (entry.symptoms || []).filter(function (s) { return SYMPTOMS.indexOf(s) >= 0; }), note: String(entry.note || '').trim().slice(0, 200) };
+      if (!e.flow && !e.symptoms.length && !e.note) delete doc.logs[date]; else doc.logs[date] = e;
+      return cycles.save(mid, doc);
+    },
+    /* A member who knows her usual cycle can set it; otherwise the average of her logged cycles is used. */
+    setCycleLength: function (mid, n) { var doc = clone(cycles.get(mid)); n = parseInt(n, 10); doc.cycleLength = n >= 15 && n <= 60 ? n : null; return cycles.save(mid, doc); },
+    stats: function (doc, today) {
+      today = today || todayIso();
+      var ps = doc.periods.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+      var lens = []; for (var i = 1; i < ps.length; i++) { var d = diffDays(ps[i].start, ps[i - 1].start); if (d >= 15 && d <= 60) lens.push(d); }
+      var recent = lens.slice(-6);
+      var avgCycle = doc.cycleLength || (recent.length ? Math.round(mean(recent)) : 28);
+      var plens = ps.filter(function (p) { return p.end; }).map(function (p) { return diffDays(p.end, p.start) + 1; }).filter(function (n) { return n >= 1 && n <= 14; }).slice(-6);
+      var avgPeriod = plens.length ? Math.round(mean(plens)) : 5;
+      var last = ps.length ? ps[ps.length - 1] : null;
+      var s = { periods: ps, count: ps.length, cycleLengths: lens, avgCycle: avgCycle, avgPeriod: avgPeriod, auto: !doc.cycleLength && recent.length > 0,
+        regular: recent.length >= 3 && Math.max.apply(null, recent) - Math.min.apply(null, recent) <= 7,
+        last: last, cycleDay: null, phase: null, nextStart: null, daysToNext: null, late: 0, ovulation: null, fertile: null, predicted: [] };
+      if (!last) return s;
+      s.cycleDay = diffDays(today, last.start) + 1;
+      var next = addDays(last.start, avgCycle);
+      /* Long gaps without logging: roll the prediction forward instead of showing weeks of "late". */
+      while (diffDays(today, next) > avgCycle) next = addDays(next, avgCycle);
+      s.nextStart = next; s.daysToNext = diffDays(next, today); s.late = s.daysToNext < 0 ? -s.daysToNext : 0;
+      s.ovulation = addDays(next, -14); s.fertile = { start: addDays(s.ovulation, -5), end: addDays(s.ovulation, 1) };
+      var inPeriod = !!cycles.periodOn(doc, today, true, avgPeriod);
+      s.phase = inPeriod ? 'period' : s.late > 14 ? 'stale' : s.late ? 'late' : (today >= s.fertile.start && today <= s.fertile.end) ? 'fertile' : today > s.fertile.end ? 'luteal' : 'follicular';
+      for (var k = 0; k < 3; k++) { var st = addDays(next, k * avgCycle), ov = addDays(st, -14); s.predicted.push({ start: st, end: addDays(st, avgPeriod - 1), ovulation: ov, fertileStart: addDays(ov, -5), fertileEnd: addDays(ov, 1) }); }
+      return s;
+    },
+    /* Everything the calendar needs for one day. */
+    dayInfo: function (doc, s, date) {
+      var p = cycles.periodOn(doc, date, true, s.avgPeriod);
+      var info = { period: !!p, start: !!p && p.start === date, open: !!p && !p.end, periodStart: p ? p.start : null, predicted: false, fertile: false, ovulation: false, log: doc.logs[date] || null };
+      if (!p) s.predicted.forEach(function (c) { if (date >= c.start && date <= c.end) info.predicted = true; if (date >= c.fertileStart && date <= c.fertileEnd) info.fertile = true; if (date === c.ovulation) info.ovulation = true; });
+      return info;
+    },
+    /* Plain-text summary a member can paste to her expert. */
+    summary: function (member, doc, s) {
+      var lines = ['NARI Health — cycle summary for ' + (member.name || MEMBER) + ' (' + fmt.date(todayIso()) + ')'];
+      if (!s.last) { lines.push('No periods logged yet.'); return lines.join('\n'); }
+      lines.push('Last period started: ' + fmt.date(s.last.start) + ' (' + fmt.relative(s.last.start).toLowerCase() + ')' + (s.last.end ? ', ended ' + fmt.date(s.last.end) : ', ongoing'));
+      lines.push('Average cycle: ' + s.avgCycle + ' days' + (s.cycleLengths.length >= 3 ? (s.regular ? ' (fairly regular)' : ' (varies)') : '') + ' · Average period: ' + s.avgPeriod + ' days');
+      if (s.count >= 2) lines.push('Next period expected: ' + fmt.date(s.nextStart));
+      if (s.cycleLengths.length) lines.push('Recent cycles: ' + s.cycleLengths.slice(-6).reverse().join(', ') + ' days');
+      var counts = {}; Object.keys(doc.logs).sort().slice(-60).forEach(function (d) { (doc.logs[d].symptoms || []).forEach(function (x) { counts[x] = (counts[x] || 0) + 1; }); });
+      var top = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 5).map(function (k) { return k + ' (' + counts[k] + ')'; });
+      if (top.length) lines.push('Symptoms noted in the last 60 days: ' + top.join(', '));
+      return lines.join('\n');
+    }
+  };
+
+  /* ====================================================================
+     DEV — figures and checks for the developer page (admin/dev)
+     ==================================================================== */
+  var dev = {
+    /* Daily traffic rows for the last `days` days, oldest first (see traffic.js for the shape). In demo mode with
+       nothing counted yet, a made-up month is returned (flagged sample: true) so the page can be tried. */
+    traffic: function (days) {
+      var since = daysFromToday(-(days - 1));
+      if (!LIVE) {
+        var all = read('nari_traffic') || {};
+        var rows = Object.keys(all).filter(function (k) { return k >= since; }).sort().map(function (k) { return all[k]; });
+        return Promise.resolve(rows.length ? rows : sampleTraffic(days));
+      }
+      return fs.collection('traffic').where('day', '>=', since).get().then(function (q) {
+        var out = []; q.forEach(function (d) { out.push(d.data()); });
+        return out.sort(function (a, b) { return a.day < b.day ? -1 : 1; });
+      });
+    },
+    /* Reads one document from collections the console needs; 'denied' means the published rules are older than the code. */
+    probe: function () {
+      if (!LIVE) return Promise.resolve({ mode: 'demo' });
+      function test(coll) { return fs.collection(coll).limit(1).get().then(function () { return 'ok'; }, function (e) { return /permission|insufficient/i.test((e && e.code) + ' ' + (e && e.message)) ? 'denied' : 'error'; }); }
+      return Promise.all([test('leads'), test('payments'), test('pushTokens'), test('traffic')]).then(function (r) { return { mode: 'live', leads: r[0], payments: r[1], pushTokens: r[2], traffic: r[3] }; });
+    },
+    serviceWorker: function () {
+      if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+      return navigator.serviceWorker.getRegistration(ROOT).then(function (r) { return r ? { scope: r.scope, active: !!r.active, script: (r.active || r.installing || r.waiting || {}).scriptURL || '' } : null; }, function () { return null; });
+    }
+  };
+  function sampleTraffic(days) {
+    var pages = ['home', 'physiotherapy_noida', 'physiotherapy_bulandshahr', 'womens_health_near_me', 'female_physiotherapist_near_me', 'physiotherapy_delhi_ncr'];
+    var sources = ['direct', 'instagram_com', 'google_com', 'l_instagram_com', 'whatsapp'];
+    var out = [];
+    for (var i = days - 1; i >= 0; i--) {
+      var day = daysFromToday(-i), seed = parseInt(day.replace(/-/g, ''), 10) % 97;
+      var views = 40 + (seed * 7) % 60 + (i % 7 === 5 || i % 7 === 6 ? 25 : 0), visitors = Math.round(views * 0.62);
+      var t = { day: day, views: views, visitors: visitors, pages: {}, sources: {}, devices: { mobile: Math.round(views * 0.78), desktop: Math.round(views * 0.22) }, hours: {}, campaigns: { diwali_offer: Math.round(visitors * 0.1) }, sample: true };
+      pages.forEach(function (p, k) { t.pages[p] = Math.round(views * [0.46, 0.14, 0.12, 0.11, 0.1, 0.07][k]); });
+      sources.forEach(function (s, k) { t.sources[s] = Math.round(visitors * [0.38, 0.3, 0.2, 0.07, 0.05][k]); });
+      for (var h = 8; h < 23; h++) t.hours['h' + h] = Math.round(views * (h >= 18 && h <= 21 ? 0.11 : 0.045));
+      out.push(t);
+    }
+    return out;
+  }
+
+  /* ====================================================================
      READY — the one entry point pages use
      ==================================================================== */
-  /* ready(role): resolves with the user for that role (after loading their data), or redirects to the login page and resolves null.
+  /* ready(role, opts): resolves with the user for that role (after loading their data), or redirects to the login page and resolves null.
+       opts.next — page (in the role's folder) to return to after login; defaults to the role's home.
      ready(): resolves { role, user } if anyone is signed in for the remembered role, else null. Does not redirect. */
-  function ready(role) {
+  function ready(role, opts) {
+    opts = opts || {};
+    var asId = asParam(role);
     return init().then(function () {
+      if (asId) return readyAs(role, asId, opts).then(function (u) { return u === undefined ? readyNormal(role, opts) : u; });
+      return readyNormal(role, opts);
+    });
+  }
+  /* member?as=<uid> or doctor/panel?as=<doctorId>. Only ids in the shape we create are accepted. */
+  function asParam(role) {
+    if (role !== 'member' && role !== 'doctor') return '';
+    var m = global.location.search.match(/[?&]as=([^&]+)/); var v = m ? decodeURIComponent(m[1]) : '';
+    return /^[A-Za-z0-9_-]{3,64}$/.test(v) ? v : '';
+  }
+  /* "View as": the signed-in admin sees the page exactly as that member or doctor would, and acts for them.
+     Resolves undefined when the visitor is not an admin, so the page then loads normally for whoever is signed in. */
+  function readyAs(role, id, opts) {
+    return resolveRole('admin').then(function (r) {
+      if (r.status !== 'ok') return undefined;
+      var admin = r.user;
+      write('nari_portal_role', 'admin');
+      var target = role === 'member' ? { id: id } : { id: id };
+      return (LIVE ? loadLive(role, target, true) : Promise.resolve()).then(function () {
+        if (role === 'doctor') return byId(db.doctors, id);
+        return LIVE ? fbGet('members', id) : byId(db.members, id);
+      }).then(function (t) {
+        if (!t) {
+          fail('No ' + (role === 'member' ? MEMBER.toLowerCase() : 'doctor') + ' with id ' + id + '. Go back to the console and try again.');
+          document.body.classList.remove('loading');
+          if (global.NariLoader) global.NariLoader.hide();
+          return null;
+        }
+        if (role === 'member') { t.id = id; if (!byId(db.members, id)) db.members.push(t); }
+        if (role === 'doctor' && !t.email) t.email = doctors.emailOf(id) || '';
+        viewAs = { admin: admin, role: role, target: t };
+        global.NariPortal.viewAs = viewAs;
+        return t;
+      });
+    });
+  }
+  function readyNormal(role, opts) {
+    return Promise.resolve().then(function () {
       if (!role) {
         var hint = LIVE ? (read('nari_portal_role') || 'member') : (read(SESSION_KEY) || {}).role;
         if (!hint) return null;
@@ -850,7 +1227,7 @@
         if (r.status !== 'ok') {
           var back = r.status === 'denied' ? '&error=' + encodeURIComponent(r.error) : '';
           if (r.status === 'denied' && LIVE) fb.auth().signOut();
-          window.location.replace(auth.loginPage(role) + '?next=' + encodeURIComponent((PAGES[role] || PAGES.member).home.split('/').pop()) + back);
+          window.location.replace(auth.loginPage(role) + '?next=' + encodeURIComponent(opts.next || (PAGES[role] || PAGES.member).home.split('/').pop()) + back);
           return null;
         }
         write('nari_portal_role', role);
@@ -884,8 +1261,9 @@
     CATEGORIES: CATEGORIES, MODES: MODES, SOURCES: SOURCES, SLOTS: SLOTS, STATUSES: STATUSES,
     ready: ready, readyPublic: readyPublic, subscribe: subscribe,
     auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, payments: payments, PLANS: PLANS, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
-    fmt: fmt, today: todayIso, daysFromToday: daysFromToday, normPhone: normPhone, waLink: waLink,
-    resetDemo: resetDemo, exportJSON: exportJSON, uid: uid,
-    _db: function () { return db; }
+    activity: activity, push: push, cycles: cycles, dev: dev, viewAs: null,
+    fmt: fmt, today: todayIso, daysFromToday: daysFromToday, addDays: addDays, diffDays: diffDays, normPhone: normPhone, waLink: waLink,
+    resetDemo: resetDemo, exportJSON: exportJSON, uid: uid, lastWriteAt: function () { return lastWrite; },
+    _db: function () { return db; }, _notify: notify
   };
 })(window);

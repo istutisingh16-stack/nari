@@ -13,6 +13,9 @@ rules_version = '2';
 //   leads/{id}              website call-back enquiries (no sign-in); admins only
 //   payments/{id}           a member's Paytm payment attempt for a plan; she may add the UPI reference,
 //                           only admins can mark it paid/failed
+//   cycles/{uid}            a member's period tracker; readable and writable by her alone
+//   pushTokens/{token}      a staff member's device token for push notifications (Cloud Messaging)
+//   traffic/{YYYY-MM-DD}    page-view counters written by traffic.js without sign-in; admins read them
 //
 // Members sign in with their mobile number + SMS code only, so request.auth.token.phone_number is
 // present for every real member. Rules below require it before a member can save a profile, book or
@@ -52,9 +55,11 @@ service cloud.firestore {
     }
 
     // A person may read their own staff record (to learn their role); only admins manage the list.
+    // Anyone on it may stamp two markers on their own record: first sign-in and "notifications seen up to".
     match /staff/{email} {
       allow read: if isAdmin() || (hasEmail() && myEmail() == email);
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (hasEmail() && myEmail() == email && onlyChanges(['firstLoginAt', 'notifSeenAt']));
     }
 
     // Members own their profile. Admins can read everyone (for the console).
@@ -108,9 +113,10 @@ service cloud.firestore {
             && request.resource.data.notes is string && request.resource.data.notes.size() <= 1000);
 
       // Members may only cancel. Doctors may change the status of their own consultations. Admins may do anything.
+      // (cancelledAt is stamped alongside a cancellation so the team's activity feed can order it.)
       allow update: if isAdmin()
-        || (signedIn() && resource.data.memberId == request.auth.uid && onlyChanges(['status']) && request.resource.data.status == 'cancelled')
-        || (isDoctor() && resource.data.doctorId == myDoctorId() && onlyChanges(['status']));
+        || (signedIn() && resource.data.memberId == request.auth.uid && onlyChanges(['status', 'cancelledAt']) && request.resource.data.status == 'cancelled')
+        || (isDoctor() && resource.data.doctorId == myDoctorId() && onlyChanges(['status', 'cancelledAt']));
 
       allow delete: if isAdmin();
     }
@@ -137,6 +143,53 @@ service cloud.firestore {
             && request.resource.data.status == 'claimed'
             && request.resource.data.txnRef is string && request.resource.data.txnRef.size() >= 6 && request.resource.data.txnRef.size() <= 40);
       allow delete: if isAdmin();
+    }
+
+    // Period tracker. Health data: the member alone can read or write it. Admins can only delete it when
+    // removing her account. Which members see the tracker (paid plans) is decided in the browser; the data
+    // itself is private either way.
+    match /cycles/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if phoneVerified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['id', 'memberId', 'periods', 'logs', 'cycleLength', 'updatedAt'])
+        && request.resource.data.id == uid && request.resource.data.memberId == uid
+        && request.resource.data.periods is list && request.resource.data.periods.size() <= 120
+        && request.resource.data.logs is map && request.resource.data.logs.size() <= 400;
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
+    }
+
+    // Push-notification device tokens. A staff member registers her own devices; admins see them all
+    // (the console lists enabled devices) and may remove any. The Cloud Function reads them server-side.
+    match /pushTokens/{token} {
+      allow read: if isAdmin();
+      allow create, update: if isStaff()
+        && request.resource.data.keys().hasOnly(['id', 'token', 'email', 'role', 'name', 'device', 'createdAt', 'updatedAt'])
+        && request.resource.data.id == token && request.resource.data.token == token
+        && request.resource.data.email == myEmail()
+        && request.resource.data.role == staffDoc().role;
+      allow delete: if isAdmin() || (isStaff() && resource.data.email == myEmail());
+    }
+
+    // Page-view counters for the developer page. Written by anyone (no sign-in) one view at a time via
+    // Firestore's increment transform; the row shape and sizes are pinned so nothing else can be stored here.
+    // Like any public counter it could be inflated on purpose; Google Analytics remains the audited source.
+    match /traffic/{day} {
+      allow read: if isAdmin();
+      allow create: if day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && trafficShape() && request.resource.data.views == 1;
+      allow update: if trafficShape() && request.resource.data.views == resource.data.views + 1;
+      allow delete: if isAdmin();
+    }
+    function trafficShape() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['day', 'views', 'visitors', 'pages', 'sources', 'devices', 'hours', 'campaigns'])
+        && d.day is string && d.day.size() == 10
+        && d.views is int && d.views <= 5000000
+        && (!('visitors' in d) || d.visitors is int)
+        && (!('pages' in d) || (d.pages is map && d.pages.size() <= 60))
+        && (!('sources' in d) || (d.sources is map && d.sources.size() <= 200))
+        && (!('devices' in d) || (d.devices is map && d.devices.size() <= 4))
+        && (!('hours' in d) || (d.hours is map && d.hours.size() <= 24))
+        && (!('campaigns' in d) || (d.campaigns is map && d.campaigns.size() <= 100));
     }
   }
 }
