@@ -39,8 +39,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ===== Reveal animation ===== */
 .reveal {
-  opacity: 0;
-  transform: translateY(28px);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.55s cubic-bezier(0.22,0.9,0.3,1), transform 0.55s cubic-bezier(0.22,0.9,0.3,1);
 }
 .reveal.is-visible { opacity: 1; transform: translateY(0); }
@@ -762,3 +762,17 @@ body.subpage .final-cta { margin-top: 5rem; }
 .btn-ghost-pill:hover { border-color: var(--primary); color: var(--primary); }
 .pricing-note { margin-top: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--muted); }
 .paytm-mark { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 700; color: #0f4a8a; }
+
+/* Public content stays visible without JavaScript. */
+.expert-placeholder { height: 18rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; background: var(--tint); color: var(--primary); }
+.expert-placeholder > span { display: grid; place-items: center; width: 6rem; height: 6rem; border-radius: 50%; background: #fff; font-size: 2.5rem; font-weight: 700; }
+.expert-placeholder small { color: var(--muted); }
+details.faq-item > summary { list-style: none; cursor: pointer; }
+details.faq-item > summary::-webkit-details-marker { display: none; }
+details.faq-item[open] .faq-a { max-height: none; opacity: 1; }
+details.faq-item[open] .faq-ic { transform: rotate(45deg); }
+@media (max-width: 639px) {
+  #expertsGrid:not(.carousel-ready) { display: grid; grid-template-columns: 1fr; }
+}
+
+.expert-img-wrap img[hidden] { display: none; }

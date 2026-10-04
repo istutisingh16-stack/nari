@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
+  <script src="routes.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My consultations — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -120,7 +120,7 @@
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Daily flow, symptom and mood log</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Cycle summary you can send to your doctor</li>
           </ul>
-          <p class="small muted">Included with every NARI plan, from a single ₹199 consultation to the monthly membership. Only you can see your entries.</p>
+          <p class="small muted">Included with every NARI plan, from a single ₹199 consultation to weekly and monthly memberships. Only you can see your entries.</p>
           <button type="button" class="btn btn-primary btn-sm" id="cycleSeePlans" style="justify-self:start">See plans</button>
         </div>
 
@@ -222,16 +222,14 @@
         '<span class="pc-label">' + esc(p.label) + '</span>' +
         '<span class="pc-price">' + esc(PAYS.rupees(p.price)) + '<small>' + esc(p.per || '') + '</small></span>' +
         '<span class="pc-desc">' + esc(p.desc || '') + '</span>' +
-        (p.recurring ? '<span class="pc-tag">' + UI.icon('refresh', '') + 'Auto-renews monthly · cancel anytime</span>' : '') +
+        (p.days ? '<span class="pc-tag">' + UI.icon('check', '') + 'One payment · no auto-debit</span>' : '') +
       '</span></label>';
     }
     function renderPlans() {
       $('plans').innerHTML = PAYS.PLANS.map(planCard).join('');
       var plan = PAYS.plan(selectedPlan) || PAYS.PLANS[0];
-      $('payBtn').innerHTML = 'Pay ' + esc(PAYS.rupees(plan.price)) + (plan.recurring ? '/month' : '') + ' with Paytm ' + UI.icon('arrowRight', 'ic sm');
-      $('payFine').textContent = plan.recurring
-        ? 'Paytm opens with ₹' + plan.price + ' ready. Renews every month; message us on WhatsApp any time to stop.'
-        : 'Paytm opens with ₹' + plan.price + ' ready. One payment, nothing recurring.';
+      $('payBtn').innerHTML = 'Pay ' + esc(PAYS.rupees(plan.price)) + (plan.days ? ' for ' + plan.days + ' days' : '') + ' with Paytm ' + UI.icon('arrowRight', 'ic sm');
+      $('payFine').textContent = 'Paytm opens with ₹' + plan.price + ' ready. One payment, no auto-debit. Access starts after payment verification.';
       var ent = PAYS.entitlement(me.id), e = $('entitle');
       e.classList.toggle('hidden', !ent);
       if (ent && ent.kind === 'plan') e.innerHTML = UI.icon('shieldCheck', '') + '<span><strong>' + esc(ent.plan.label) + ' active</strong> until ' + esc(NP.fmt.date(ent.until.toISOString().slice(0, 10))) + '. Book as many consultations as you need.</span>';
@@ -267,7 +265,7 @@
       var how;
       if (r.method === 'whatsapp') how = '<p class="small muted" style="line-height:1.6">Online payment is being switched on. We opened WhatsApp so the NARI team can send you a Paytm link for <strong>' + esc(PAYS.rupees(plan.price)) + '</strong>. Your request is saved as <code>' + esc(p.id) + '</code>.</p>';
       else how = '<ol class="pay-steps">' +
-          '<li><span>Paytm ' + (r.method === 'page' ? 'opened in a new tab' : r.method === 'app' ? 'should have opened on your phone' : 'can be opened on your phone') + ' with <strong>' + esc(PAYS.rupees(plan.price)) + '</strong> filled in' + (plan.recurring ? ' (first month; renewals follow monthly)' : '') + '.</span></li>' +
+          '<li><span>Paytm ' + (r.method === 'page' ? 'opened in a new tab' : r.method === 'app' ? 'should have opened on your phone' : 'can be opened on your phone') + ' with <strong>' + esc(PAYS.rupees(plan.price)) + '</strong> filled in' + (plan.days ? ' for ' + plan.days + ' days of care' : '') + '.</span></li>' +
           (r.method === 'upi' ? '<li><span>On this device, pay from any UPI app to the ID below with the note <em>' + esc(plan.label) + '</em>:<div class="upi-box" style="margin-top:.5rem"><code>' + esc(PAYS.upiId) + '</code><button type="button" class="btn btn-ghost btn-xs" data-copy-upi>Copy</button></div></span></li>' : '') +
           '<li><span>After paying, copy the <strong>UPI reference / UTR number</strong> from Paytm (12 digits) and enter it below. The team verifies it and your plan goes live.</span></li>' +
         '</ol>' +
@@ -308,7 +306,7 @@
     document.addEventListener('click', function (e) {
       var id = e.target.getAttribute && e.target.getAttribute('data-claim'); if (!id) return;
       var p = PAYS.get(id); if (!p) return;
-      var plan = PAYS.plan(p.planId) || { label: p.planLabel, price: p.amount };
+      var plan = PAYS.forPayment(p) || { label: p.planLabel, price: p.amount };
       var l = PAYS.links(plan, p); var method = l.page ? 'page' : l.paytm ? (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'app' : 'upi') : 'whatsapp';
       payDialog({ payment: p, plan: plan, method: method, url: method === 'page' ? l.page : method === 'app' ? l.paytm : method === 'upi' ? l.upi : l.whatsapp, links: l });
     });

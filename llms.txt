@@ -2,7 +2,7 @@
 
 > NARI Health is a women-led women's health platform in India. It connects women with licence-verified gynaecologists, female physiotherapists, psychologists and nutritionists for private video consultations anywhere in India, and clinic or home visits in Bulandshahr, Noida, Greater Noida and Delhi NCR (Delhi, Ghaziabad, Gurugram, Faridabad).
 
-NARI treats women as members, not patients. There are no subscriptions: a 25-minute private video consultation is ₹499 and clinic visits are quoted at booking. Bookings are confirmed by a care coordinator on WhatsApp. Members sign in with Google and a one-time SMS code. Doctors on the panel can refer members and follow their care.
+NARI treats women as members, not patients. A 25-minute private video consultation is ₹199 and clinic visits are quoted at booking. Bookings are confirmed by a care coordinator on WhatsApp. Members sign in with their mobile number and a one-time SMS code. Doctors on the panel can refer members and follow their care.
 
 ## Services
 
@@ -18,8 +18,11 @@ NARI treats women as members, not patients. There are no subscriptions: a 25-min
 
 ## Pricing
 
-- Video consultation (25 min): ₹499, paid only after the slot is confirmed.
-- Clinic or home visit: quoted at booking. No subscriptions or packages.
+- Video consultation (25 min): ₹199.
+- Weekly membership: ₹799 for 7 days of unlimited video consultations.
+- Monthly membership: ₹2,499 for 30 days of unlimited video consultations.
+- Memberships start after payment verification and have no auto-debit.
+- Clinic or home visit: quoted at booking. Quoted separately from video memberships.
 
 ## Contact
 

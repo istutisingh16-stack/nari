@@ -102,9 +102,27 @@
   /* ---------- Avatar ---------- */
   function avatar(user, size) {
     var cls = 'avatar' + (size ? ' ' + size : '');
-    if (user && user.img) return '<span class="' + cls + '"><img src="' + esc(user.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></span>';
-    return '<span class="' + cls + '">' + esc(NP.fmt.initials(user && user.name)) + '</span>';
+    var initials = esc(NP.fmt.initials(user && user.name));
+    var src = user && user.img || '';
+    // Existing Firestore profiles may still contain one of the deleted Hostinger portraits.
+    if (/^https:\/\/horizons-cdn\.hostinger\.com\/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0\//.test(src)) {
+      var seed = (NP.CONFIG.seedDoctors || []).filter(function (d) { return d.id === user.id; })[0];
+      src = seed && seed.img || '';
+    }
+    if (!src && user) {
+      var configured = (NP.CONFIG.seedDoctors || []).filter(function (d) { return d.id === user.id; })[0];
+      src = configured && configured.img || '';
+    }
+    if (/^assets\//.test(src)) src = NP.ROOT + src;
+    return '<span class="' + cls + '">' + initials +
+      (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-avatar-image>' : '') + '</span>';
   }
+
+  // Capture image errors because they do not bubble; initials remain underneath.
+  document.addEventListener('error', function (event) {
+    var img = event.target;
+    if (img && img.hasAttribute && img.hasAttribute('data-avatar-image')) img.remove();
+  }, true);
 
   /* ---------- Appointment card ---------- */
   /* opts: { who: 'member'|'doctor'|'admin', actions: fn(a) -> html string } */
@@ -340,9 +358,14 @@
   }
 
   function showError(id, msg) { var n = $(id); if (!n) return; n.textContent = msg || ''; n.classList.toggle('show', !!msg); }
-  function param(name) { var m = window.location.search.match(new RegExp('[?&]' + name + '=([^&]+)')); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : ''; }
+  function param(name) { var m = window.location.search.match(new RegExp('[?&]' + name + '=([^&]+)')); try { return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : ''; } catch (e) { return ''; } }
   /* Only a bare page name in the same folder is accepted (no paths or other sites). Old links with ".html" still work. */
-  function nextParam(fallback) { var v = param('next').replace(/\.html$/, ''); return /^[a-z-]+$/.test(v) ? v : fallback; }
+  function nextParam(fallback) {
+    var value = param('next').replace(/\.html$/, '');
+    var allowed = fallback === 'member' ? ['member'] : fallback === 'panel' ? ['panel'] : ['console', 'dev'];
+    var target = allowed.indexOf(value) >= 0 ? value : fallback;
+    return global.NariRoutes ? global.NariRoutes.url(target) : target;
+  }
 
   /* Live-mode pages hide demo helpers; demo pages hide live-only ones. */
   function applyMode() {

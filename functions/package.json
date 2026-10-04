@@ -1,6 +1,6 @@
 {
   "name": "nari-health-functions",
-  "description": "Push notifications to the NARI Health team when something needs their attention.",
+  "description": "Admin notifications and verified WhatsApp consultation orders for NARI Health.",
   "private": true,
   "main": "index.js",
   "engines": {

@@ -1,6 +1,10 @@
 # NARI Health — Going live and building the business
 
-Two parts. **Part A** takes the portal live for ₹0/month in about an hour.
+For the new WhatsApp consultation menu, native checkout and admin tracking, see
+[WHATSAPP-SETUP.md](WHATSAPP-SETUP.md). It requires a Business Platform account,
+eligible payment configuration and Cloud Functions; it is not activated yet.
+
+Two parts. **Part A** configures the portal; costs depend on enabled services and usage.
 **Part B** is what we recommend doing next to turn it into revenue.
 
 ---
@@ -253,11 +257,9 @@ member referral → 6. WhatsApp API automation → 7. B2B page.
    (looks like `1234567890@paytm`). Paste it into `portal-config.js` →
    `payments.upiId`. From then on **Pay with Paytm** on the member page opens
    Paytm with the amount filled in (₹799 by default).
-2. Optional but recommended: Paytm Business → **Payment Links** → create one
-   link per plan (₹999 pass, ₹199 single) and a **Subscription** link for the
-   ₹799/month plan. Paste each URL into `payments.plans[].link`. The
-   subscription link is what makes the ₹799 renew automatically; without it the
-   first month is a one-time payment and you remind the member each month.
+2. Optional: Paytm Business → **Payment Links** → create one one-time link per
+   plan (₹799 weekly, ₹2,499 monthly, ₹199 single). Paste each URL into
+   `payments.plans[].link`. Memberships renew manually; do not use subscription links.
 3. Publish the updated `firestore.rules` (it adds the `payments` collection).
 4. Verify payments in the console → **Payments**: compare the member's UPI
    reference with your Paytm statement and press **Mark paid**. Her plan goes
@@ -353,8 +355,14 @@ test numbers work**; no real SMS is sent. Add one under Authentication → Sign-
 method → Phone → *Phone numbers for testing* (e.g. `+91 99999 00001`, code
 `123456`), then sign in with it locally. Test real numbers on narihealth.in.
 
-Serve the folder with `npx serve -l 5055 .` (not VS Code Live Server, which cannot
-open clean addresses like `/member-login`).
+Run `npm start` and open `http://localhost:5500/member-login`. If port 5500 is
+already in use, stop that server or run `PORT=5501 npm start`.
+
+VS Code Live Server also works: run `npm run prepare:local` once to generate
+local clean-URL redirects, then open `/member-login` or `/member-login.html`.
+The redirect directories are Git-ignored and are not deployed. Local navigation
+keeps real `.html` filenames, so refreshing or signing out does not produce a
+404. `routes.js` preserves clean URLs on the production domain.
 
 "Missing or insufficient permissions" after sign-in means the published
 Firestore rules are older than the code. Paste `firestore.rules` into

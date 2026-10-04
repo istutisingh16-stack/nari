@@ -2,15 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="routes.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign in — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
-  <meta http-equiv="refresh" content="0; url=member-login" />
+  <noscript><meta http-equiv="refresh" content="0; url=member-login.html" /></noscript>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
   <!-- The public sign-in is for members only. Doctors use /doctor/ and the team uses /admin/. -->
-  <script>window.location.replace('member-login' + window.location.search);</script>
+  <script>window.location.replace(NariRoutes.url('member-login' + window.location.search + window.location.hash));</script>
   <p style="font-family:sans-serif;padding:2rem">Taking you to <a href="member-login">member sign in</a>…</p>
 </body>
 </html>

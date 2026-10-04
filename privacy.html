@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
+  <script src="routes.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy | NARI Health</title>
     <meta name="description" content="Privacy Policy for NARI Health — how we collect, use and protect your personal information.">
@@ -176,7 +176,7 @@
 
     <div class="hero-bar">
         <h1>Privacy Policy</h1>
-        <p>Last updated: January 2025</p>
+        <p>Last updated: 4 October 2026</p>
     </div>
 
     <div class="content-wrap">
@@ -197,7 +197,8 @@
             <li>Preferred appointment date and time</li>
             <li>Messages and communication you send through our contact form or WhatsApp</li>
         </ul>
-        <p>We do not collect payment information directly — any payments are processed through third-party providers under their own privacy policies.</p>
+        <p>Payments are processed by third-party providers. We store order and payment records, including your selected plan, amount, payment status, transaction reference and refund status. We do not collect your UPI PIN or full card details.</p>
+        <p>When you use our WhatsApp consultation ordering service, your WhatsApp display name, phone number, plan selection and message time are used to process your enquiry and order. Our team can see these details to arrange your consultation and follow up. The ordering automation does not copy full chat messages or medical reports into its order records. Reply HELP for a team member or STOP to pause automated replies.</p>
 
         <hr class="divider">
 
@@ -228,6 +229,8 @@
         <ul>
             <li><strong>EmailJS</strong> — to receive contact form submissions securely</li>
             <li><strong>WhatsApp</strong> — for direct communication; subject to WhatsApp's own privacy policy</li>
+            <li><strong>Google Firebase</strong> — for sign-in, enquiry and order records, and team notifications</li>
+            <li><strong>Payment providers</strong> — to process payments and confirm transaction and refund status; in-chat checkout uses the gateway connected to our WhatsApp account</li>
             <li><strong>Google Fonts &amp; Font Awesome</strong> — for website typography and icons</li>
         </ul>
         <p>Each of these providers has their own privacy policy governing how they handle data.</p>

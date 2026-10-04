@@ -6,47 +6,14 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- Data ---------- */
-  var CATEGORIES = [
-    { label: "Women's Health", tint: '#FCEEEE', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
-    { label: 'PCOS', tint: '#F3F0FF', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
-    { label: 'Pregnancy', tint: '#FFF4E8', icon: '<path d="M9 12h6M12 9v6"/><circle cx="12" cy="12" r="10"/>' },
-    { label: 'Periods', tint: '#FCEEEE', icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>' },
-    { label: 'Stomach & Digestion', tint: '#F0F7EE', icon: '<path d="M9 3v3a3 3 0 0 0 3 3h1.5a5.5 5.5 0 0 1 0 11H10a3 3 0 0 1-3-3v-1"/><path d="M15 3v2"/><path d="M6 14h2"/>' },
-    { label: 'Mental Health', tint: '#EAF4FF', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/>' },
-    { label: 'Nutrition', tint: '#EDF9EF', icon: '<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06z"/><path d="M10 2c1 .5 2 2 2 5"/>' },
-    { label: 'Sleep', tint: '#F1F0FB', icon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>' },
-    { label: 'Menopause', tint: '#FFF1F6', icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
-    { label: 'General Health', tint: '#F4F5F7', icon: '<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/>' },
-    { label: 'Pelvic Health', tint: '#FFF4E8', icon: '<path d="M12 3l1.9 5.8L19.7 11l-5.8 1.9L12 18.7l-1.9-5.8L4.3 11l5.8-1.9z"/>' }
-  ];
-
-  var EXPERTS = [
-    { img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/21382c5b8e03d1b3281a7be4d1d609f2.png', name: 'Dr. Sudha Sharma', role: 'Gynecologist', exp: '32+ yrs' },
-    { img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/39c844c99b0c53eb89ca7bcd29bf7874.png', name: 'Dr. Hanifa', role: 'Psychologist', exp: '15+ yrs' },
-    { img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/00080d23203e6329660ad5faf6d06897.png', name: 'Dr. Nisha Andola', role: 'Physiotherapist', exp: '4 yrs' },
-    { img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/0a8f90209fff53566c4ee75a308ec234.png', name: 'Dr. Sneha Iyer', role: 'Nutritionist', exp: ' 2 yrs' }
-  ];
-
   var REVIEWS = [
     { name: 'Priya S.', city: 'Chennai', text: 'Got a clear answer about my PCOS reports in ten minutes. No panic-Googling at 2am.' },
     { name: 'Divya M.', city: 'Hyderabad', text: 'The doctor was kind and specific. Booking a follow-up took one message.' },
     { name: 'Kavita R.', city: 'Jaipur', text: 'The nutritionist gave me advice I actually trusted. I have recommended NARI to my whole family.' }
   ];
 
-  var FAQS = [
-    ['How much does a consultation cost?', 'A single video consultation is ₹199. If you want ongoing care, the monthly membership is ₹799 a month (auto-renews, cancel any time) or a one-month pass is ₹999 with nothing recurring. Both give unlimited consultations. Clinic visits are quoted when you book. Pay through Paytm from your NARI account; no hidden charges.'],
-    ['How do I pay?', 'From your NARI account, choose a plan and press Pay. Paytm opens with the amount filled in. After paying, enter the UPI reference number and the care team confirms it, usually within a few hours.'],
-    ['How soon can I get a slot?', 'Most requests are confirmed within a few hours, often for the same or next day. Our care coordinator confirms on WhatsApp.'],
-    ['Is my information private?', 'Yes. Your bookings are visible only to you, your expert and the NARI care coordinator. We never sell or share your data.'],
-    ['Are the experts really verified?', 'Every professional is licence-verified and reviewed before joining the NARI panel.'],
-    ['Can I see a doctor in person?', 'Yes. Choose “Clinic visit” when you book and we will arrange a partner clinic near you.'],
-    ['Which cities do you serve?', 'Video consultations are available anywhere in India. In-person physiotherapy and clinic visits are arranged in Bulandshahr, Noida, Greater Noida and across Delhi NCR (Delhi, Ghaziabad, Gurugram, Faridabad), with home physiotherapy visits on request.'],
-    ['Do you have female physiotherapists?', 'Yes. NARI is built for women, and our physiotherapy panel is led by women. You can ask for a female physiotherapist for pelvic floor, post-natal, PCOS-related or pain-related care, online or at a partner clinic near you.'],
-    ['Is NARI a good option for women\'s health near me if I am not in a metro?', 'Yes. Most of our members consult by video from home, including smaller cities and towns such as Bulandshahr, Khurja and Sikandrabad. Where we have partner clinics, you can choose an in-person visit instead.']
-  ];
 
   var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-  var badgeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>';
 
   /* ---------- Helpers ---------- */
   function el(tag, cls, html) {
@@ -56,56 +23,23 @@
     return n;
   }
 
-  /* ---------- Render Categories ---------- */
-  function renderCategories() {
-    var grid = document.getElementById('catGrid');
-    if (!grid) return;
-    CATEGORIES.forEach(function (c, i) {
-      var card = el('div', 'cat-card reveal');
-      card.setAttribute('data-delay', String(i * 50));
-      card.style.backgroundColor = c.tint;
-      card.innerHTML =
-        '<span class="cat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + c.icon + '</svg></span>' +
-        '<p class="cat-label">' + c.label + '</p>';
-      grid.appendChild(card);
-    });
-  }
-
-  /* ---------- Render Experts ---------- */
-  function expertCardHTML(e) {
-    return '<div class="expert-img-wrap"><img src="' + e.img + '" alt="' + e.name + ', ' + e.role + '" loading="lazy" />' +
-      '<span class="verified-badge">' + badgeSvg + ' Verified</span></div>' +
-      '<div class="expert-body"><h3 class="expert-name">' + e.name + '</h3>' +
-      '<p class="expert-role">' + e.role + ' · ' + e.exp + ' experience</p></div>';
-  }
+  /* Copy the HTML expert cards into the mobile carousel. */
   function renderExperts() {
     var grid = document.getElementById('expertsGrid');
     var track = document.getElementById('expertsTrack');
     var dots = document.getElementById('expertsDots');
-    if (grid) {
-      EXPERTS.forEach(function (e, i) {
-        var wrap = el('div', 'reveal');
-        wrap.setAttribute('data-delay', String(i * 80));
-        var card = el('article', 'expert-card');
-        card.innerHTML = expertCardHTML(e);
-        wrap.appendChild(card);
-        grid.appendChild(wrap);
-      });
-    }
-    if (track && dots) {
-      EXPERTS.forEach(function (e, i) {
-        var slide = el('div', 'carousel-slide');
-        var card = el('article', 'expert-card');
-        card.innerHTML = expertCardHTML(e);
-        slide.appendChild(card);
-        track.appendChild(slide);
-        var dot = el('button', 'carousel-dot' + (i === 0 ? ' active' : ''));
-        dot.setAttribute('type', 'button');
-        dot.setAttribute('aria-label', 'Go to ' + e.name);
-        dot.addEventListener('click', function () { expertsGoTo(i); });
-        dots.appendChild(dot);
-      });
-    }
+    if (!grid || !track || !dots) return;
+    Array.prototype.forEach.call(grid.children, function (card, i) {
+      var slide = el('div', 'carousel-slide');
+      slide.appendChild(card.cloneNode(true));
+      track.appendChild(slide);
+      var dot = el('button', 'carousel-dot' + (i === 0 ? ' active' : ''));
+      dot.type = 'button';
+      dot.setAttribute('aria-label', 'Go to ' + card.querySelector('.expert-name').textContent);
+      dot.addEventListener('click', function () { expertsGoTo(i); });
+      dots.appendChild(dot);
+    });
+    grid.classList.add('carousel-ready');
   }
 
   /* Experts carousel logic */
@@ -114,7 +48,7 @@
   function expertsGoTo(i) {
     var track = document.getElementById('expertsTrack');
     if (!track) return;
-    expertsIdx = (i + EXPERTS.length) % EXPERTS.length;
+    expertsIdx = (i + track.children.length) % track.children.length;
     var slideW = track.children[0].getBoundingClientRect().width + 16; // gap 1rem
     track.style.transform = 'translateX(' + (-expertsIdx * slideW) + 'px)';
     var dots = document.getElementById('expertsDots');
@@ -188,39 +122,6 @@
     if (reviewTimer) clearInterval(reviewTimer);
     reviewTimer = setInterval(function () { showReview(reviewIdx + 1); }, 6000);
   }
-
-  /* ---------- Render FAQ ---------- */
-  function renderFAQ() {
-    var list = document.getElementById('faqList');
-    if (!list) return;
-    FAQS.forEach(function (pair, i) {
-      var item = el('div', 'faq-item' + (i === 0 ? ' open' : ''));
-      item.innerHTML =
-        '<button type="button" class="faq-q" aria-expanded="' + (i === 0) + '">' +
-          '<span class="faq-q-text">' + pair[0] + '</span>' +
-          '<span class="faq-ic">' + (i === 0 ? minusSvg() : plusSvg()) + '</span>' +
-        '</button>' +
-        '<div class="faq-a"><p>' + pair[1] + '</p></div>';
-      var btn = item.querySelector('.faq-q');
-      btn.addEventListener('click', function () {
-        var isOpen = item.classList.contains('open');
-        // close all
-        Array.prototype.forEach.call(list.children, function (c) {
-          c.classList.remove('open');
-          c.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
-          c.querySelector('.faq-ic').innerHTML = plusSvg();
-        });
-        if (!isOpen) {
-          item.classList.add('open');
-          btn.setAttribute('aria-expanded', 'true');
-          item.querySelector('.faq-ic').innerHTML = minusSvg();
-        }
-      });
-      list.appendChild(item);
-    });
-  }
-  function plusSvg() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'; }
-  function minusSvg() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'; }
 
   /* ---------- Navbar ---------- */
   function initNavbar() {
@@ -469,10 +370,8 @@
 
   /* ---------- Boot ---------- */
   document.addEventListener('DOMContentLoaded', function () {
-    renderCategories();
     renderExperts();
     renderReviews();
-    renderFAQ();
     initNavbar();
     initReveal();
     initCounters();

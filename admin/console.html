@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <script>/* Clean address bar: /page.html shows as /page and /index.html as / (GitHub Pages serves both). */(function(l){var p=l.pathname,c=p.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'');if(c!==p&&history.replaceState)history.replaceState(null,'',c+l.search+l.hash)})(location)</script>
+  <script src="../routes.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Team console — NARI Health</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -29,6 +29,7 @@
         <button type="button" class="tab" data-tab="leads">Enquiries <span class="count" id="cLead">0</span></button>
         <button type="button" class="tab" data-tab="appointments">Consultations <span class="count" id="cApt">0</span></button>
         <button type="button" class="tab" data-tab="payments">Payments <span class="count" id="cPay">0</span></button>
+        <button type="button" class="tab" data-tab="whatsapp">WhatsApp <span class="count" id="cWa">0</span></button>
         <button type="button" class="tab" data-tab="members"><span data-member-word="plural">Members</span> <span class="count" id="cMem">0</span></button>
         <button type="button" class="tab" data-tab="doctors">Doctors <span class="count" id="cDoc">0</span></button>
         <button type="button" class="tab" data-tab="settings">Team &amp; settings</button>
@@ -108,6 +109,26 @@
         </table>
       </div>
       <p class="small muted" id="payCount" style="margin-top:.75rem"></p>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div class="tab-panel" id="whatsapp">
+      <p class="notice" id="waConnection" style="margin-bottom:1rem"></p>
+      <div class="toolbar">
+        <div class="input-group grow"><input class="input" id="waSearch" type="search" aria-label="Search WhatsApp" placeholder="Search patient, phone, plan or payment reference" /></div>
+        <select class="select" id="waStatus" aria-label="WhatsApp payment status"><option value="">All payments</option><option value="pending">Awaiting payment</option><option value="paid">Paid</option><option value="expired">Expired</option><option value="partially_refunded">Partially refunded</option><option value="refunded">Refunded</option></select>
+      </div>
+      <h2 class="card-title">Consultation orders</h2>
+      <p class="small muted" style="margin:.5rem 0 1rem">Payment status is verified automatically. Use Recheck if a payment is delayed. Arrange the consultation in chat, then update Follow-up. Refunds are issued through your payment provider and appear after verification.</p>
+      <div class="table-wrap"><table class="table" id="waOrderTable">
+        <thead><tr><th>When</th><th>Patient</th><th>Plan</th><th class="num">Amount</th><th>Payment</th><th>Follow-up</th><th>Actions</th></tr></thead><tbody></tbody>
+      </table></div>
+      <p class="small muted" id="waCount" style="margin:.75rem 0 2rem"></p>
+      <h2 class="card-title">Patient enquiries</h2>
+      <p class="small muted" style="margin:.5rem 0 1rem">Includes patients who message but have not selected or paid for a plan. HELP pauses automated replies for a team member; START or MENU resumes them.</p>
+      <div class="table-wrap"><table class="table" id="waCustomerTable">
+        <thead><tr><th>Last message</th><th>Patient</th><th>Conversation</th><th>Follow-up</th><th>Action</th></tr></thead><tbody></tbody>
+      </table></div>
     </div>
 
     <!-- MEMBERS -->
@@ -317,7 +338,7 @@
     var PAYS = NP.payments;
     var PAY_LABEL = { initiated: 'Not completed', claimed: 'Claimed', paid: 'Paid', failed: 'Failed', refunded: 'Refunded' };
     $('payHelp').innerHTML = PAYS.upiId
-      ? 'Members pay through Paytm to <strong>' + esc(PAYS.upiId) + '</strong> and enter the UPI reference. Check it against your Paytm for Business statement, then mark <strong>Paid</strong> so their plan goes live. Monthly memberships without a Paytm subscription link need a manual reminder each month.'
+      ? 'Members pay through Paytm to <strong>' + esc(PAYS.upiId) + '</strong> and enter the UPI reference. Check it against your Paytm for Business statement, then mark <strong>Paid</strong> so their plan goes live. Weekly and monthly plans are one-time payments. Orders placed in WhatsApp appear in the WhatsApp tab.'
       : '<strong>Paytm is not configured yet.</strong> Set <code>payments.upiId</code> in portal-config.js (your Paytm for Business UPI ID). Until then "Pay" sends members to WhatsApp and their request is listed here as Not completed.';
     function renderPayments() {
       var q = $('paySearch').value.trim().toLowerCase(), st = $('payStatus').value;
@@ -354,6 +375,66 @@
     }
     $('paySearch').addEventListener('input', renderPayments);
     $('payStatus').addEventListener('change', renderPayments);
+
+    /* ---------- WhatsApp enquiries and server-verified orders ---------- */
+    function waFollowUp(collection, record) {
+      return '<select class="select" aria-label="Follow-up for ' + esc(record.name || record.phone) + '" data-wa-followup="' + collection + '" data-wa-id="' + esc(record.id) + '">' + ['new', 'contacted', 'scheduled', 'closed'].map(function (status) {
+        return '<option value="' + status + '"' + ((record.followUp || 'new') === status ? ' selected' : '') + '>' + status[0].toUpperCase() + status.slice(1) + '</option>';
+      }).join('') + '</select>';
+    }
+    function waChat(record) {
+      if (!/^91[6-9]\d{9}$/.test(record.phone || '')) return '';
+      return '<a class="btn btn-soft btn-xs" href="https://wa.me/' + record.phone + '" target="_blank" rel="noreferrer">Open chat</a>';
+    }
+    function renderWhatsApp() {
+      var orders = NP.whatsapp.orders(), customers = NP.whatsapp.customers(), connection = NP.whatsapp.integration();
+      var q = $('waSearch').value.trim().toLowerCase(), status = $('waStatus').value;
+      function matches(r) { return !q || [r.name, r.phone, r.planLabel, r.id, r.transactionId].join(' ').toLowerCase().indexOf(q) >= 0; }
+      $('waConnection').textContent = connection && connection.lastWebhookAt
+        ? 'Latest WhatsApp update: ' + NP.fmt.dateTime(connection.lastWebhookAt) + '. Payments update when confirmed by the connected provider.'
+        : 'Awaiting WhatsApp Business Platform connection. Chats from the mobile app alone cannot sync here. Setup instructions: WHATSAPP-SETUP.md.';
+      var labels = { pending: 'Awaiting payment', paid: 'Paid', expired: 'Expired', partially_refunded: 'Partially refunded', refunded: 'Refunded' };
+      var visible = orders.filter(function (o) { return matches(o) && (!status || o.status === status); });
+      $('cWa').textContent = orders.filter(function (o) { return o.status === 'paid' && o.followUp === 'new'; }).length + customers.filter(function (c) { return c.needsHelp && c.followUp === 'new'; }).length;
+      $('waOrderTable').querySelector('tbody').innerHTML = visible.map(function (o) {
+        var warning = o.invoiceError || (o.invoiceStatus === 'sending' || o.invoiceStatus === 'needs_review' ? 'Checkout delivery needs review.' : '');
+        var expired = o.status === 'pending' && Date.parse(o.checkoutExpiresAt) <= Date.now();
+        return '<tr><td>' + esc(NP.fmt.dateTime(o.createdAt)) + '</td>' +
+          '<td><strong>' + esc(o.name || 'Patient') + '</strong><div class="small muted">+' + esc(o.phone) + '</div></td>' +
+          '<td>' + esc(o.planLabel) + '<div class="small muted">' + (o.validUntil ? 'Until ' + esc(NP.fmt.dateTime(o.validUntil)) : o.days ? o.days + ' days from payment' : 'One consultation') + '</div></td>' +
+          '<td class="num">' + esc(PAYS.rupees(o.amount)) + (o.refundedAmount ? '<div class="small muted">Refunded ' + esc(PAYS.rupees(o.refundedAmount)) + '</div>' : '') + '</td>' +
+          '<td><span class="badge ' + (o.status === 'paid' ? 'paid' : 'neutral') + '">' + esc(labels[o.status] || o.status) + '</span>' +
+            '<div class="small muted">' + esc(o.id) + '</div>' + (o.transactionId ? '<div class="small muted">' + esc(o.transactionId) + '</div>' : '') +
+            (o.paidAt ? '<div class="small muted">Paid ' + esc(NP.fmt.dateTime(o.paidAt)) + '</div>' : '') +
+            (expired ? '<div class="small muted">Payment request expired; recheck before follow-up.</div>' : '') +
+            (warning ? '<div class="small">' + esc(warning) + '</div>' : '') +
+            (o.checkError ? '<div class="small">' + esc(o.checkError) + '</div>' : '') +
+            (o.lastCheckedAt ? '<div class="small muted">Checked ' + esc(NP.fmt.dateTime(o.lastCheckedAt)) + '</div>' : '') +
+            (o.confirmationStatus === 'team_follow_up' ? '<div class="small">Payment received; team confirmation needed in chat.</div>' : '') + '</td>' +
+          '<td>' + waFollowUp('whatsappOrders', o) + '</td>' +
+          '<td><div class="actions">' + waChat(o) + '<button type="button" class="btn btn-ghost btn-xs" data-wa-recheck="' + esc(o.id) + '">Recheck</button></div></td></tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty">No WhatsApp orders match. Plan selections will appear here after the integration is connected.</div></td></tr>';
+      var collected = orders.reduce(function (sum, o) { return sum + (['paid', 'partially_refunded', 'refunded'].indexOf(o.status) >= 0 ? o.amount - (o.refundedAmount || 0) : 0); }, 0);
+      $('waCount').textContent = visible.length + ' of ' + orders.length + ' WhatsApp orders · ' + PAYS.rupees(collected) + ' collected after verified refunds (before fees).';
+      $('waCustomerTable').querySelector('tbody').innerHTML = customers.filter(matches).map(function (c) {
+        return '<tr><td>' + esc(NP.fmt.dateTime(c.lastMessageAt)) + '</td><td><strong>' + esc(c.name || 'Patient') + '</strong><div class="small muted">+' + esc(c.phone) + '</div></td>' +
+          '<td>' + (c.needsHelp ? 'Team reply requested' : c.paused ? 'Automated replies paused' : 'Plan selection available') + '</td><td>' + waFollowUp('whatsappCustomers', c) + '</td><td>' + waChat(c) + '</td></tr>';
+      }).join('') || '<tr><td colspan="5"><div class="empty">No WhatsApp enquiries match.</div></td></tr>';
+    }
+    $('waSearch').addEventListener('input', renderWhatsApp);
+    $('waStatus').addEventListener('change', renderWhatsApp);
+    $('whatsapp').addEventListener('change', function (event) {
+      var input = event.target, collection = input.getAttribute('data-wa-followup'); if (!collection) return;
+      input.disabled = true;
+      NP.whatsapp.followUp(collection, input.getAttribute('data-wa-id'), input.value).then(function () { UI.toast('Follow-up updated.', 'success'); })
+        .catch(function (error) { UI.toast(error.message, 'error'); }).finally(function () { renderWhatsApp(); });
+    });
+    $('whatsapp').addEventListener('click', function (event) {
+      var button = event.target.closest('[data-wa-recheck]'); if (!button) return;
+      button.disabled = true;
+      NP.whatsapp.recheck(button.getAttribute('data-wa-recheck')).then(function () { UI.toast('Verification requested. The order will update after the payment provider responds.', 'info'); })
+        .catch(function (error) { UI.toast(error.message, 'error'); }).finally(function () { button.disabled = false; });
+    });
 
     /* ---------- Appointments ---------- */
     function aptActions(a) {
@@ -537,7 +618,7 @@
       if (st === 'cancelled') UI.confirmDialog('Cancel this consultation?', 'Remember to let the ' + NP.MEMBER.toLowerCase() + ' know on WhatsApp.', 'Yes, cancel', true).then(function (ok) { if (ok) go(); }); else go();
     });
 
-    function renderAll() { renderDoctors(); renderOverview(); renderLeads(); renderPayments(); renderAppointments(); renderMembers(); renderSettings(); renderActivity(); renderNotifSettings(); if (notif) notif.check(); }
+    function renderAll() { renderDoctors(); renderOverview(); renderLeads(); renderPayments(); renderWhatsApp(); renderAppointments(); renderMembers(); renderSettings(); renderActivity(); renderNotifSettings(); if (notif) notif.check(); }
     UI.initTabs($('tabs'));
     NP.subscribe(renderAll);
     renderAll();

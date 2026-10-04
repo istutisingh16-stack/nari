@@ -145,6 +145,30 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // WhatsApp prices, payments and references are server-owned. Staff can track follow-up only.
+    match /whatsappCustomers/{id} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['followUp'])
+        && request.resource.data.followUp in ['new', 'contacted', 'scheduled', 'closed'];
+    }
+    match /whatsappOrders/{id} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['followUp'])
+        && request.resource.data.followUp in ['new', 'contacted', 'scheduled', 'closed'];
+    }
+    match /whatsappRechecks/{id} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin()
+        && exists(/databases/$(database)/documents/whatsappOrders/$(id))
+        && request.resource.data.keys().hasOnly(['requestedAt', 'requestedBy'])
+        && request.resource.data.requestedAt is string && request.resource.data.requestedAt.size() <= 40
+        && request.resource.data.requestedBy == request.auth.uid;
+    }
+    match /integrations/{id} {
+      allow read: if isAdmin() && id == 'whatsapp';
+    }
+    // whatsappEvents has no client rules: webhook queue and deduplication records are server-only.
+
     // Period tracker. Health data: the member alone can read or write it. Admins can only delete it when
     // removing her account. Which members see the tracker (paid plans) is decided in the browser; the data
     // itself is private either way.

@@ -40,9 +40,14 @@
   ];
   var PAY = CFG.payments || {};
   var PLANS = PAY.plans || [
-    { id: 'sub', label: 'Monthly membership', price: 799, per: '/month', recurring: true, default: true, desc: 'Unlimited consultations. ₹799 every month.', days: 30 },
-    { id: 'month', label: '1-month pass', price: 999, per: 'for 30 days', recurring: false, desc: 'Unlimited consultations for 30 days.', days: 30 },
+    { id: 'weekly', label: 'Weekly membership', price: 799, per: 'for 7 days', recurring: false, default: true, desc: 'Unlimited video consultations for 7 days. No auto-debit.', days: 7 },
+    { id: 'monthly', label: 'Monthly membership', price: 2499, per: 'for 30 days', recurring: false, desc: 'Unlimited video consultations for 30 days. No auto-debit.', days: 30 },
     { id: 'single', label: 'Single consultation', price: 199, per: 'one time', recurring: false, desc: 'One consultation.', days: 0 }
+  ];
+  // Historical IDs keep their original validity and price. Never offer them for new purchases.
+  var LEGACY_PLANS = [
+    { id: 'sub', label: 'Monthly membership (legacy)', price: 799, days: 30, recurring: false },
+    { id: 'month', label: '1-month pass (legacy)', price: 999, days: 30, recurring: false }
   ];
   var PAY_STATUSES = ['initiated', 'claimed', 'paid', 'failed', 'refunded'];
   var SOURCES = CFG.sources || ['Friend or family', 'Instagram', 'Google search', 'WhatsApp forward', 'Other'];
@@ -64,6 +69,8 @@
     doctor: { login: 'doctor/', home: 'doctor/panel' },
     admin: { login: 'admin/', home: 'admin/console' }
   };
+
+  function pageUrl(path) { return global.NariRoutes ? global.NariRoutes.url(path) : path; }
 
   /* ---------- helpers ---------- */
   function uid(prefix) { return (prefix || 'id') + '_' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
@@ -88,7 +95,7 @@
   function fail(msg) { emit('nari:error', { message: msg }); }
 
   /* ---------- in-memory cache (both backends) ---------- */
-  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [], payments: [], cycles: [], pushTokens: [] };
+  var db = { doctors: [], staff: [], members: [], appointments: [], invites: [], leads: [], payments: [], cycles: [], pushTokens: [], whatsappCustomers: [], whatsappOrders: [], whatsappIntegration: [] };
   var listeners = [];
   function notify() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
   /* When this page last wrote anything. The console uses it to tell its own changes (echoed straight back by
@@ -181,6 +188,9 @@
       if (!saved.payments) saved.payments = [];
       if (!saved.cycles) { saved.cycles = seedCycles(); write(DB_KEY, saved); }
       if (!saved.pushTokens) saved.pushTokens = [];
+      if (!saved.whatsappCustomers) saved.whatsappCustomers = [];
+      if (!saved.whatsappOrders) saved.whatsappOrders = [];
+      if (!saved.whatsappIntegration) saved.whatsappIntegration = [];
       /* Enquiries submitted from the public pages in demo mode land in a side key; fold them in. */
       var pending = read('nari_portal_leads');
       if (pending && pending.length) { pending.forEach(function (l) { if (indexOf(saved.leads, 'leads', l.id) < 0) saved.leads.push(l); }); remove('nari_portal_leads'); write(DB_KEY, saved); }
@@ -267,6 +277,7 @@
     if (liveSets.payments) db.payments = liveSets.payments;
     if (liveSets.cycles) db.cycles = liveSets.cycles;
     if (liveSets.pushTokens) db.pushTokens = liveSets.pushTokens;
+    ['whatsappCustomers', 'whatsappOrders', 'whatsappIntegration'].forEach(function (key) { if (liveSets[key]) db[key] = liveSets[key]; });
   }
   var FIRST_LOAD_TIMEOUT = 12000;
   function watch(key, query) {
@@ -306,6 +317,9 @@
       jobs.push(watch('invites', fs.collection('invites')));
       jobs.push(watch('leads', fs.collection('leads')));
       jobs.push(optional('payments', fs.collection('payments'), 'Payments'));
+      jobs.push(optional('whatsappCustomers', fs.collection('whatsappCustomers'), 'WhatsApp contacts'));
+      jobs.push(optional('whatsappOrders', fs.collection('whatsappOrders'), 'WhatsApp orders'));
+      jobs.push(optional('whatsappIntegration', fs.collection('integrations').doc('whatsapp'), 'WhatsApp connection'));
       jobs.push(watch('pushTokens', fs.collection('pushTokens')).catch(function () { liveSets.pushTokens = []; rebuild(); }));
     }
     if (!role) jobs.length = 1; /* login pages only need doctors for referral lookups */
@@ -387,8 +401,8 @@
       return LIVE ? init().then(function () { return fb.auth().signOut(); }) : Promise.resolve();
     },
     resolve: function (role) { return init().then(function () { return resolveRole(role); }); },
-    loginPage: function (role) { return ROOT + (PAGES[role] || PAGES.member).login; },
-    homeFor: function (role) { return ROOT + (PAGES[role] || PAGES.member).home; },
+    loginPage: function (role) { return pageUrl(ROOT + (PAGES[role] || PAGES.member).login); },
+    homeFor: function (role) { return pageUrl(ROOT + (PAGES[role] || PAGES.member).home); },
 
     /* ---- Google (staff only; members use their mobile number) ---- */
     signInWithGoogle: function (role) {
@@ -774,6 +788,16 @@
     PLANS: PLANS, STATUSES: PAY_STATUSES,
     upiId: PAY.upiId || '',
     plan: function (id) { return byId(PLANS, id); },
+    forPayment: function (payment) {
+      var original = byId(PLANS, payment.planId) || byId(LEGACY_PLANS, payment.planId);
+      if (!original) return null;
+      var plan = clone(original);
+      // A resumed payment must use the amount originally recorded, even if the catalogue changes.
+      plan.price = payment.amount;
+      plan.label = payment.planLabel || plan.label;
+      if (Number(payment.amount) !== Number(original.price)) plan.link = '';
+      return plan;
+    },
     defaultPlan: function () { for (var i = 0; i < PLANS.length; i++) if (PLANS[i].default) return PLANS[i]; return PLANS[0]; },
     list: function () { return db.payments.slice().sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : -1; }); },
     get: function (id) { return byId(db.payments, id); },
@@ -786,12 +810,12 @@
       var paid = payments.forMember(mid).filter(function (p) { return p.status === 'paid'; });
       var best = null;
       paid.forEach(function (p) {
-        var plan = payments.plan(p.planId); if (!plan || !plan.days) return;
+        var plan = payments.forPayment(p); if (!plan || !plan.days) return;
         var from = new Date(p.paidAt || p.createdAt); var until = new Date(from.getTime() + plan.days * 86400e3);
-        if (until >= new Date() && (!best || until > best.until)) best = { kind: 'plan', plan: plan, until: until, payment: p };
+        if (until > new Date() && (!best || until > best.until)) best = { kind: 'plan', plan: plan, until: until, payment: p };
       });
       if (best) return best;
-      var singles = paid.filter(function (p) { var pl = payments.plan(p.planId); return pl && !pl.days; }).length;
+      var singles = paid.filter(function (p) { var pl = payments.forPayment(p); return pl && !pl.days; }).length;
       var used = db.appointments.filter(function (a) { return a.memberId === mid && (a.status === 'completed' || a.status === 'confirmed'); }).length;
       var left = singles - used;
       return left > 0 ? { kind: 'single', count: left } : null;
@@ -837,6 +861,22 @@
     remove: function (id) { return store.remove('payments', id); }
   };
 
+  var whatsapp = {
+    customers: function () { return (db.whatsappCustomers || []).slice().sort(function (a, b) { return (b.lastMessageAt || '').localeCompare(a.lastMessageAt || ''); }); },
+    orders: function () { return (db.whatsappOrders || []).slice().sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); }); },
+    integration: function () { return (db.whatsappIntegration || [])[0] || null; },
+    followUp: function (collection, id, status) {
+      if (['whatsappCustomers', 'whatsappOrders'].indexOf(collection) < 0 || ['new', 'contacted', 'scheduled', 'closed'].indexOf(status) < 0) return Promise.reject(new Error('Invalid follow-up.'));
+      return store.patch(collection, id, { followUp: status });
+    },
+    recheck: function (id) {
+      if (!LIVE) return Promise.reject(new Error('Payment verification needs the connected WhatsApp API. Demo mode cannot verify money.'));
+      var user = fb.auth().currentUser;
+      if (!user) return Promise.reject(new Error('Sign in as an admin again.'));
+      return fs.collection('whatsappRechecks').doc(id).set({ requestedAt: nowIso(), requestedBy: user.uid });
+    }
+  };
+
   /* ====================================================================
      REFERRALS (from ?ref= links)
      ==================================================================== */
@@ -853,7 +893,7 @@
       if (r.type === 'doctor') { var d = doctors.get(r.doctorId); return d ? d.name : 'A NARI doctor'; }
       return r.label || 'Other';
     },
-    linkFor: function (code) { return ROOT + 'member-login?ref=' + encodeURIComponent(code); }
+    linkFor: function (code) { return pageUrl(ROOT + 'member-login?ref=' + encodeURIComponent(code)); }
   };
 
   /* ====================================================================
@@ -908,6 +948,12 @@
       function changedBy(o) { return o && o.updatedByAdmin ? ' · by ' + o.updatedByAdmin + ' (admin)' : ''; }
       db.leads.forEach(function (l) {
         add({ id: 'lead:' + l.id, type: 'lead', ts: tsOf(l.createdAt), icon: 'phone', tab: 'leads', title: 'New enquiry from ' + (l.name || 'someone'), body: (l.concern || 'General') + ' · ' + (leads.TIMES[l.time] || l.time || '') + ' · ' + leads.sourceOf(l), urgent: l.status === 'new' });
+      });
+      (db.whatsappCustomers || []).forEach(function (c) {
+        add({ id: 'wa-contact:' + c.id, type: 'lead', ts: tsOf(c.createdAt), icon: 'phone', tab: 'whatsapp', title: 'WhatsApp enquiry from ' + (c.name || 'a patient'), body: '+' + c.phone, urgent: c.followUp === 'new' });
+      });
+      (db.whatsappOrders || []).forEach(function (o) {
+        if (o.paidAt) add({ id: 'wa-paid:' + o.id, type: 'payment', ts: tsOf(o.paidAt), icon: 'shieldCheck', tab: 'whatsapp', title: 'WhatsApp payment verified: ' + payments.rupees(o.amount), body: o.planLabel + ' · ' + o.status, urgent: o.status === 'paid' && o.followUp === 'new' });
       });
       db.payments.forEach(function (p) {
         var who = p.memberName || MEMBER, amt = payments.rupees(p.amount);
@@ -1260,7 +1306,7 @@
     isLive: LIVE, CONFIG: CFG, MEMBER: MEMBER, MEMBERS: MEMBERS,
     CATEGORIES: CATEGORIES, MODES: MODES, SOURCES: SOURCES, SLOTS: SLOTS, STATUSES: STATUSES,
     ready: ready, readyPublic: readyPublic, subscribe: subscribe,
-    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, payments: payments, PLANS: PLANS, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
+    auth: auth, members: members, doctors: doctors, staff: staff, invites: invites, appointments: appointments, leads: leads, payments: payments, whatsapp: whatsapp, PLANS: PLANS, referral: referral, stats: stats, ROOT: ROOT, PAGES: PAGES,
     activity: activity, push: push, cycles: cycles, dev: dev, viewAs: null,
     fmt: fmt, today: todayIso, daysFromToday: daysFromToday, addDays: addDays, diffDays: diffDays, normPhone: normPhone, waLink: waLink,
     resetDemo: resetDemo, exportJSON: exportJSON, uid: uid, lastWriteAt: function () { return lastWrite; },

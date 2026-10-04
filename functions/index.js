@@ -1,5 +1,5 @@
 /* ===== NARI Health — Cloud Functions =====
-   One job: push a notification to every admin device (pushTokens/{token} with role 'admin') when something
+   Push a notification to every admin device (pushTokens/{token} with role 'admin') when something
    happens that the team should act on. The triggers are Firestore writes, so they fire for enquiries from
    the public pages, member bookings and payments, and doctor changes alike, whichever page made the write.
 
@@ -147,3 +147,29 @@ exports.onDoctorFirstLogin = onDocumentUpdated('staff/{email}', async (event) =>
     tab: 'doctors', tag: `docin-${after.doctorId || event.params.email}`
   });
 });
+
+/* ---- WhatsApp enquiries and verified payments ---- */
+exports.onWhatsAppCustomer = onDocumentCreated('whatsappCustomers/{id}', event => {
+  const c = event.data.data();
+  return notifyAdmins({ title: 'New WhatsApp enquiry', body: `${c.name || 'Patient'} · ${phone(c.phone)}`,
+    tab: 'whatsapp', tag: `wa-customer-${event.params.id}` });
+});
+exports.onWhatsAppHelp = onDocumentUpdated('whatsappCustomers/{id}', event => {
+  const before = event.data.before.data(), after = event.data.after.data();
+  if (before.needsHelp || !after.needsHelp) return null;
+  return notifyAdmins({ title: 'WhatsApp patient needs a team reply', body: after.name || 'Open WhatsApp enquiries.',
+    tab: 'whatsapp', tag: `wa-help-${event.params.id}` });
+});
+exports.onWhatsAppOrder = onDocumentUpdated('whatsappOrders/{id}', event => {
+  const before = event.data.before.data(), after = event.data.after.data();
+  if (before.status !== after.status && after.status === 'paid') {
+    return notifyAdmins({ title: `WhatsApp payment verified: ${rupees(after.amount)}`,
+      body: `${after.planLabel} · arrange the consultation`, tab: 'whatsapp', tag: `wa-pay-${event.params.id}` });
+  }
+  if (before.invoiceStatus !== after.invoiceStatus && ['needs_review', 'failed'].includes(after.invoiceStatus)) {
+    return notifyAdmins({ title: 'WhatsApp checkout needs attention', body: 'Open the order and recheck its payment status.',
+      tab: 'whatsapp', tag: `wa-review-${event.params.id}` });
+  }
+  return null;
+});
+Object.assign(exports, require('./whatsapp'));

@@ -57,18 +57,17 @@ window.NARI_CONFIG = {
        upiId  — your Paytm for Business UPI ID (Paytm app → Business → Profile, looks like 1234567890@paytm
                 or narihealth@paytm). Leave '' to route "Pay" to WhatsApp until you have one.
        plans[].link — optional. Paytm for Business → Payment Links → create one per plan and paste the
-                https://paytm.me/... URL. For the monthly auto-debit plan create a SUBSCRIPTION link
-                (Paytm Business → Subscriptions); a plain UPI payment cannot set up auto-debit, so
-                without this link the first month is taken as a one-time ₹799 and renewals are manual. */
+                https://paytm.me/... URL. Both memberships are one-time payments;
+                renew manually after 7 or 30 days. Plain UPI does not set up auto-debit. */
   payments: {
     provider: 'paytm',
     upiId: '7906409321@ptaxis',
     payeeName: 'NARI Health',
     plans: [
-      { id: 'sub', label: 'Monthly membership', price: 799, per: '/month', recurring: true, default: true, badge: 'Most popular',
-        desc: 'Unlimited consultations with any NARI expert. ₹799 is charged every month. Cancel any time.', days: 30, link: '' },
-      { id: 'month', label: '1-month pass', price: 999, per: 'for 30 days', recurring: false,
-        desc: 'Unlimited consultations for 30 days. One payment, nothing recurring.', days: 30, link: '' },
+      { id: 'weekly', label: 'Weekly membership', price: 799, per: 'for 7 days', recurring: false, default: true, badge: 'Most popular',
+        desc: 'Unlimited video consultations with any NARI expert for 7 days. One payment, no auto-debit.', days: 7, link: '' },
+      { id: 'monthly', label: 'Monthly membership', price: 2499, per: 'for 30 days', recurring: false,
+        desc: 'Unlimited video consultations for 30 days. One payment, no auto-debit.', days: 30, link: '' },
       { id: 'single', label: 'Single consultation', price: 199, per: 'one time', recurring: false,
         desc: 'One consultation with one expert. Pay only when you need it.', days: 0, link: '' }
     ]
@@ -87,10 +86,12 @@ window.NARI_CONFIG = {
 
   /* The experts shown on the website. Admin → Settings → "Add website experts to panel"
      writes these into the live database with one click. */
+  // Add original portraits as local assets (for example assets/doctors/sudha.webp).
+  // The former Hostinger portrait URLs all return 404; leave blank until originals are available.
   seedDoctors: [
-    { id: 'doc_sudha', name: 'Dr. Sudha Sharma', role: 'Gynecologist', exp: '32+ yrs', email: 'sudha@narihealth.in', refCode: 'NH-SUDHA', img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/21382c5b8e03d1b3281a7be4d1d609f2.png', categories: ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Menopause'] },
-    { id: 'doc_hanifa', name: 'Dr. Hanifa', role: 'Psychologist', exp: '15+ yrs', email: 'hanifa@narihealth.in', refCode: 'NH-HANIFA', img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/39c844c99b0c53eb89ca7bcd29bf7874.png', categories: ['Mental Health', 'Sleep'] },
-    { id: 'doc_nisha', name: 'Dr. Nisha Andola', role: 'Physiotherapist', exp: '4 yrs', email: 'nisha@narihealth.in', refCode: 'NH-NISHA', img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/00080d23203e6329660ad5faf6d06897.png', categories: ['Pelvic Health', 'General Health'] },
-    { id: 'doc_sneha', name: 'Dr. Sneha Iyer', role: 'Nutritionist', exp: '2 yrs', email: 'sneha@narihealth.in', refCode: 'NH-SNEHA', img: 'https://horizons-cdn.hostinger.com/4f4cbd5f-21cd-4aac-8b1c-4a246b104cf0/0a8f90209fff53566c4ee75a308ec234.png', categories: ['Nutrition', 'PCOS', 'Stomach & Digestion', 'General Health'] }
+    { id: 'doc_sudha', name: 'Dr. Sudha Sharma', role: 'Gynecologist', exp: '32+ yrs', email: 'sudha@narihealth.in', refCode: 'NH-SUDHA', img: '', categories: ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Menopause'] },
+    { id: 'doc_hanifa', name: 'Dr. Hanifa', role: 'Psychologist', exp: '15+ yrs', email: 'hanifa@narihealth.in', refCode: 'NH-HANIFA', img: '', categories: ['Mental Health', 'Sleep'] },
+    { id: 'doc_nisha', name: 'Dr. Nisha Andola', role: 'Physiotherapist', exp: '4 yrs', email: 'nisha@narihealth.in', refCode: 'NH-NISHA', img: '', categories: ['Pelvic Health', 'General Health'] },
+    { id: 'doc_sneha', name: 'Dr. Sneha Iyer', role: 'Nutritionist', exp: '2 yrs', email: 'sneha@narihealth.in', refCode: 'NH-SNEHA', img: '', categories: ['Nutrition', 'PCOS', 'Stomach & Digestion', 'General Health'] }
   ]
 };

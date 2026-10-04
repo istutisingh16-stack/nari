@@ -244,8 +244,8 @@ The portal pages are excluded from search engines via `robots.txt` and a
 
 The site has no server, so there is no hosted checkout. Instead:
 
-1. On `member.html` → **Your plan** the member picks a plan (default: **Monthly
-   membership ₹799/month**; also **1-month pass ₹999** and **Single
+1. On `member.html` → **Your plan** the member picks a plan (default: **Weekly
+   membership ₹799 for 7 days**; also **Monthly membership ₹2,499 for 30 days** and **Single
    consultation ₹199**) and presses **Pay with Paytm**.
 2. The browser writes `payments/{id}` (`status: 'initiated'`) and opens Paytm:
    on a phone via the `paytmmp://pay?...&am=799.00` intent (falls back to
@@ -259,10 +259,10 @@ The site has no server, so there is no hosted checkout. Instead:
    valid for `days` from `paidAt`, or unused single consultations. The booking
    summary shows "Covered by your plan" accordingly.
 
-Recurring ₹799 auto-debit needs a Paytm **Subscription** link (Paytm Business →
-Subscriptions) pasted into `payments.plans[0].link`; a plain UPI payment cannot
-create a mandate, so without it the first month is a one-time ₹799 and the
-team reminds the member monthly.
+Both memberships are one-time payments with manual renewal, no auto-debit.
+New purchases use IDs `weekly` and `monthly`. Historical `sub` and `month`
+payments retain 30-day access and their original payment amounts; these IDs
+cannot be used for new purchases.
 
 | Collection | Key | Fields |
 |---|---|---|

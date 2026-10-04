@@ -1,0 +1,9 @@
+{
+  "name": "nari-health-site",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve.cjs",
+    "prepare:local": "node scripts/prepare-local.cjs",
+    "test": "node tests/site.test.cjs && node tests/routes.test.cjs && node tests/whatsapp.test.cjs"
+  }
+}
