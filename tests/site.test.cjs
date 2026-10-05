@@ -5,14 +5,14 @@ const vm = require('node:vm');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-function portal(configured = true) {
+function portal(configured = true, userAgent = 'Test desktop') {
   const storage = new Map();
   const context = {
     console, Date, URL, Promise, setTimeout, clearTimeout,
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k) },
     sessionStorage: { getItem: () => null },
     location: { hostname: 'localhost', search: '', pathname: '/member' },
-    navigator: { userAgent: 'Test desktop' },
+    navigator: { userAgent },
     document: { currentScript: { src: 'http://localhost/portal-data.js' } },
     dispatchEvent() {}
   };
@@ -21,6 +21,63 @@ function portal(configured = true) {
   if (configured) { vm.runInContext(read('portal-config.js'), context); context.NARI_CONFIG.firebase = null; }
   vm.runInContext(read('portal-data.js'), context);
   return context.NariPortal;
+}
+
+// Exercise the actual checkout handlers with a delayed save. No navigation or
+// timer is allowed until the user follows the rendered payment link.
+for (const userAgent of ['Android', 'iPhone', 'iPad', 'Test desktop']) {
+  test(`checkout waits for saving and offers native payment links on ${userAgent}`, async () => {
+    const p = portal(true, userAgent); await p.readyPublic();
+    const result = await p.payments.start('weekly', {id: 'test_member'});
+    let resolveSave, rejectSave, click, dialog, copied, error;
+    const save = new Promise((resolve, reject) => { resolveSave = resolve; rejectSave = reject; });
+    const button = {addEventListener(_type, handler) { click = handler; }};
+    const context = {
+      PAYS: {...p.payments, start: () => save}, selectedPlan: 'weekly', me: {id: 'test_member'},
+      navigator: {userAgent}, renderPlans() {}, $: () => button,
+      esc: value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;'),
+      UI: {
+        busy() {}, showError(_id, message) { error = message; }, toast() {},
+        copyText(value) { copied = value; return Promise.resolve(true); },
+        el() { return {addEventListener(_type, handler) { this.click = handler; }}; }
+      },
+      document: {body: {appendChild(value) { dialog = value; }}, addEventListener() {}},
+      window: {open() { assert.fail('No popup after asynchronous save'); },
+        location: {set href(_value) { assert.fail('No app launch after asynchronous save'); }}},
+      setTimeout() { assert.fail('No timer-based app fallback'); }
+    };
+    vm.createContext(context);
+    const source = read('member.html');
+    vm.runInContext(source.slice(source.indexOf('    function payDialog(r)'), source.indexOf('    /* ---------- Form setup ---------- */')), context);
+    click();
+    assert.equal(dialog, undefined, 'no checkout before persistence succeeds');
+    resolveSave(result); await save; await Promise.resolve();
+    assert.match(dialog.innerHTML, /data-copy-upi/);
+    assert.match(dialog.innerHTML, /₹799/);
+    if (userAgent !== 'Test desktop') {
+      assert.match(dialog.innerHTML, /href="paytmmp:\/\/pay\?/);
+      assert.match(dialog.innerHTML, /am=799\.00/);
+      assert.match(dialog.innerHTML, /data-reopen>Open Paytm<\/a>/);
+      dialog.click({target: {closest: () => ({hasAttribute: name => name === 'data-reopen'})},
+        preventDefault() { assert.fail('Must preserve native link navigation'); }});
+    }
+    assert.equal(dialog.innerHTML.includes('Use another UPI app'), userAgent === 'Android');
+    dialog.click({target: {closest: () => ({hasAttribute: name => name === 'data-copy-upi'})}});
+    assert.equal(copied, p.payments.upiId);
+
+    for (const [method, url, label] of [['page', 'https://paytm.me/test', 'Open Paytm'], ['whatsapp', 'https://wa.me/123', 'Open WhatsApp']]) {
+      context.payDialog({...result, method, url});
+      assert.ok(dialog.innerHTML.includes(`href="${url}"`));
+      assert.ok(dialog.innerHTML.includes(label));
+      assert.match(dialog.innerHTML, /target="_blank" rel="noopener noreferrer"/);
+    }
+
+    dialog = undefined;
+    context.PAYS.start = () => new Promise((resolve, reject) => { rejectSave = reject; });
+    click(); rejectSave(new Error('Save failed')); await Promise.resolve();
+    assert.equal(dialog, undefined);
+    assert.equal(error, 'Save failed');
+  });
 }
 for (const configured of [true, false]) {
   test(`current catalogue and UPI amounts (${configured ? 'configured' : 'fallback'})`, async () => {

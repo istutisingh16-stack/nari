@@ -247,11 +247,14 @@ The site has no server, so there is no hosted checkout. Instead:
 1. On `member.html` → **Your plan** the member picks a plan (default: **Weekly
    membership ₹799 for 7 days**; also **Monthly membership ₹2,499 for 30 days** and **Single
    consultation ₹199**) and presses **Pay with Paytm**.
-2. The browser writes `payments/{id}` (`status: 'initiated'`) and opens Paytm:
-   on a phone via the `paytmmp://pay?...&am=799.00` intent (falls back to
-   `upi://pay` if Paytm is not installed); elsewhere via the plan's Paytm
-   payment link if one is set in `portal-config.js`, or by showing the UPI ID.
-   With no UPI ID configured the button opens WhatsApp instead.
+2. The browser writes `payments/{id}` (`status: 'initiated'`) and shows a
+   payment dialog. The member taps **Open Paytm** to follow the
+   `paytmmp://pay?...&am=799.00` link on a phone, or the configured hosted
+   payment link. The fresh tap is required for reliable mobile app hand-off;
+   do not launch an app after an asynchronous save or from a fallback timer.
+   Android also offers **Use another UPI app**. The UPI ID is available to copy
+   on all devices if app launching is unavailable. With no payment destination
+   configured, the dialog offers **Open WhatsApp** to request a payment link.
 3. She enters the UPI reference / UTR from Paytm → `status: 'claimed'`.
 4. The team console → **Payments** shows claimed payments; an admin checks the
    Paytm for Business statement and marks **Paid** (or Not received).

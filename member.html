@@ -229,7 +229,7 @@
       $('plans').innerHTML = PAYS.PLANS.map(planCard).join('');
       var plan = PAYS.plan(selectedPlan) || PAYS.PLANS[0];
       $('payBtn').innerHTML = 'Pay ' + esc(PAYS.rupees(plan.price)) + (plan.days ? ' for ' + plan.days + ' days' : '') + ' with Paytm ' + UI.icon('arrowRight', 'ic sm');
-      $('payFine').textContent = 'Paytm opens with ₹' + plan.price + ' ready. One payment, no auto-debit. Access starts after payment verification.';
+      $('payFine').textContent = 'Continue to open Paytm with ₹' + plan.price + ' ready. One payment, no auto-debit. Access starts after payment verification.';
       var ent = PAYS.entitlement(me.id), e = $('entitle');
       e.classList.toggle('hidden', !ent);
       if (ent && ent.kind === 'plan') e.innerHTML = UI.icon('shieldCheck', '') + '<span><strong>' + esc(ent.plan.label) + ' active</strong> until ' + esc(NP.fmt.date(ent.until.toISOString().slice(0, 10))) + '. Book as many consultations as you need.</span>';
@@ -249,31 +249,24 @@
     }
     $('plans').addEventListener('change', function (e) { if (e.target.name === 'plan') { selectedPlan = e.target.value; renderPlans(); } });
 
-    /* Opens Paytm. On a phone the paytmmp:// intent opens the Paytm app; if nothing happens within 1.6 s
-       (app not installed) the generic upi:// link lets her pick any UPI app. */
-    function openPay(r) {
-      if (r.method === 'app') {
-        var left = Date.now();
-        window.location.href = r.links.paytm;
-        setTimeout(function () { if (document.visibilityState === 'visible' && Date.now() - left < 2200) window.location.href = r.links.upi; }, 1600);
-      } else if (r.method === 'page' || r.method === 'whatsapp') {
-        window.open(r.url, '_blank', 'noopener');
-      }
-    }
+    /* App hand-off must come from a fresh tap, not a database promise or timer.
+       Save first, then let the member follow a normal link in this dialog. */
     function payDialog(r) {
       var plan = r.plan, p = r.payment;
       var how;
-      if (r.method === 'whatsapp') how = '<p class="small muted" style="line-height:1.6">Online payment is being switched on. We opened WhatsApp so the NARI team can send you a Paytm link for <strong>' + esc(PAYS.rupees(plan.price)) + '</strong>. Your request is saved as <code>' + esc(p.id) + '</code>.</p>';
+      if (r.method === 'whatsapp') how = '<p class="small muted" style="line-height:1.6">Online payment is being switched on. Tap below to ask the NARI team on WhatsApp for a Paytm link for <strong>' + esc(PAYS.rupees(plan.price)) + '</strong>. Your request is saved as <code>' + esc(p.id) + '</code>.</p><a class="btn btn-primary btn-block" href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">Open WhatsApp</a>';
       else how = '<ol class="pay-steps">' +
-          '<li><span>Paytm ' + (r.method === 'page' ? 'opened in a new tab' : r.method === 'app' ? 'should have opened on your phone' : 'can be opened on your phone') + ' with <strong>' + esc(PAYS.rupees(plan.price)) + '</strong> filled in' + (plan.days ? ' for ' + plan.days + ' days of care' : '') + '.</span></li>' +
-          (r.method === 'upi' ? '<li><span>On this device, pay from any UPI app to the ID below with the note <em>' + esc(plan.label) + '</em>:<div class="upi-box" style="margin-top:.5rem"><code>' + esc(PAYS.upiId) + '</code><button type="button" class="btn btn-ghost btn-xs" data-copy-upi>Copy</button></div></span></li>' : '') +
+          '<li><span>' + (r.method === 'upi' ? 'Pay from a UPI app on your phone' : 'Tap Open Paytm below to continue') + ' with <strong>' + esc(PAYS.rupees(plan.price)) + '</strong> filled in' + (plan.days ? ' for ' + plan.days + ' days of care' : '') + '.</span></li>' +
+          (PAYS.upiId ? '<li><span>If the app does not open, pay from your UPI app to the ID below with the note <em>' + esc(plan.label) + '</em>:<div class="upi-box" style="margin-top:.5rem"><code>' + esc(PAYS.upiId) + '</code><button type="button" class="btn btn-ghost btn-xs" data-copy-upi>Copy</button></div></span></li>' : '') +
           '<li><span>After paying, copy the <strong>UPI reference / UTR number</strong> from Paytm (12 digits) and enter it below. The team verifies it and your plan goes live.</span></li>' +
         '</ol>' +
+        '<div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">' +
+          (r.method === 'app' || r.method === 'page' ? '<a class="btn btn-primary" href="' + esc(r.url) + '" ' + (r.method === 'page' ? 'target="_blank" rel="noopener noreferrer"' : '') + ' data-reopen>Open Paytm</a>' : '') +
+          (r.method === 'app' && /Android/i.test(navigator.userAgent) ? '<a class="btn btn-ghost btn-sm" href="' + esc(r.links.upi) + '">Use another UPI app</a>' : '') +
+        '</div>' +
+        '<p class="small muted" style="margin-top:.75rem">If you opened this page inside another app and payment does not open, try this page in Chrome or Safari' + (PAYS.upiId ? ', or copy the UPI ID above' : '') + '.</p>' +
         '<div class="field" style="margin-top:1rem"><label for="txnRef">UPI reference number</label><input class="input" id="txnRef" inputmode="numeric" placeholder="e.g. 4231XXXX9012" maxlength="40" /></div>' +
-        '<p class="form-error" id="claimErr" role="alert" style="margin-top:.6rem"></p>' +
-        '<div class="row" style="margin-top:.75rem;gap:.5rem;flex-wrap:wrap">' +
-          (r.method !== 'whatsapp' ? '<a class="btn btn-ghost btn-sm" href="' + esc(r.url) + '" ' + (r.method === 'page' ? 'target="_blank" rel="noreferrer"' : '') + ' data-reopen>Open Paytm again</a>' : '') +
-        '</div>';
+        '<p class="form-error" id="claimErr" role="alert" style="margin-top:.6rem"></p>';
       var bg = UI.el('div', 'modal-bg open');
       bg.innerHTML = '<div class="modal" role="dialog" aria-modal="true"><div class="row between"><h3>' + esc(plan.label) + ' · ' + esc(PAYS.rupees(plan.price)) + '</h3><span class="pay-brand"><span class="pt">P</span><span class="pt-name">Paytm</span></span></div>' +
         '<div style="margin-top:1rem">' + how + '</div>' +
@@ -284,7 +277,7 @@
         if (e.target === bg) { bg.remove(); return; }
         if (!t) return;
         if (t.hasAttribute('data-copy-upi')) { UI.copyText(PAYS.upiId).then(function (ok) { UI.toast(ok ? 'UPI ID copied.' : 'Could not copy.', ok ? 'success' : 'error'); }); return; }
-        if (t.hasAttribute('data-reopen')) { if (r.method === 'app') { e.preventDefault(); openPay(r); } return; }
+        if (t.hasAttribute('data-reopen')) return; // Preserve the link's native, user-initiated navigation.
         var act = t.getAttribute('data-act');
         if (act === 'later') { bg.remove(); UI.toast('No problem. You can finish paying any time from "Your plan".', 'info'); return; }
         if (act === 'claim') {
@@ -297,10 +290,10 @@
     }
     $('payBtn').addEventListener('click', function () {
       UI.showError('payErr', '');
-      var btn = $('payBtn'); UI.busy(btn, true, 'Opening Paytm…');
+      var btn = $('payBtn'); UI.busy(btn, true, 'Preparing payment…');
       PAYS.start(selectedPlan, me).then(function (r) {
         UI.busy(btn, false); renderPlans();
-        openPay(r); payDialog(r);
+        payDialog(r);
       }, function (e) { UI.busy(btn, false); UI.showError('payErr', e && e.message || 'Could not start the payment. Try again.'); });
     });
     document.addEventListener('click', function (e) {
