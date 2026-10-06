@@ -86,12 +86,11 @@ window.NARI_CONFIG = {
 
   /* The experts shown on the website. Admin → Settings → "Add website experts to panel"
      writes these into the live database with one click. */
-  // Add original portraits as local assets (for example assets/doctors/sudha.webp).
-  // The former Hostinger portrait URLs all return 404; leave blank until originals are available.
+  // Portrait filenames match the supplied images. Run scripts/sync-doctor-photos.cjs after edits.
   seedDoctors: [
-    { id: 'doc_sudha', name: 'Dr. Sudha Sharma', role: 'Gynecologist', exp: '32+ yrs', email: 'sudha@narihealth.in', refCode: 'NH-SUDHA', img: '', categories: ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Menopause'] },
-    { id: 'doc_hanifa', name: 'Dr. Hanifa', role: 'Psychologist', exp: '15+ yrs', email: 'hanifa@narihealth.in', refCode: 'NH-HANIFA', img: '', categories: ['Mental Health', 'Sleep'] },
-    { id: 'doc_nisha', name: 'Dr. Nisha Andola', role: 'Physiotherapist', exp: '4 yrs', email: 'nisha@narihealth.in', refCode: 'NH-NISHA', img: '', categories: ['Pelvic Health', 'General Health'] },
-    { id: 'doc_sneha', name: 'Dr. Sneha Iyer', role: 'Nutritionist', exp: '2 yrs', email: 'sneha@narihealth.in', refCode: 'NH-SNEHA', img: '', categories: ['Nutrition', 'PCOS', 'Stomach & Digestion', 'General Health'] }
+    { id: 'doc_sudha', name: 'Dr. Sudha Sharma', role: 'Gynecologist', exp: '32+ yrs', email: 'sudha@narihealth.in', refCode: 'NH-SUDHA', img: 'images/sudha.jpeg', categories: ["Women's Health", 'PCOS', 'Pregnancy', 'Periods', 'Menopause'] },
+    { id: 'doc_hanifa', name: 'Dr. Hanifa', role: 'Psychologist', exp: '15+ yrs', email: 'hanifa@narihealth.in', refCode: 'NH-HANIFA', img: 'images/hanifa.jpeg', categories: ['Mental Health', 'Sleep'] },
+    { id: 'doc_nisha', name: 'Dr. Nisha Andola', role: 'Physiotherapist', exp: '4 yrs', email: 'nisha@narihealth.in', refCode: 'NH-NISHA', img: 'images/nisha.jpeg', categories: ['Pelvic Health', 'General Health'] },
+    { id: 'doc_sneha', name: 'Dr. Sneha Iyer', role: 'Nutritionist', exp: '2 yrs', email: 'sneha@narihealth.in', refCode: 'NH-SNEHA', img: 'images/sneha.jpeg', categories: ['Nutrition', 'PCOS', 'Stomach & Digestion', 'General Health'] }
   ]
 };

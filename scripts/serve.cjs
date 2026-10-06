@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const pages = require('../routes.js');
 const root = path.resolve(__dirname, '..');
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.ico': 'image/x-icon' };
 function createServer() {
   return http.createServer((req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }); res.end(); return; }
@@ -27,7 +27,7 @@ function createServer() {
     } else {
       // Serve public assets only; never expose configuration backups or repository internals.
       const relative = pathname.slice(1);
-      if (/^(?:assets\/[\w./-]+|[\w-]+\.(?:js|css|ico|txt|xml))$/.test(relative) && !relative.split('/').includes('..')) file = path.join(root, relative);
+      if (/^(?:assets\/[\w./-]+|images\/[\w-]+\.(?:webp|png|jpe?g)|[\w-]+\.(?:js|css|ico|txt|xml))$/.test(relative) && !relative.split('/').includes('..')) file = path.join(root, relative);
     }
     if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });

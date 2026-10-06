@@ -1,4 +1,4 @@
-// Put original portraits under assets/doctors/, set seedDoctors[].img in portal-config.js,
+// Put original portraits under images/ or assets/doctors/, set seedDoctors[].img in portal-config.js,
 // then run: node scripts/sync-doctor-photos.cjs
 const fs = require('node:fs');
 const path = require('node:path');
@@ -10,7 +10,7 @@ const doctors = context.window.NARI_CONFIG.seedDoctors;
 const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 for(const doctor of doctors) {
   if(doctor.img && !/^https:\/\//.test(doctor.img)) {
-    if(!/^assets\/doctors\/[\w.-]+\.(webp|png|jpe?g)$/.test(doctor.img) || !fs.existsSync(path.join(root,doctor.img))) throw new Error('Missing local portrait: '+doctor.img);
+    if(!/^(?:assets\/doctors|images)\/[\w.-]+\.(webp|png|jpe?g)$/.test(doctor.img) || !fs.existsSync(path.join(root,doctor.img))) throw new Error('Missing local portrait: '+doctor.img);
   }
 }
 for(const file of fs.readdirSync(root).filter(f=>f.endsWith('.html'))) {

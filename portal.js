@@ -113,7 +113,7 @@
       var configured = (NP.CONFIG.seedDoctors || []).filter(function (d) { return d.id === user.id; })[0];
       src = configured && configured.img || '';
     }
-    if (/^assets\//.test(src)) src = NP.ROOT + src;
+    if (/^(?:assets|images)\//.test(src)) src = NP.ROOT + src;
     return '<span class="' + cls + '">' + initials +
       (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-avatar-image>' : '') + '</span>';
   }
