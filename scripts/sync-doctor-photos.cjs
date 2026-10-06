@@ -24,8 +24,8 @@ for(const file of fs.readdirSync(root).filter(f=>f.endsWith('.html'))) {
     return card.replace(/(<div class="expert-img-wrap">)[\s\S]*?(<span class="verified-badge">)/,(_,open,badge)=>open+photo+badge);
   });
   html=html.replace(/<script type="application\/ld\+json">(.*?)<\/script>/gs,(all,raw)=>{
-    const data=JSON.parse(raw); if(!data.employee)return all;
-    for(const employee of data.employee) {
+    const data=JSON.parse(raw); const people=data.member || data.employee; if(!people)return all;
+    for(const employee of people) {
       const doctor=doctors.find(d=>d.name===employee.name); if(!doctor)continue;
       if(doctor.img)employee.image=new URL(doctor.img,'https://narihealth.in/').href;
       else delete employee.image;

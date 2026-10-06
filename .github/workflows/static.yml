@@ -31,6 +31,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate site and generate sitemap
+        run: |
+          npm run build
+          npm test
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

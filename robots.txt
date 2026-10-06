@@ -1,10 +1,21 @@
+# Public rendering resources remain crawlable. These rules are not access control.
 User-agent: *
 Allow: /
 Disallow: /login
-Disallow: /member-login
-Disallow: /doctor/
-Disallow: /admin/
 Disallow: /member
-Disallow: /firebase-messaging-sw.js
+Disallow: /doctor
+Disallow: /admin
+Disallow: /private/
+Disallow: /dashboard/
+
+# Search access only; no new GPTBot training preference is set.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /login
+Disallow: /member
+Disallow: /doctor
+Disallow: /admin
+Disallow: /private/
+Disallow: /dashboard/
 
 Sitemap: https://narihealth.in/sitemap.xml

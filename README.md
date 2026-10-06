@@ -39,3 +39,16 @@ See [SEO-NEXT-STEPS.md](SEO-NEXT-STEPS.md) for search follow-up and
 The WhatsApp consultation menu, native payment requests and admin tracking are
 implemented but disabled until account setup and live validation. See
 [WHATSAPP-SETUP.md](WHATSAPP-SETUP.md) for prerequisites, deployment and testing.
+
+## Technical SEO
+
+Run `npm run build` after editing routes or public metadata. It validates the
+indexable HTML and generates `sitemap.xml` from `routes.js`, excluding pages
+marked `noindex`. `npm run check:seo` also verifies that the checked-in sitemap
+is current. GitHub Pages runs the build and tests before deploying.
+
+Metadata remains in the HTML so it works without JavaScript. No dependencies or
+client-side SEO rendering are required. Sitemap modification dates are omitted
+until genuine editorial dates can be maintained; deployment time is not a
+content modification date. See [SEO_IMPLEMENTATION_REPORT.md](SEO_IMPLEMENTATION_REPORT.md)
+for findings, unchanged business inconsistencies and Search Console actions.

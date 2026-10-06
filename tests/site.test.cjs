@@ -153,7 +153,7 @@ test('homepage FAQ is usable without JS and matches its schema', () => {
   assert.equal((html.match(/<details class="faq-item">/g)||[]).length,faq.mainEntity.length);
   const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   for(const q of faq.mainEntity) {assert(html.includes(esc(q.name)));assert(html.includes(esc(q.acceptedAnswer.text)));}
-  const offers=schemas.find(s=>s['@type']==='MedicalBusiness').hasOfferCatalog.itemListElement;
+  const offers=schemas.find(s=>s['@type']==='MedicalOrganization').hasOfferCatalog.itemListElement;
   assert.equal(offers[1].price,'799');assert.equal(offers[2].price,'2499');
   assert.equal((html.match(/class="expert-name"/g)||[]).length,4);
   assert.equal((html.match(/class="cat-label"/g)||[]).length,11);
