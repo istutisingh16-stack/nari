@@ -1,5 +1,14 @@
 # NARI Health SEO implementation report
 
+## Update: Noida, Greater Noida and Faridabad service pages — 17 October 2026
+
+- Retained and updated `/physiotherapy-noida`; added `/nutritionist-noida`, `/physiotherapy-greater-noida`, `/nutritionist-greater-noida` and `/physiotherapy-faridabad`.
+- Each new page includes service-specific consultation guidance, local appointment logistics, fees, callback and booking links, related condition pages, unique metadata and Service/WebPage/BreadcrumbList markup. Service area markup describes the city without inventing a clinic address.
+- Added links to all five requested locations from the homepage, women’s health hub, online nutrition page, Delhi NCR physiotherapy page and the location pages. Clinic/home visits require confirmation of professional, address, fee and slot; online care is distinguished from local availability.
+- Sitemap now includes **29 canonical URLs**, generated from registered routes.
+- `npm run build`, all 30 tests including HTTP route checks, SEO validation for 29 pages, and `git diff --check` passed. No browser visual or production verification performed.
+- This update is local, not committed, pushed or deployed. Earlier sections describe prior changes, including those already pushed to main.
+
 ## Update: all 15 confirmed care areas — 17 October 2026
 
 Implemented the service list confirmed by the site owner. The sitemap now contains **25 canonical public URLs**: 13 new concern pages plus the existing 12 pages. PCOS and menopause retain their existing URLs.
