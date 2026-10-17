@@ -1,5 +1,64 @@
 # NARI Health SEO implementation report
 
+## Update: all 15 confirmed care areas — 17 October 2026
+
+Implemented the service list confirmed by the site owner. The sitemap now contains **25 canonical public URLs**: 13 new concern pages plus the existing 12 pages. PCOS and menopause retain their existing URLs.
+
+- Added a visible 15-area directory at `/womens-health-near-me#conditions` and a homepage link beside the categories heading. Each directory card explains the service and links to its page.
+- Each new page has distinct scope, consultation preparation and assessment guidance, unique search/social metadata, a self-canonical, Service/WebPage/BreadcrumbList markup, related-care links, booking and callback access. NHS patient-information sources are linked for medical background; no clinician review is claimed.
+- New pages explain online access and conditional local availability in existing coverage areas. No new addresses, guaranteed cures, fixed outcomes or specialist availability were invented.
+- Expanded existing PCOS copy to cover PCOS / PCOD, weight management and hormonal/lifestyle support. Expanded menopause copy to include perimenopause, hot flashes, sleep, weight and mood concerns.
+- New routes feed the existing sitemap generator, so `npm run build` retains all 25 URLs.
+- Validation: all 30 existing tests pass, including HTTP routing for every registered page; SEO checks pass for 25 pages. A separate completeness check confirmed that all 15 care areas have a real page, exactly one sitemap entry, a directory link and booking/callback paths. `git diff --check` passes.
+- Changes remain local and are **not deployed**. No browser visual check, live production verification, Search Console submission or ranking measurement was performed.
+
+| Confirmed care area | Canonical route |
+| --- | --- |
+| PCOS / PCOD | `/pcos-support` |
+| Irregular periods | `/irregular-periods` |
+| Painful periods and PMS | `/painful-periods-pms` |
+| Pregnancy back pain, pelvic girdle pain and prenatal fitness | `/pregnancy-physiotherapy` |
+| Postpartum recovery | `/postpartum-recovery` |
+| Pelvic floor dysfunction | `/pelvic-floor-physiotherapy` |
+| Frequent urination and urinary leakage | `/urinary-leakage-support` |
+| Menopause and perimenopause | `/menopause-support` |
+| Vaginal dryness and painful intercourse | `/vaginal-dryness-painful-intercourse` |
+| Weight gain and obesity support | `/weight-management` |
+| Lower back and neck pain | `/back-neck-pain` |
+| Constipation and bloating | `/constipation-bloating` |
+| Chronic pelvic pain | `/chronic-pelvic-pain` |
+| Persistent fatigue and sleep problems | `/fatigue-sleep-support` |
+| Stress, anxiety and emotional health | `/stress-anxiety-support` |
+
+After deployment, submit the sitemap and inspect the new URLs in Search Console. Use landing-page impressions, clicks and actual enquiries to decide which care areas need further depth. Earlier dated sections below record prior stages of implementation.
+
+## Update: focused PCOS search page — 17 October 2026
+
+Expanded `/pcos-support` to address PCOS treatment consultations online and local care enquiries. The sitemap still contains 12 pages because this strengthens the existing canonical PCOS page rather than duplicating it for cure, online and near-me keyword variants.
+
+- Updated the title, description, social metadata, service schema and visible H1 to describe PCOS treatment consultations.
+- Added a sourced answer to the cure question, guidance on choosing gynaecology or nutrition, names/roles already listed in the panel configuration, online booking steps, local availability limitations, fees and five accessible FAQ answers.
+- Linked the homepage PCOS category directly to the page and updated service-link labels across the new service pages and women’s health hub.
+- Medical background references [WHO’s PCOS fact sheet](https://www.who.int/news-room/fact-sheets/detail/polycystic-ovary-syndrome). No clinical-review attribution, prescription promise, new clinic address or guaranteed outcome was added.
+- Local enquiries refer to existing coverage only; the team must confirm a suitable clinician, actual address, fee and slot. For local search, [Google describes relevance, distance and prominence as ranking factors](https://support.google.com/business/answer/7091). Publishing this page cannot guarantee near-me rankings.
+- Validation: sitemap build and SEO checks pass for 12 pages; 11 site tests pass. No runtime logic or route changes in this follow-up. No browser visual verification, deployment, Search Console submission or ranking measurement performed.
+
+Next growth should follow actual services and patient demand: distinct condition pages, genuine clinician profiles and verified clinic information, each with useful original content. Do not multiply the same copy across cities: see [Google’s doorway and scaled-content spam policies](https://developers.google.com/search/docs/essentials/spam-policies). A clinician should review further clinical guidance before it is expanded beyond this general sourced overview.
+
+## Update: nutrition and women’s health discovery — 17 October 2026
+
+Local changes; not deployed. This update adds visible service pages and navigation in response to the new request to attract nutrition and broader women’s health enquiries. The original 7 October report below describes the earlier head-only scope and its eight-page sitemap, not the current site.
+
+- Added `/nutritionist-online`, `/gynaecologist-online`, `/pcos-support` and `/menopause-support`, bringing the generated sitemap to **12 canonical URLs**.
+- Each page has distinct service copy, a title and description, canonical/social metadata, Service/WebPage/BreadcrumbList structured data, and the existing booking and callback flow. Copy describes consultation scope and preparation, without adding treatment protocols, clinician credentials or cure guarantees.
+- Added crawlable service links to the homepage and women’s health hub, plus links between the new pages. Reused existing styles and navigation.
+- Registered the pages in `routes.js`, which remains the sitemap generator’s route source. `npm run build` preserves the new URLs; no manual sitemap-only entries or fictional pages.
+- Validation: `npm run build`, all 30 existing tests via `npm test`, SEO checks for all 12 pages, and `git diff --check` passed. The routing suite verified clean/HTML/trailing-slash routes locally. Browser visual checks and production URL checks were not performed.
+- After deployment through the existing GitHub Pages workflow, submit `https://narihealth.in/sitemap.xml` in Google Search Console and inspect the four new URLs. Track impressions, clicks and enquiries by landing page; no ranking or patient-volume increase has been verified.
+- [Google’s sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) says sitemap submission is a hint, and Google ignores priority/changefreq. This update adds real discoverable content rather than those fields.
+
+---
+
 Date: 7 October 2026 (Asia/Kolkata). Changes are local and have not been deployed.
 
 ## Scope and UI preservation

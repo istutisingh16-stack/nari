@@ -6,6 +6,8 @@
     'index', 'member-login', 'member', 'login', 'gallery', 'privacy', 'terms',
     'physiotherapy-bulandshahr', 'physiotherapy-noida', 'physiotherapy-delhi-ncr',
     'female-physiotherapist-near-me', 'womens-health-near-me',
+    'nutritionist-online', 'gynaecologist-online', 'pcos-support', 'menopause-support',
+    'irregular-periods', 'painful-periods-pms', 'pregnancy-physiotherapy', 'postpartum-recovery', 'pelvic-floor-physiotherapy', 'urinary-leakage-support', 'vaginal-dryness-painful-intercourse', 'weight-management', 'back-neck-pain', 'constipation-bloating', 'chronic-pelvic-pain', 'fatigue-sleep-support', 'stress-anxiety-support',
     'doctor/index', 'doctor/panel', 'admin/index', 'admin/console', 'admin/dev'
   ];
   if (typeof module === 'object' && module.exports) { module.exports = pages; return; }
