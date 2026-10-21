@@ -6,7 +6,7 @@ Static public site with a Firebase member, doctor and admin portal.
 
 Run `npm start` (no dependency install required) and open
 <http://localhost:5500/member-login>. Clean URLs and `.html` URLs both work.
-If VS Code Live Server already owns port 5500, stop it first, or run
+If VS Code Live Server already owns port 5500, stop it first, orr run
 `PORT=5501 npm start`.
 
 To keep using **VS Code Live Server**, run `npm run prepare:local` once in this
