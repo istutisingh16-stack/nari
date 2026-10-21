@@ -414,9 +414,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: 3.5rem; height: 3.5rem; border-radius: 1rem; background: var(--tint); color: var(--primary);
 }
 .trust-ic svg { width: 1.5rem; height: 1.5rem; }
-.trust-num {
+.trust-title {
   font-family: "Plus Jakarta Sans", sans-serif; margin-top: 1.25rem;
-  font-size: 2.25rem; font-weight: 800; letter-spacing: -0.02em; color: var(--ink);
+  font-size: 1.375rem; font-weight: 800; letter-spacing: -0.02em; color: var(--ink);
 }
 .trust-label { margin-top: 0.25rem; font-size: 0.875rem; color: var(--muted); }
 
