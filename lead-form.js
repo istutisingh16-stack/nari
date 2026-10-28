@@ -15,7 +15,7 @@
   function param(n) { var m = window.location.search.match(new RegExp('[?&]' + n + '=([^&]+)')); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')).slice(0, 80) : ''; }
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function uid() { return 'lead_' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
-  function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {} }
+  function track(name) { try { if (window.NariAnalytics) window.NariAnalytics.track(name); } catch (e) {} }
 
   /* Referral code in the URL (doctor shares narihealth.in/?ref=NH-SUDHA) is remembered for the session. */
   var ref = param('ref').toUpperCase();
@@ -84,11 +84,11 @@
     var phoneEl = form.elements.phone;
     phoneEl.addEventListener('input', function () { var v = phoneEl.value.replace(/\D/g, '').slice(0, 10); phoneEl.value = v.length > 5 ? v.slice(0, 5) + ' ' + v.slice(5) : v; });
     var warmed = false;
-    form.addEventListener('focusin', function () { if (!warmed) { warmed = true; track('lead_form_start', { page: page }); if (LIVE) firestore().catch(function () {}); } });
+    form.addEventListener('focusin', function () { if (!warmed) { warmed = true; track('lead_form_start'); if (LIVE) firestore().catch(function () {}); } });
 
     function showErr(m) { err.textContent = m || ''; err.classList.toggle('show', !!m); }
     form.addEventListener('submit', function (e) {
-      e.preventDefault(); showErr('');
+      e.preventDefault(); if (btn.disabled) return; showErr('');
       if (form.elements.website.value) return; /* honeypot: bots fill hidden fields */
       var name = form.elements.name.value.trim(), phone = normPhone(phoneEl.value), concern = form.elements.concern.value;
       var time = (form.querySelector('input[name="time"]:checked') || {}).value || 'morning';
@@ -98,11 +98,11 @@
       var lead = { id: uid(), name: name.slice(0, 80), phone: phone, concern: concern.slice(0, 60), time: time, page: page, ref: ref || '', utm: utm, status: 'new', createdAt: new Date().toISOString() };
       btn.disabled = true; var label = btn.innerHTML; btn.innerHTML = '<span class="lead-spin"></span>Sending…';
       saveLead(lead).then(function () {
-        track('lead_submitted', { page: page, concern: concern, time: time, ref: ref || '(none)' });
+        if (LIVE) track('lead_submitted');
         success(root, lead, false);
       }, function () {
         /* Could not save: hand the details to WhatsApp so the team still gets them. */
-        track('lead_fallback_whatsapp', { page: page });
+        track('lead_fallback_whatsapp');
         success(root, lead, true);
         window.open(waLink(waText(lead)), '_blank', 'noopener');
       }).then(null, function () { btn.disabled = false; btn.innerHTML = label; showErr('Something went wrong. Please WhatsApp us instead.'); });

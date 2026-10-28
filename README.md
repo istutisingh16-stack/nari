@@ -52,3 +52,16 @@ client-side SEO rendering are required. Sitemap modification dates are omitted
 until genuine editorial dates can be maintained; deployment time is not a
 content modification date. See [SEO_IMPLEMENTATION_REPORT.md](SEO_IMPLEMENTATION_REPORT.md)
 for findings, unchanged business inconsistencies and Search Console actions.
+
+The public-site GA4 property is retained, with optional analytics off until a
+visitor opts in at `/privacy#analytics-preferences`. Phone, WhatsApp and booking
+clicks are distinct from successfully saved callback requests. See
+[the 28 October audit](SEO_AUDIT_2026-10-28.md) for event definitions, GA4 settings
+that must be reviewed before release, live redirect findings and the monitoring plan.
+
+`npm run test:browser` is an optional Chrome/Playwright integration check. Supply
+`PLAYWRIGHT_MODULE` with the path to an existing Playwright installation if it is
+not locally installed, and `CHROME_PATH` if Chrome is not at
+`/usr/bin/google-chrome`. The test blocks all external browser requests and mocks
+lead storage; it never sends a real patient enquiry. It checks the six priority
+pages at 320, 390 and 1440 pixels, consent, forms and FAQs without JavaScript.

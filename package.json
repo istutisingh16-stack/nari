@@ -4,8 +4,9 @@
   "scripts": {
     "start": "node scripts/serve.cjs",
     "prepare:local": "node scripts/prepare-local.cjs",
-    "test": "node tests/site.test.cjs && node tests/routes.test.cjs && node tests/whatsapp.test.cjs && npm run check:seo",
+    "test": "node tests/site.test.cjs && node tests/routes.test.cjs && node tests/whatsapp.test.cjs && node tests/analytics.test.cjs && npm run check:seo",
     "build": "node scripts/seo.cjs --write",
-    "check:seo": "node scripts/seo.cjs"
+    "check:seo": "node scripts/seo.cjs",
+    "test:browser": "node tests/browser-check.cjs"
   }
 }

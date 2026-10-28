@@ -49,6 +49,21 @@ function inspect() {
         assert(!schema.address && !schema.aggregateRating, 'No unverified offices or ratings');
         for (const person of schema.member || []) assert.equal(person['@type'], 'Person');
       }
+      if (schema['@type'] === 'BreadcrumbList') {
+        assert(schema.itemListElement.length >= 2, route + ': breadcrumb needs hierarchy');
+        schema.itemListElement.forEach((item, i) => {
+          assert.equal(item.position, i + 1, route + ': breadcrumb order');
+          assert(item.name && item.item.startsWith(origin + '/'), route + ': breadcrumb destination');
+        });
+        assert.equal(schema.itemListElement.at(-1).item, url, route + ': breadcrumb must end at canonical');
+      }
+    }
+    for (const match of html.matchAll(/<img\b[^>]*>/g)) {
+      const image = attrs(match[0]);
+      assert(Object.hasOwn(image, 'alt'), route + ': image needs alt text');
+      assert(Number(image.width) > 0 && Number(image.height) > 0, route + ': reserve image dimensions');
+      const source = new URL(image.src, url);
+      if (source.origin === origin) assert(fs.existsSync(path.join(root, source.pathname)), route + ': missing image ' + image.src);
     }
     // Validate crawlable destinations and fragments, without requesting third-party sites.
     for (const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)) {

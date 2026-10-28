@@ -11,7 +11,7 @@
   var LIVE = !!(FB.apiKey && FB.projectId && /^AIza/.test(FB.apiKey));
   var KEY = 'nari_traffic', VISIT_KEY = 'nari_visit';
   /* Honour the browser's "do not track" and "global privacy control" signals. */
-  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+  if (!window.NariAnalytics || !window.NariAnalytics.allowed()) return;
 
   function key(s) { s = String(s || '').toLowerCase().replace(/^www\./, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40); return s || 'other'; }
   function param(n) { var m = window.location.search.match(new RegExp('[?&]' + n + '=([^&]+)')); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : ''; }
@@ -56,7 +56,7 @@
     try { fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, mode: 'cors' }).catch(function () {}); } catch (e) {}
   }
 
-  function run() { if (LIVE) liveCount(); else demoCount(); }
+  function run() { if (!window.NariAnalytics.allowed()) return; if (LIVE) liveCount(); else demoCount(); }
   if (document.readyState === 'complete') setTimeout(run, 800);
   else window.addEventListener('load', function () { setTimeout(run, 800); });
 })();
